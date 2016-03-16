@@ -1,0 +1,176 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>多人射屁股大戰</title>
+        <script src="src/Item/Item.js"></script>
+        <script src="src/Control/left.js"></script>
+        <script src="src/Control/right.js"></script>
+        <script src="src/Option.js"></script>
+    </head>
+    <body></body>
+    <script>
+        var Container,GameArea,LeftControl,RightControl;
+        var Option;
+        var player;
+        var FocalVar=1;//焦距 最低1
+        var MoveCube=[];
+        var login = false;
+        
+        init();
+        /*if(login) init();
+        else loginView();*/
+        //登入畫面描繪
+        function loginView(){
+            
+        }
+        //登入系統函式
+        function registerMember(){
+            
+        }
+        
+        
+        function init(){
+            /*global OptionSet 實作於Option.js*/
+            Option = new OptionSet();
+            GameArea = document.createElement("div");
+            GameArea.style.width = Option.GameAreaWidth + "px";
+            GameArea.style.height = Option.GameAreaHeight + "px";
+            GameArea.style.backgroundColor = "#FFAC55";
+            GameArea.style.margin = "0 auto";
+            GameArea.style.position = 'absolute';
+            GameArea.style.top = "0px";
+            GameArea.style.left = "250px";
+            document.body.appendChild(GameArea);
+            LeftControl = new LeftControl();
+            LeftControl.MoveButton.addEventListener("click",function(){
+                MoveItem(); 
+            });
+            document.body.appendChild(LeftControl.self);
+            
+            RightControl = new RightControl();
+            document.body.appendChild(RightControl.self);
+            /*global Item 實作於Item.js*/
+            for(var i=0;i<Option.CubeX;i++){
+                MoveCube.push([]);
+                for(var j=0;j<Option.CubeY;j++){
+                    var item = new Item(j,i,0,"space");
+                    MoveCube[i].push(item);
+                }
+            }
+            var focalPos = new Object();
+            focalPos.X = Option.CubeX / 2;
+            focalPos.Y = Option.CubeY / 2;
+            rendCube(focalPos);
+            
+            //以下測試插入玩家
+            player = new Item(0,0,1,"player","+",2);//x,y,ID,Type,MoveType,MoveRange
+            addItem(player);
+            
+        }
+        function rendCube(centerPos){//centerPos = 聚焦中心位置
+            var X_num = Option.CubeX/FocalVar;//X軸顯示數量
+            var Y_num = Option.CubeY/FocalVar;//Y軸顯示數量
+            var min_X = centerPos.X - X_num;
+            var max_X = centerPos.X + X_num;
+            var min_Y = centerPos.Y - Y_num;
+            var max_Y = centerPos.Y + Y_num;
+            
+            for(var i=min_X;i<max_X;i++){
+                if(i<0) continue;
+                if(i>=Option.CubeX) break;
+                for(var j=min_Y;j<max_Y;j++){
+                    if(j<0) continue;
+                    if(j>=Option.CubeY) break;
+                    MoveCube[i][j].Div.style.width = Option.CubeSize*FocalVar + "px";
+                    MoveCube[i][j].Div.style.height = Option.CubeSize*FocalVar + "px";
+                    switch (MoveCube[i][j].Type) {
+                        case 'player':
+                            MoveCube[i][j].Div.style.backgroundColor = "#FF0000";//for TEST
+                            console.log(i+","+j);
+                            break;
+                        case 'move':
+                            MoveCube[i][j].Div.style.backgroundColor = "#FFFF00";//for TEST
+                            break;
+                        default:
+                            MoveCube[i][j].Div.style.backgroundColor = "#FFFFFF";//for TEST
+                    }
+                    if(min_X < 0) MoveCube[i][j].Div.style.left = (i * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    else MoveCube[i][j].Div.style.left = ((i-min_X) * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    if(min_Y < 0) MoveCube[i][j].Div.style.top = (j * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    else MoveCube[i][j].Div.style.top = ((j-min_Y) * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    GameArea.appendChild(MoveCube[i][j].Div);
+                }
+            }
+        }//畫面描繪
+        function addItem(Item){
+            var x = Item.Postion.X;
+            var y = Item.Postion.Y;
+            MoveCube[x][y] = Item;
+            var focalPos = new Object();
+            focalPos.X = x;
+            focalPos.Y = y;
+            rendCube(focalPos);
+        }//加入玩家，發射彈藥
+        
+        function MoveItem(){
+            
+            function addEvent(x,y){//按下移動按鈕後
+                MoveCube[x][y].Div.addEventListener("click",function(){
+                    MoveCube[player.Postion.X][player.Postion.Y] = player.clone();//物件複製
+                    MoveCube[player.Postion.X][player.Postion.Y].No=0;
+                    MoveCube[player.Postion.X][player.Postion.Y].Type="space";
+                    
+                    player.Postion.X=x;
+                    player.Postion.Y=y;
+                    MoveCube[x][y] = player.clone();
+                    
+                    rendCube(player.Postion);
+                    console.log(MoveCube[0][0]);
+                });
+            }
+            var CenterX = player.Postion.X;
+            var CenterY = player.Postion.Y;
+            switch (player.property.MoveType) {//依照移動類型描繪可移動目標
+                case '+':
+                    for(var i=0;i<4;i++){
+                        for(var j=1;j<=player.property.MoveAbility;j++){
+                            switch (i) {
+                                case 0:
+                                    //偵測是否可移動
+                                    if(CenterX+j<0 || CenterX+j>Option.CubeX) break;//邊界判定
+                                    
+                                    //移動目標描繪
+                                    MoveCube[CenterX+j][CenterY].Type = "move";
+                                    addEvent(CenterX+j,CenterY);//增加按鈕事件
+                                    break;
+                                case 1:
+                                    //偵測是否可移動
+                                    if(CenterX-j<0 || CenterX-j>Option.CubeX) break;//邊界判定
+                                    //移動目標描繪
+                                    MoveCube[CenterX-j][CenterY].Type = "move";
+                                    addEvent(CenterX-j,CenterY);//增加按鈕事件
+                                    break;
+                                case 2:
+                                    //偵測是否可移動
+                                    if(CenterY+j<0 || CenterY+j>Option.CubeY) break;//邊界判定
+                                    //移動目標描繪
+                                    MoveCube[CenterX][CenterY+j].Type = "move";
+                                    addEvent(CenterX,CenterY+j);//增加按鈕事件
+                                    break;
+                                case 3:
+                                    //偵測是否可移動
+                                    if(CenterY-j<0 || CenterY-j>Option.CubeY) break;//邊界判定
+                                    //移動目標描繪
+                                    MoveCube[CenterX][CenterY-j].Type = "move";
+                                    addEvent(CenterX,CenterY-j);//增加按鈕事件
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+            }
+            rendCube(player.Postion);
+        }
+    </script>
+
+</html>
