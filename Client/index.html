@@ -6,10 +6,12 @@
         <script src="src/Control/left.js"></script>
         <script src="src/Control/right.js"></script>
         <script src="src/Option.js"></script>
+        <script src="src/Login/login.js"></script>
     </head>
     <body></body>
     <script>
-        var Container,GameArea,LeftControl,RightControl;
+        var GameArea,LeftControl,RightControl;
+        var LoginView;
         var Option;
         var player;
         var FocalVar=1;//焦距 最低1
@@ -17,19 +19,23 @@
         var login = false;
         
         init();
-        /*if(login) init();
-        else loginView();*/
+        if(login) GameAreaInit();
+        else loginView();
+        
+        function init(){
+            window.addEventListener( 'resize', onWindowReSize, false );
+        }
         //登入畫面描繪
         function loginView(){
-            
+            /*global LoginView 實作於login.js*/
+            LoginView = new LoginView(getWindowSize());
+            document.body.appendChild(LoginView.self);
         }
         //登入系統函式
         function registerMember(){
             
         }
-        
-        
-        function init(){
+        function GameAreaInit(){
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
             GameArea = document.createElement("div");
@@ -65,8 +71,8 @@
             //以下測試插入玩家
             player = new Item(0,0,1,"player","+",2);//x,y,ID,Type,MoveType,MoveRange
             addItem(player);
-            
-        }
+        }//遊戲畫面初始化
+        
         function rendCube(centerPos){//centerPos = 聚焦中心位置
             var X_num = Option.CubeX/FocalVar;//X軸顯示數量
             var Y_num = Option.CubeY/FocalVar;//Y軸顯示數量
@@ -102,6 +108,7 @@
                 }
             }
         }//畫面描繪
+        
         function addItem(Item){
             var x = Item.Postion.X;
             var y = Item.Postion.Y;
@@ -113,7 +120,6 @@
         }//加入玩家，發射彈藥
         
         function MoveItem(){
-            
             function addEvent(x,y){//按下移動按鈕後
                 MoveCube[x][y].Div.addEventListener("click",function(){
                     MoveCube[player.Postion.X][player.Postion.Y] = player.clone();//物件複製
@@ -170,6 +176,22 @@
                     break;
             }
             rendCube(player.Postion);
+        }
+        //以下為系統工具
+        function getWindowSize(){
+            var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+            return {W:x,H:y};
+        }
+        
+        function onWindowReSize(){
+            var windowSize = getWindowSize();
+            console.log(windowSize);
+            LoginView.windowReSize(windowSize);
         }
     </script>
 
