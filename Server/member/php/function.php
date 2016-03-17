@@ -10,12 +10,9 @@
 	error#4	註冊失敗
 */
 //登入函數
-function login($username,$password,$password_md5){
+function login($connect,$username,$password,$password_md5){
 	$error[] = null;
-	include("../connect/function.php");
-	$connect = ConnectSql("member");
-	mysqli_query($connect,"SET CHARACTER SET UTF8");
-	$sql = "SELECT * FROM member_table where username = '$username'";
+	$sql = "SELECT * FROM member_list where username = '$username'";
 	$result = mysqli_query($connect,$sql);
 	$row = mysqli_fetch_row($result);
 	if($username!=$row[1]){
@@ -32,22 +29,23 @@ function login($username,$password,$password_md5){
 	}
 }
 //註冊函數
-function reg($username,$email,$password_md5){
-	include("../connect/function.php");
-	$connect = ConnectSql("member");
+function reg($connect,$username,$email,$password_md5){
 	$error = "0";
-	$sql = "SELECT * FROM member_list where username = '$username'";
-	$result = mysql_query($sql);
-	$row = mysql_fetch_row($result);
+	$sql = "SELECT * FROM member_list where username = '$username'";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+	$result = mysqli_query($connect,$sql);
+	$row = mysqli_fetch_row($result);
 	if($username==$row[1]){
 		$error = "3";
+		mysqli_close($connect);
 		return $error;
 	}
-	$sql="INSERT INTO member_table (username, email, password) VALUES ('$username', '$email', '$password_md5');";
-	if(mysql_query($sql)){
+	$sql="INSERT INTO member_list (username, email, password, ActorID) VALUES ('$username', '$email', '$password_md5', '-1');";
+	if(mysqli_query($connect,$sql)){
+		mysqli_close($connect);
 		return $error;
 	}else{
 		$error = "4";
+		mysqli_close($connect);
 		return $error;
 	}
 }

@@ -7,21 +7,24 @@
         <script src="src/Control/right.js"></script>
         <script src="src/Option.js"></script>
         <script src="src/Login/login.js"></script>
+        <script src="src/Login/register.js"></script>
+        <script src="../Server/js/ajax.js"></script>
     </head>
     <body></body>
     <script>
         var GameArea,LeftControl,RightControl;
-        var LoginView;
+        var LoginView,RegView;
         var Option;
         var player;
         var FocalVar=1;//焦距 最低1
         var MoveCube=[];
-        var login = false;
+        var loginBool = false;
         
         init();
-        if(login) GameAreaInit();
+        //如果要進行測試，要先把登入畫面這兩行註解
+        if(loginBool) GameAreaInit();
         else loginView();
-        
+        // ↑↑↑↑
         function init(){
             window.addEventListener( 'resize', onWindowReSize, false );
         }
@@ -29,11 +32,45 @@
         function loginView(){
             /*global LoginView 實作於login.js*/
             LoginView = new LoginView(getWindowSize());
+            LoginView.Reg.addEventListener("click",function(){
+               document.body.removeChild(LoginView.self);
+               document.body.appendChild(RegView.self);
+            });
+            LoginView.commit.addEventListener("click",function(){
+                /*global login 實作於 ajax.js*/
+                login(LoginView.getCommit());
+            });
+            /*global RegisterView 實作於register.js*/
+            RegView = new RegisterView(getWindowSize());
+            RegView.login.addEventListener("click",function(){
+                document.body.removeChild(RegView.self);
+                document.body.appendChild(LoginView.self);
+            });
+            RegView.commit.addEventListener("click",function(){
+                /*global register 實作於 ajax.js*/
+                register(RegView.getCommit());
+            });
             document.body.appendChild(LoginView.self);
         }
         //登入系統函式
+        function loginMember(){
+            /*global request 實作於 ajax.js*/
+				if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+					var data = request.responseText;//取得傳回的資料存在變數中
+					if(data=="Success#1"){
+					    document.body.removeChild(LoginView.self);
+					    loginBool = true;
+					    GameAreaInit();
+					}
+				}
+        }
+        //註冊系統函式
         function registerMember(){
-            
+            /*global request 實作於 ajax.js*/
+				if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+					var data = request.responseText;//取得傳回的資料存在變數中
+					if(data=="Success#1") alert("註冊成功");
+				}
         }
         function GameAreaInit(){
             /*global OptionSet 實作於Option.js*/
@@ -190,8 +227,8 @@
         
         function onWindowReSize(){
             var windowSize = getWindowSize();
-            console.log(windowSize);
             LoginView.windowReSize(windowSize);
+            RegView.windowReSize(windowSize);
         }
     </script>
 

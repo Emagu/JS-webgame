@@ -1,9 +1,10 @@
 <?php
 //宣告
 	$database_name = "member";
-	$connect = mysqli_connect($database_host, $database_username, $database_password, $database_name, $port)or die(mysql_error());
+	include("../../connect/function.php");//引入函數庫
+	$connect = ConnectSql($database_name);
 	mysqli_query($connect,"SET CHARACTER SET UTF8");
-	
+	include("config.php");//引入設定檔
 	include("function.php");//引入函數庫
 //抓取資料
 	$id = $_GET['name'];
@@ -48,8 +49,8 @@
 		}elseif($pw!=$pw2){
 			echo 'error#9';
 		}else{
-			$password_md5 = md5($password); //密碼加密
-			$error = reg($username,$email,$password_md5);//使用註冊函數
+			$password_md5 = md5($pw); //密碼加密
+			$error = reg($connect,$id,$email,$password_md5);//使用註冊函數
 			switch($error){
 				case "0":
 					echo 'Success#1';
