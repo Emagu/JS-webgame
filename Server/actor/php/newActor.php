@@ -12,18 +12,23 @@
 		error #3	角色名稱長度不符
 		error #4	角色名稱已存在
 		error #5	SQL登入失敗
-		Success #1  註冊成功
+		error #6	SQL更新失敗
 	*/
 	if($id==""){
 		echo 'error#1';
 	}elseif($name==""){
 		echo 'error#2';
-	}elseif(checkActorNameConfig($name)!="Success"){
+	}elseif(!checkActorNameConfig($name)){
 		echo 'error#3';
 	}else{
 		if(getActor($connect,$name)=="error#4"){
-			if(newActor($connect,$id,$name)=="Success"){
-				echo getActor($connect,$name);
+			if(newActor($connect,$id,$name)){
+				$data = getActor($connect,$name);
+				if(updateUser($connect,$data)){
+					echo json_encode($data);
+				}else{
+					echo 'error#6';
+				}
 			}else{
 				echo 'error#5';
 			}
@@ -31,5 +36,4 @@
 			echo 'error#4';
 		}
 	}
-	mysqli_close($connect);
 ?>

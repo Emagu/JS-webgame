@@ -2,11 +2,11 @@
 function RegisterView(windowSize){
     //載體
     this.self = document.createElement("div");
-    this.self.style.width = windowSize.W * 0.3 + "px";
+    this.self.style.width = windowSize.W * 0.6 + "px";
     this.self.style.height = windowSize.H * 0.2 + "px";
     this.self.style.backgroundColor = "#00FFFF";
     this.self.style.position = "absolute";
-    this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
+    this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.6 / 2) + "px";
     this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
     this.self.style.textAlign = 'center';
     //輸入端口
@@ -85,29 +85,29 @@ function RegisterView(windowSize){
 	        this.login.appendChild(document.createTextNode("前往登入!"));
 	        this.self.appendChild(this.login);
 	        
-	        this.commit = document.createElement("P");
-	        this.commit.style.position = "absolute";
-	        this.commit.style.top = "70%";
-	        this.commit.style.width = "50%";
-	        this.commit.style.left = "50%";
-	        this.commit.style.cursor = "pointer";
-	        this.commit.appendChild(document.createTextNode("資料送出!"));
-	        this.self.appendChild(this.commit);
+	        commit = document.createElement("P");
+	        commit.style.position = "absolute";
+	        commit.style.top = "70%";
+	        commit.style.width = "50%";
+	        commit.style.left = "50%";
+	        commit.style.cursor = "pointer";
+	        commit.appendChild(document.createTextNode("資料送出!"));
+	        this.self.appendChild(commit);
 	        
 	    
     this.windowReSize = function(windowSize){//當視窗調整 調整版面
-        this.self.style.width = windowSize.W * 0.3 + "px";
+        this.self.style.width = windowSize.W * 0.6 + "px";
         //this.self.style.height = windowSize.H * 0.8 + "px";
-        this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
+        this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.6 / 2) + "px";
         this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
     }
-    
-    this.getCommit = function(){
-    	var data = new Object();
+    commit.addEventListener("click",function(){
+		/*global register 實作於 ajax.js*/
+		var data = new Object();
     	data.Name = name.value;
     	data.PW = pw.value;
     	data.PW2 = pw2.value;
     	data.Mail = mail.value;
-    	return data;
-    }
+		register(data);
+	});
 }

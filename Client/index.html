@@ -7,13 +7,19 @@
         <script src="src/Control/right.js"></script>
         <script src="src/Control/top.js"></script>
         <script src="src/Option.js"></script>
-        <script src="src/Login/login.js"></script>
-        <script src="src/Login/register.js"></script>
         <script src="src/Hall/HallRoomList.js"></script>
         <script src="src/Hall/HallCommand.js"></script>
         <script src="src/Hall/HallStatus.js"></script>
-        <script src="src/NewActor/NewActor.js"></script>
+        
+        <script src="src/View/Login.js"></script>
+        <script src="src/View/Register.js"></script>
+        <script src="src/View/NewActor.js"></script>
+        
+        <script src="src/Actor/Actor.js"></script>
+        
+        <script src="lib/ajax_res.js"></script>
         <script src="../Server/js/ajax.js"></script>
+        
     </head>
     <body></body>
     <script>
@@ -25,7 +31,7 @@
         var player;
         var FocalVar=1;//焦距 最低1
         var MoveCube=[];
-        var USERID = null;
+        var USERID = null,ACTOR=null;
         init();
         var testport = location.hash;//URL+testport
         switch (testport) {
@@ -43,64 +49,27 @@
         }//初始化
         
         function loginViewiInit(){
-            /*global LoginView 實作於login.js*/
+            /*global LoginView 實作於src/View */
             LoginView = new LoginView(getWindowSize());
             LoginView.Reg.addEventListener("click",function(){
                document.body.removeChild(LoginView.self);
                document.body.appendChild(RegView.self);
             });
-            LoginView.commit.addEventListener("click",function(){
-                /*global login 實作於 ajax.js*/
-                login(LoginView.getCommit());
-            });
-            /*global RegisterView 實作於register.js*/
+            /*global RegisterView 實作於src/View.js*/
             RegView = new RegisterView(getWindowSize());
             RegView.login.addEventListener("click",function(){
                 document.body.removeChild(RegView.self);
                 document.body.appendChild(LoginView.self);
             });
-            RegView.commit.addEventListener("click",function(){
-                /*global register 實作於 ajax.js*/
-                register(RegView.getCommit());
-            });
             document.body.appendChild(LoginView.self);
         }//登入畫面描繪
-        function loginMember(){
-            /*global request 實作於 ajax.js*/
-			if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-				var data = request.responseText;//取得傳回的資料存在變數中
-				data = JSON.parse(data);
-				if(data.status == "Success"){
-				    USERID = data.data.UserID;
-				    if(data.data.ActorID == 0){//登入成功但未有角色
-				        document.body.removeChild(LoginView.self);
-				        NewActorViewInit();  
-				    }else{//登入成功且已有角色
-				        document.body.removeChild(LoginView.self);
-				        GameAreaInit();  
-				    }
-				}
-			}
-        }//登入系統函式
-        function registerMember(){
-            /*global request 實作於 ajax.js*/
-				if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-					var data = request.responseText;//取得傳回的資料存在變數中
-					if(data=="Success#1") alert("註冊成功");
-				}
-        }//註冊系統函式
         
         function NewActorViewInit(){
-            /*global Hall_RoomList,Hall_Command,Hall_Status 實作於Hall.* */
+            /*global NewActorView 實作於src/View.* */
             NewActorView = new NewActorView();
             document.body.appendChild(NewActorView.self);
         }
-        function NewActorRequest(){//建立角色成功後
-            if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-				var data = request.responseText;//取得傳回的資料存在變數中
-				console.log(data);
-			}
-        }
+        
         function HallViewInit(){
             /*global Hall_RoomList,Hall_Command,Hall_Status 實作於Hall.* */
             HallRoomList = new Hall_RoomList();
@@ -110,8 +79,6 @@
             document.body.appendChild(HallCommand.self);
             document.body.appendChild(HallStatus.self);
         }//大廳描繪
-        
-        
         
         function GameAreaInit(){
             /*global OptionSet 實作於Option.js*/

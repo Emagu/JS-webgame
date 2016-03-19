@@ -12,21 +12,21 @@ function LoginView(windowSize){
     //輸入端口
 	this.self.appendChild(document.createTextNode("----登入----"));//標題
 	    //標籤
-	        var logintxt = document.createElement("P");
-	        logintxt.style.position = "absolute";
-	        logintxt.style.top = "15%";
-	        logintxt.style.width = "20%";
-	        logintxt.style.left = "2%";
-	        logintxt.appendChild(document.createTextNode("帳號:"));
-	        this.self.appendChild(logintxt);
+	        var usertxt = document.createElement("P");
+	        usertxt.style.position = "absolute";
+	        usertxt.style.top = "15%";
+	        usertxt.style.width = "20%";
+	        usertxt.style.left = "2%";
+	        usertxt.appendChild(document.createTextNode("帳號:"));
+	        this.self.appendChild(usertxt);
 	        
-	        var login = document.createElement("input");
-	        login.setAttribute("type", "text");
-	        login.style.position = "absolute";
-	        login.style.top = "23%";
-	        login.style.width = "60%";
-	        login.style.left = "22%";
-	        this.self.appendChild(login);
+	        var user = document.createElement("input");
+	        user.setAttribute("type", "text");
+	        user.style.position = "absolute";
+	        user.style.top = "23%";
+	        user.style.width = "60%";
+	        user.style.left = "22%";
+	        this.self.appendChild(user);
 	        
 	        var pwtxt = document.createElement("P");
 	        pwtxt.style.position = "absolute";
@@ -62,14 +62,14 @@ function LoginView(windowSize){
 	        this.Reg.appendChild(document.createTextNode("立即註冊!"));
 	        this.self.appendChild(this.Reg);
 	        
-	        this.commit = document.createElement("P");
-	        this.commit.style.position = "absolute";
-	        this.commit.style.top = "70%";
-	        this.commit.style.width = "100%";
-	        this.commit.style.left = "0%";
-	        this.commit.style.cursor = "pointer";
-	        this.commit.appendChild(document.createTextNode("登入!"));
-	        this.self.appendChild(this.commit);
+	        var commit = document.createElement("P");
+	        commit.style.position = "absolute";
+	       	commit.style.top = "70%";
+	        commit.style.width = "100%";
+	        commit.style.left = "0%";
+	       	commit.style.cursor = "pointer";
+	        commit.appendChild(document.createTextNode("登入!"));
+	        this.self.appendChild(commit);
 	        
 	    
     this.windowReSize = function(windowSize){//當視窗調整 調整版面
@@ -78,10 +78,11 @@ function LoginView(windowSize){
         this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
         this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
     }
-    this.getCommit = function(){
-    	var data = new Object();
-    	data.Name = login.value;
+    commit.addEventListener("click",function(){
+       	/*global login 實作於 ajax.js*/
+       	var data = new Object();
+    	data.Name = user.value;
     	data.PW = pw.value;
-    	return data;
-    }
+		login(data);
+    });
 }
