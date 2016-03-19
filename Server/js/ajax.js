@@ -13,11 +13,24 @@ function register(data) {
 	request.send(null);//送出
 }
 function login(data) {
-	console.log(data);
 	var url = "../Server/member/php/login.php?name="+data.Name+"&pw="+data.PW;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global loginMember 實作於Client/index*/
 	request.onreadystatechange = loginMember//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function checkActorConfig(name) {
+	var url = "../Server/actor/php/checkActorConfig.php?name="+name;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global NewActorView.CheckActorName 實作於Client/src/NewActor*/
+	request.onreadystatechange = NewActorView.CheckActorName//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function newActor(name,userID) {
+	var url = "../Server/actor/php/newActor.php?name="+name+"&id="+userID;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global NewActorRequest 實作於Client/index*/
+	request.onreadystatechange = NewActorRequest//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function creatRequestObj(){

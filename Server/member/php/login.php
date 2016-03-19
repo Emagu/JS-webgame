@@ -1,8 +1,7 @@
 <?php
 	//連接資料庫
-	$database_name = "member";
 	include("../../connect/function.php");//引入函數庫
-	$connect = ConnectSql($database_name);
+	$connect = ConnectSql();
 	mysqli_query($connect,"SET CHARACTER SET UTF8");
 	
 	include("config.php");//引入設定檔
@@ -17,17 +16,17 @@
 		error #4 密碼錯誤
 	*/
 	if($id==""){
-		echo 'error#1';
+		echo json_encode(array("status" => 'error#1'));
 	}elseif($pw==""){
-		echo 'error#2';
+		echo json_encode(array("status" => 'error#2'));
 	}else{
 		$error = login($connect,$id,$pw,$password_md5);//使用登入函數
 		if($error[0] == "1"){
-			echo 'error#1';
+			echo json_encode(array("status" => 'error#3'));
 		}elseif($error[0] == "2"){
-			echo 'error#4';
+			echo json_encode(array("status" => 'error#4'));
 		}elseif($error[0] == "0"){
-			echo "Success#1";
+			echo json_encode(array("status" => "Success","data" => array("UserID" => $error[1],"ActorID" => $error[2])));
 		}
 	}
 ?>

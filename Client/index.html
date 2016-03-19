@@ -5,31 +5,44 @@
         <script src="src/Item/Item.js"></script>
         <script src="src/Control/left.js"></script>
         <script src="src/Control/right.js"></script>
+        <script src="src/Control/top.js"></script>
         <script src="src/Option.js"></script>
         <script src="src/Login/login.js"></script>
         <script src="src/Login/register.js"></script>
+        <script src="src/Hall/HallRoomList.js"></script>
+        <script src="src/Hall/HallCommand.js"></script>
+        <script src="src/Hall/HallStatus.js"></script>
+        <script src="src/NewActor/NewActor.js"></script>
         <script src="../Server/js/ajax.js"></script>
     </head>
     <body></body>
     <script>
-        var GameArea,LeftControl,RightControl;
+        var GameArea,LeftControl,RightControl,TopControl;
         var LoginView,RegView;
+        var NewActorView;
+        var HallRoomList,HallCommand,HallStatus;
         var Option;
         var player;
         var FocalVar=1;//焦距 最低1
         var MoveCube=[];
-        var loginBool = false;
-        
+        var USERID = null;
         init();
-        //如果要進行測試，要先把登入畫面這兩行註解
-        if(loginBool) GameAreaInit();
-        else loginView();
-        // ↑↑↑↑
+        var testport = location.hash;//URL+testport
+        switch (testport) {
+            case '#0':
+                GameAreaInit();
+                break;
+            case '#1':
+                HallViewInit();
+                break;
+            default:
+                loginViewiInit();
+        }
         function init(){
             window.addEventListener( 'resize', onWindowReSize, false );
-        }
-        //登入畫面描繪
-        function loginView(){
+        }//初始化
+        
+        function loginViewiInit(){
             /*global LoginView 實作於login.js*/
             LoginView = new LoginView(getWindowSize());
             LoginView.Reg.addEventListener("click",function(){
@@ -51,39 +64,83 @@
                 register(RegView.getCommit());
             });
             document.body.appendChild(LoginView.self);
-        }
-        //登入系統函式
+        }//登入畫面描繪
         function loginMember(){
             /*global request 實作於 ajax.js*/
-				if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-					var data = request.responseText;//取得傳回的資料存在變數中
-					if(data=="Success#1"){
-					    document.body.removeChild(LoginView.self);
-					    loginBool = true;
-					    GameAreaInit();
-					}
+			if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+				var data = request.responseText;//取得傳回的資料存在變數中
+				data = JSON.parse(data);
+				if(data.status == "Success"){
+				    USERID = data.data.UserID;
+				    if(data.data.ActorID == 0){//登入成功但未有角色
+				        document.body.removeChild(LoginView.self);
+				        NewActorViewInit();  
+				    }else{//登入成功且已有角色
+				        document.body.removeChild(LoginView.self);
+				        GameAreaInit();  
+				    }
 				}
-        }
-        //註冊系統函式
+			}
+        }//登入系統函式
         function registerMember(){
             /*global request 實作於 ajax.js*/
 				if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
 					var data = request.responseText;//取得傳回的資料存在變數中
 					if(data=="Success#1") alert("註冊成功");
 				}
+        }//註冊系統函式
+        
+        function NewActorViewInit(){
+            /*global Hall_RoomList,Hall_Command,Hall_Status 實作於Hall.* */
+            NewActorView = new NewActorView();
+            document.body.appendChild(NewActorView.self);
         }
+        function NewActorRequest(){//建立角色成功後
+            if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+				var data = request.responseText;//取得傳回的資料存在變數中
+				console.log(data);
+			}
+        }
+        function HallViewInit(){
+            /*global Hall_RoomList,Hall_Command,Hall_Status 實作於Hall.* */
+            HallRoomList = new Hall_RoomList();
+            HallCommand = new Hall_Command();
+            HallStatus = new Hall_Status();
+            document.body.appendChild(HallRoomList.self);
+            document.body.appendChild(HallCommand.self);
+            document.body.appendChild(HallStatus.self);
+        }//大廳描繪
+        
+        
+        
         function GameAreaInit(){
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
+            document.body.style.width = Option.GameAreaWidth;
+            document.body.style.height = Option.GameAreaHeight;
             GameArea = document.createElement("div");
-            GameArea.style.width = Option.GameAreaWidth + "px";
-            GameArea.style.height = Option.GameAreaHeight + "px";
+            GameArea.style.width = "70%";
+            GameArea.style.height = "70%";
             GameArea.style.backgroundColor = "#FFAC55";
             GameArea.style.margin = "0 auto";
             GameArea.style.position = 'absolute';
-            GameArea.style.top = "0px";
-            GameArea.style.left = "250px";
+            GameArea.style.top = "20%";
+            GameArea.style.left = "15%";
             document.body.appendChild(GameArea);
+            TopControl =new TopControl();
+            TopControl.ZoomButton1.addEventListener("click",function(){
+                zoom("300%");
+            });
+            TopControl.ZoomButton2.addEventListener("click",function(){
+                zoom("200%");
+            });
+            TopControl.ZoomButton3.addEventListener("click",function(){
+                zoom("100%");
+            });
+            
+            document.body.appendChild((TopControl.self));
+            
+            
             LeftControl = new LeftControl();
             LeftControl.MoveButton.addEventListener("click",function(){
                 MoveItem(); 
@@ -106,10 +163,12 @@
             rendCube(focalPos);
             
             //以下測試插入玩家
-            player = new Item(0,0,1,"player","+",2);//x,y,ID,Type,MoveType,MoveRange
+            player = new Item(5,5,1,"player","+",2);//x,y,ID,Type,MoveType,MoveRange
             addItem(player);
         }//遊戲畫面初始化
-        
+        function zoom(size){
+            GameArea.style.zoom=size;
+        }
         function rendCube(centerPos){//centerPos = 聚焦中心位置
             var X_num = Option.CubeX/FocalVar;//X軸顯示數量
             var Y_num = Option.CubeY/FocalVar;//Y軸顯示數量
@@ -162,13 +221,10 @@
                     MoveCube[player.Postion.X][player.Postion.Y] = player.clone();//物件複製
                     MoveCube[player.Postion.X][player.Postion.Y].No=0;
                     MoveCube[player.Postion.X][player.Postion.Y].Type="space";
-                    
                     player.Postion.X=x;
                     player.Postion.Y=y;
                     MoveCube[x][y] = player.clone();
-                    
                     rendCube(player.Postion);
-                    console.log(MoveCube[0][0]);
                 });
             }
             var CenterX = player.Postion.X;

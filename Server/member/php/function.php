@@ -49,14 +49,4 @@ function reg($connect,$username,$email,$password_md5){
 		return $error;
 	}
 }
-//登出函數
-function logout()
-{
-	unset($_SESSION['username']);
-	unset($_SESSION['userID']);
-	unset($_SESSION['level']);
-	unset($_SESSION['del_name']);
-	echo "登出中...";
-	echo '<meta http-equiv=REFRESH CONTENT=1;url=../index.php>';
-}
 ?>

@@ -1,8 +1,6 @@
 <?php
-//宣告
-	$database_name = "member";
 	include("../../connect/function.php");//引入函數庫
-	$connect = ConnectSql($database_name);
+	$connect = ConnectSql();
 	mysqli_query($connect,"SET CHARACTER SET UTF8");
 	include("config.php");//引入設定檔
 	include("function.php");//引入函數庫
