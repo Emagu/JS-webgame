@@ -7,15 +7,13 @@
         <script src="src/Control/right.js"></script>
         <script src="src/Control/top.js"></script>
         <script src="src/Option.js"></script>
-        <script src="src/Hall/HallRoomList.js"></script>
-        <script src="src/Hall/HallCommand.js"></script>
-        <script src="src/Hall/HallStatus.js"></script>
         
         <script src="src/View/Login.js"></script>
         <script src="src/View/Register.js"></script>
         <script src="src/View/NewActor.js"></script>
+        <script src="src/View/Hall.js"></script>
         
-        <script src="src/Actor/Actor.js"></script>
+        <script src="src/Data/User.js"></script>
         
         <script src="lib/ajax_res.js"></script>
         <script src="../Server/js/ajax.js"></script>
@@ -26,12 +24,14 @@
         var GameArea,LeftControl,RightControl,TopControl;
         var LoginView,RegView;
         var NewActorView;
-        var HallRoomList,HallCommand,HallStatus;
+        var Hall;
         var Option;
         var player;
         var FocalVar=1;//焦距 最低1
         var MoveCube=[];
-        var USERID = null,ACTOR=null;
+        /*global UserData 實作於Data*/
+        var USER=new UserData();//用戶資料
+        var SCENES;
         init();
         var testport = location.hash;//URL+testport
         switch (testport) {
@@ -49,6 +49,7 @@
         }//初始化
         
         function loginViewiInit(){
+            SCENES = "login";
             /*global LoginView 實作於src/View */
             LoginView = new LoginView(getWindowSize());
             LoginView.Reg.addEventListener("click",function(){
@@ -65,22 +66,21 @@
         }//登入畫面描繪
         
         function NewActorViewInit(){
+            SCENES = "NewActor";
             /*global NewActorView 實作於src/View.* */
             NewActorView = new NewActorView();
             document.body.appendChild(NewActorView.self);
         }
         
         function HallViewInit(){
-            /*global Hall_RoomList,Hall_Command,Hall_Status 實作於Hall.* */
-            HallRoomList = new Hall_RoomList();
-            HallCommand = new Hall_Command();
-            HallStatus = new Hall_Status();
-            document.body.appendChild(HallRoomList.self);
-            document.body.appendChild(HallCommand.self);
-            document.body.appendChild(HallStatus.self);
+            SCENES = "hall";
+            /*global HallView 實作於View.* */
+            Hall = new HallView();
+            document.body.appendChild(Hall.self);
         }//大廳描繪
         
         function GameAreaInit(){
+            SCENES = "game";
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
             document.body.style.width = Option.GameAreaWidth;
@@ -91,19 +91,12 @@
             GameArea.style.backgroundColor = "#FFAC55";
             GameArea.style.margin = "0 auto";
             GameArea.style.position = 'absolute';
+            
             GameArea.style.top = "20%";
             GameArea.style.left = "15%";
+            //GameArea.style.overflow = "hidden";
             document.body.appendChild(GameArea);
             TopControl =new TopControl();
-            TopControl.ZoomButton1.addEventListener("click",function(){
-                zoom("300%");
-            });
-            TopControl.ZoomButton2.addEventListener("click",function(){
-                zoom("200%");
-            });
-            TopControl.ZoomButton3.addEventListener("click",function(){
-                zoom("100%");
-            });
             
             document.body.appendChild((TopControl.self));
             
@@ -111,6 +104,11 @@
             LeftControl = new LeftControl();
             LeftControl.MoveButton.addEventListener("click",function(){
                 MoveItem(); 
+                //取得物件下的node
+                LeftControl.MoveButton.childNodes[0].nodeValue="yee";
+            });
+            LeftControl.AttackButton.addEventListener("click",function(){
+               
             });
             document.body.appendChild(LeftControl.self);
             
@@ -133,8 +131,9 @@
             player = new Item(5,5,1,"player","+",2);//x,y,ID,Type,MoveType,MoveRange
             addItem(player);
         }//遊戲畫面初始化
+        
         function zoom(size){
-            GameArea.style.zoom=size;
+            rendCube(player.Postion);
         }
         function rendCube(centerPos){//centerPos = 聚焦中心位置
             var X_num = Option.CubeX/FocalVar;//X軸顯示數量
@@ -143,7 +142,6 @@
             var max_X = centerPos.X + X_num;
             var min_Y = centerPos.Y - Y_num;
             var max_Y = centerPos.Y + Y_num;
-            
             for(var i=min_X;i<max_X;i++){
                 if(i<0) continue;
                 if(i>=Option.CubeX) break;

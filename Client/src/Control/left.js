@@ -8,8 +8,10 @@ function LeftControl(){
     this.self.style.position = "absolute";
     this.self.style.left = "0px";
     this.self.style.top = "0px";
+    this.self.style.textAlig='center';
     
     this.MoveButton = document.createElement("div");
+    this.MoveButton.style.textAlig='center';
 	this.MoveButton.appendChild(document.createTextNode("開始移動"));
 	this.MoveButton.style.position = "absolute";
 	this.MoveButton.style.backgroundColor = "#AAAA00";
@@ -18,7 +20,7 @@ function LeftControl(){
 	this.MoveButton.style.left = "5%";
     this.MoveButton.style.top = "1%";
     this.MoveButton.style.cursor = "pointer";
-    this.MoveButton.style.textAlig= "center";
+   
     this.self.appendChild(this.MoveButton);
     
   

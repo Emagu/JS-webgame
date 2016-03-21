@@ -6,14 +6,14 @@ if (request == null){
 	alert("Error creating request object!");
 }
 function register(data) {
-	var url = "../Server/member/php/register.php?name="+data.Name+"&mail="+data.Mail+"&pw="+data.PW+"&pw2="+data.PW2;
+	var url = "../Server/member/php/register.php?data="+data;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global registerMember 實作於Client/lib/ajax_res.* */
 	request.onreadystatechange = registerMember//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function login(data) {
-	var url = "../Server/member/php/login.php?name="+data.Name+"&pw="+data.PW;
+	var url = "../Server/member/php/login.php?data="+data;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global loginMember 實作於Client/lib/ajax_res.* */
 	request.onreadystatechange = loginMember//狀態完成時所要執行的函式
@@ -22,7 +22,7 @@ function login(data) {
 function checkActorConfig(name) {
 	var url = "../Server/actor/php/checkActorConfig.php?name="+name;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global NewActorView.CheckActorName 實作於Client/src/View/NewActor */
+	/*global NewActorView 實作於Client/src/View/NewActor */
 	request.onreadystatechange = NewActorView.CheckActorName//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
@@ -31,6 +31,13 @@ function newActor(name,userID) {
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global NewActorRequest 實作於Client/lib/ajax_res.* */
 	request.onreadystatechange = NewActorRequest//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function getActor(actorID) {
+	var url = "../Server/actor/php/getActor.php?id="+actorID;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global getActorRequest 實作於ajax_res.* */
+	request.onreadystatechange = getActorRequest//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function creatRequestObj(){

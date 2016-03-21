@@ -8,8 +8,18 @@ function checkActorNameConfig($ActorName){//確認角色名稱格式
 		return true;
 	}
 }
-function getActor($connect,$ActorName){//取得腳色資訊&確認角色是否存在
+function getActorByName($connect,$ActorName){//取得腳色資訊&確認角色是否存在
 	$sql = "SELECT * FROM actor_list where actorName = '$ActorName'";
+	$res = mysqli_query($connect,$sql);
+	$row = mysqli_fetch_assoc($res);
+	if($row){
+		return $row;
+	}else{
+		return "error#4";
+	}
+}
+function getActorByID($connect,$ActorID){//取得腳色資訊&確認角色是否存在
+	$sql = "SELECT * FROM actor_list where NO = '$ActorID'";
 	$res = mysqli_query($connect,$sql);
 	$row = mysqli_fetch_assoc($res);
 	if($row){

@@ -1,4 +1,3 @@
-//右邊工具列
 function RegisterView(windowSize){
     //載體
     this.self = document.createElement("div");
@@ -85,7 +84,7 @@ function RegisterView(windowSize){
 	        this.login.appendChild(document.createTextNode("前往登入!"));
 	        this.self.appendChild(this.login);
 	        
-	        commit = document.createElement("P");
+	        var commit = document.createElement("P");
 	        commit.style.position = "absolute";
 	        commit.style.top = "70%";
 	        commit.style.width = "50%";
@@ -108,6 +107,6 @@ function RegisterView(windowSize){
     	data.PW = pw.value;
     	data.PW2 = pw2.value;
     	data.Mail = mail.value;
-		register(data);
+		register(JSON.stringify(data));
 	});
 }

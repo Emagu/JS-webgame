@@ -21,9 +21,9 @@
 	}elseif(!checkActorNameConfig($name)){
 		echo 'error#3';
 	}else{
-		if(getActor($connect,$name)=="error#4"){
+		if(getActorByName($connect,$name)=="error#4"){
 			if(newActor($connect,$id,$name)){
-				$data = getActor($connect,$name);
+				$data = getActorByName($connect,$name);
 				if(updateUser($connect,$data)){
 					echo json_encode($data);
 				}else{

@@ -83,6 +83,6 @@ function LoginView(windowSize){
        	var data = new Object();
     	data.Name = user.value;
     	data.PW = pw.value;
-		login(data);
+		login(JSON.stringify(data));
     });
 }

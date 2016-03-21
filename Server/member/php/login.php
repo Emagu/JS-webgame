@@ -6,8 +6,10 @@
 	
 	include("config.php");//引入設定檔
 	include("function.php");//引入函數庫
-	$id = $_GET['name'];
-	$pw = $_GET['pw'];
+	$data = $_GET['data'];
+	$data_res = json_decode($data,true);
+	$id = $data_res['Name'];
+	$pw = $data_res['PW'];
 	$password_md5 = md5($pw); //密碼加密
 	/*
 		error #1 帳號未輸入

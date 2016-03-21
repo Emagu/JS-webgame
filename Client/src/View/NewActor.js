@@ -56,15 +56,19 @@ function NewActorView(){
     this.self.appendChild(commit);
 	
 	commit.addEventListener("click",function() {
-        if(USERID) newActor(actor.value,USERID);
+		/*global USER 宣告於index*/
+		/*global  newActor 實作於ajax*/
+        if(USER.UserID) newActor(actor.value,USER.UserID);
         else alert("未登入!");
 	});
 	
 	actor.addEventListener("change",function(){//確認角色名稱可否使用
+	    /*global  checkActorConfig 實作於ajax*/
 	    checkActorConfig(actor.value);
 	});
 	
 	this.CheckActorName = function(){
+		/*global  request 實作於ajax*/
 	    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
 			var data = request.responseText;//取得傳回的資料存在變數中
 			switch(data){

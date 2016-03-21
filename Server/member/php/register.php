@@ -5,10 +5,12 @@
 	include("config.php");//引入設定檔
 	include("function.php");//引入函數庫
 //抓取資料
-	$id = $_GET['name'];
-	$email = $_GET['mail'];
-	$pw = $_GET['pw'];
-	$pw2 = $_GET['pw2'];
+	$data = $_GET['data'];
+	$data_res = json_decode($data,true);
+	$id = $data_res['Name'];
+	$email = $data_res['Mail'];
+	$pw = $data_res['PW'];
+	$pw2 = $data_res['PW2'];
 	/*
 		error #1	未輸入帳號
 		error #2	未輸入密碼
@@ -21,8 +23,7 @@
 		error #9	輸入密碼兩次不相同
 		error #10	已有使用者
 		error #11	註冊失敗
-		Success #1  註冊成功
-	*/
+		Success #1  註冊成功	*/
 	if($id==""){
 		echo 'error#1';
 	}elseif($pw==""){
