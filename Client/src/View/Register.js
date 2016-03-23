@@ -1,4 +1,8 @@
-function RegisterView(windowSize){
+function RegisterView(){
+    var windowSize = new Object();
+    windowSize.W = Option.windowSize.W;
+    windowSize.H = Option.windowSize.H;
+    
     //載體
     this.self = document.createElement("div");
     this.self.style.width = windowSize.W * 0.6 + "px";
@@ -75,14 +79,14 @@ function RegisterView(windowSize){
 	        mail.style.left = "26%";
 	        this.self.appendChild(mail);
 	        
-	        this.login = document.createElement("P");
-	        this.login.style.position = "absolute";
-	        this.login.style.top = "70%";
-	        this.login.style.width = "50%";
-	        this.login.style.left = "0%";
-	        this.login.style.cursor = "pointer";
-	        this.login.appendChild(document.createTextNode("前往登入!"));
-	        this.self.appendChild(this.login);
+	       	var login = document.createElement("P");
+	        login.style.position = "absolute";
+	        login.style.top = "70%";
+	        login.style.width = "50%";
+	        login.style.left = "0%";
+	        login.style.cursor = "pointer";
+	        login.appendChild(document.createTextNode("前往登入!"));
+	        this.self.appendChild(login);
 	        
 	        var commit = document.createElement("P");
 	        commit.style.position = "absolute";
@@ -109,4 +113,10 @@ function RegisterView(windowSize){
     	data.Mail = mail.value;
 		register(JSON.stringify(data));
 	});
+	
+	login.addEventListener("click",function(){
+		/*global loginViewiInit 實作於 index*/
+		loginViewiInit();
+	});
+	
 }

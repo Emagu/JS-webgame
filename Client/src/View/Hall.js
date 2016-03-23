@@ -1,11 +1,11 @@
 function HallView(){
+    var windowSize = new Object();
+    windowSize.W = Option.windowSize.W;
+    windowSize.H = Option.windowSize.H;
+    
     this.self = document.createElement("div");
-    this.self.style.width = "100%";
-    this.self.style.height = "100%";
-    this.self.style.backgroundColor = "#FFFFFF";
-    this.self.style.position = "absolute";
-    this.self.style.left = "0px";
-    this.self.style.top = "0px";
+    this.self.style.width = windowSize.W;
+    this.self.style.height = windowSize.H;
     
     var command = document.createElement("div");
     command.style.width = "20%";
@@ -15,6 +15,30 @@ function HallView(){
     command.style.left = "0px";
     command.style.top = "0px";
     this.self.appendChild(command);
+    
+    var command_CreateRoom = document.createElement("div");
+    command_CreateRoom.style.width = "98%";
+    command_CreateRoom.style.height = "18%";
+    command_CreateRoom.style.left = "1%";
+    command_CreateRoom.style.top = "1%";
+    command_CreateRoom.style.position = "absolute";
+    command_CreateRoom.style.backgroundColor = "#00AFAA";
+    command_CreateRoom.style.cursor = "pointer";
+    command_CreateRoom.style.textAlign = "center";
+    command_CreateRoom.appendChild(document.createTextNode("創建房間"));
+    command.appendChild(command_CreateRoom);
+    
+    var command_UpdateRoomList = document.createElement("div");
+    command_UpdateRoomList.style.width = "98%";
+    command_UpdateRoomList.style.height = "18%";
+    command_UpdateRoomList.style.left = "1%";
+    command_UpdateRoomList.style.top = "20%";
+    command_UpdateRoomList.style.position = "absolute";
+    command_UpdateRoomList.style.backgroundColor = "#00AFAA";
+    command_UpdateRoomList.style.cursor = "pointer";
+    command_UpdateRoomList.style.textAlign = "center";
+    command_UpdateRoomList.appendChild(document.createTextNode("刷新房間"));
+    command.appendChild(command_UpdateRoomList);
     
     var status = document.createElement("div");
     status.style.width = "20%";
@@ -44,6 +68,35 @@ function HallView(){
 	title.appendChild(document.createTextNode("房間列表"));
 	this.self.appendChild(title);
 	
+	command_UpdateRoomList.addEventListener("click",function(){
+	    /* global getRoomList 實作於ajax*/
+	    getRoomList();
+	})
+	
+	this.RoomListRender = function(data){
+	    this.self.removeChild(roomList);
+	    roomList = document.createElement("div");
+        roomList.style.width = "80%";
+        roomList.style.height = "90%";
+        roomList.style.backgroundColor = "#AAAAAA";
+        roomList.style.position = "absolute";
+        roomList.style.left = "20%";
+        roomList.style.top = "10%";
+        roomList.style.overflowY = "auto";
+        for(var i=0;i<data.length;i++){
+            var roomDiv = document.createElement("div");
+            roomDiv.style.width = "98%";
+            roomDiv.style.height = "8%";
+            roomDiv.style.backgroundColor = "#BBAAAA";
+            roomDiv.style.position = "absolute";
+            roomDiv.style.left = "1%";
+            roomDiv.style.top = (1+9*i) + "%";
+            roomDiv.appendChild(document.createTextNode(data[i].RoomID + "    " + data[i].RoomName + "    " + data[i].Map + "    " + data[i].ActorNum));
+            roomList.appendChild(roomDiv);
+        }
+        this.self.appendChild(roomList);
+	};
+	
 	
     this.StatusRender = function() {
         this.self.removeChild(status);
@@ -54,14 +107,18 @@ function HallView(){
         status.style.position = "absolute";
         status.style.left = "0px";
         status.style.top = "70%";
-        /*global USER 宣告於index*/
-        status.appendChild(document.createTextNode("角色名稱:"+USER.ActorName));
+        /*global VARIABLE 宣告於index*/
+        status.appendChild(document.createTextNode("角色名稱:"+VARIABLE.USER.ActorName));
         status.appendChild(document.createElement("br"));
-        status.appendChild(document.createTextNode("角色等級:"+USER.Level));
+        status.appendChild(document.createTextNode("角色等級:"+VARIABLE.USER.Level));
         status.appendChild(document.createElement("br"));
         this.self.appendChild(status);
     }
 
-    
+    command_CreateRoom.addEventListener("click",function(){
+        /*global CreateRoomViewInit 實作於index */
+        CreateRoomViewInit();
+    });
 }
+
 

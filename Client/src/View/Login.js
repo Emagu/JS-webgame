@@ -1,11 +1,16 @@
 //右邊工具列
-function LoginView(windowSize){
+function LoginView(){
+    var windowSize = new Object();
+    windowSize.W = Option.windowSize.W;
+    windowSize.H = Option.windowSize.H;
+    
     //載體
     this.self = document.createElement("div");
     this.self.style.width = windowSize.W * 0.3 + "px";
     this.self.style.height = windowSize.H * 0.2 + "px";
     this.self.style.backgroundColor = "#00FFFF";
     this.self.style.position = "absolute";
+    
     this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
     this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
     this.self.style.textAlign = 'center';
@@ -53,14 +58,14 @@ function LoginView(windowSize){
 	        this.forgetPW.appendChild(document.createTextNode("忘記密碼?"));
 	        this.self.appendChild(this.forgetPW);
 	        
-	        this.Reg = document.createElement("P");
-	        this.Reg.style.position = "absolute";
-	        this.Reg.style.top = "50%";
-	        this.Reg.style.width = "50%";
-	        this.Reg.style.left = "50%";
-	        this.Reg.style.cursor = "pointer";
-	        this.Reg.appendChild(document.createTextNode("立即註冊!"));
-	        this.self.appendChild(this.Reg);
+	        var Reg = document.createElement("P");
+	        Reg.style.position = "absolute";
+	        Reg.style.top = "50%";
+	        Reg.style.width = "50%";
+	        Reg.style.left = "50%";
+	        Reg.style.cursor = "pointer";
+	        Reg.appendChild(document.createTextNode("立即註冊!"));
+	        this.self.appendChild(Reg);
 	        
 	        var commit = document.createElement("P");
 	        commit.style.position = "absolute";
@@ -70,19 +75,17 @@ function LoginView(windowSize){
 	       	commit.style.cursor = "pointer";
 	        commit.appendChild(document.createTextNode("登入!"));
 	        this.self.appendChild(commit);
-	        
-	    
-    this.windowReSize = function(windowSize){//當視窗調整 調整版面
-        this.self.style.width = windowSize.W * 0.3 + "px";
-        //this.self.style.height = windowSize.H * 0.8 + "px";
-        this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
-        this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
-    }
+	 
     commit.addEventListener("click",function(){
        	/*global login 實作於 ajax.js*/
        	var data = new Object();
     	data.Name = user.value;
     	data.PW = pw.value;
 		login(JSON.stringify(data));
+    });
+    
+    Reg.addEventListener("click",function(){
+    	/*global registerViewInit 實作於 index */
+		registerViewInit();
     });
 }

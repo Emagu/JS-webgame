@@ -1,11 +1,12 @@
 function NewActorView(){
+    var windowSize = new Object();
+    windowSize.W = Option.windowSize.W;
+    windowSize.H = Option.windowSize.H;
+    
     this.self = document.createElement("div");
-    this.self.style.width = "100%";
-    this.self.style.height = "100%";
+    this.self.style.width = windowSize.W;
+    this.self.style.height = windowSize.H;
     this.self.style.backgroundColor = "#FFFFFF";
-    this.self.style.position = "absolute";
-    this.self.style.left = "0px";
-    this.self.style.top = "0px";
     
     var title = document.createElement("H1");
     title.style.width = "100%";
@@ -90,6 +91,7 @@ function NewActorView(){
     	            break;
     	        default://角色名稱重複
     	            actorCheckMsgBox.removeChild(actorCheckMsg);
+    	            actorCheckMsgBox.style.color = "red";
     	            actorCheckMsg = document.createTextNode("角色名稱重複!");
     	            actorCheckMsgBox.appendChild(actorCheckMsg);
     	            break;

@@ -12,26 +12,22 @@
         <script src="src/View/Register.js"></script>
         <script src="src/View/NewActor.js"></script>
         <script src="src/View/Hall.js"></script>
+        <script src="src/View/CreateRoom.js"></script>
+        <script src="src/View/Room.js"></script>
         
         <script src="src/Data/User.js"></script>
         
         <script src="lib/ajax_res.js"></script>
+        <script src="lib/jquery.js"></script>
         <script src="../Server/js/ajax.js"></script>
-        
     </head>
     <body></body>
     <script>
         var GameArea,LeftControl,RightControl,TopControl;
-        var LoginView,RegView;
-        var NewActorView;
-        var Hall;
         var Option;
         var player;
-        var FocalVar=1;//焦距 最低1
         var MoveCube=[];
-        /*global UserData 實作於Data*/
-        var USER=new UserData();//用戶資料
-        var SCENES;
+        var VARIABLE=new Object()//全域變數
         init();
         var testport = location.hash;//URL+testport
         switch (testport) {
@@ -45,44 +41,68 @@
                 loginViewiInit();
         }
         function init(){
-            window.addEventListener( 'resize', onWindowReSize, false );
-        }//初始化
-        
-        function loginViewiInit(){
-            SCENES = "login";
-            /*global LoginView 實作於src/View */
-            LoginView = new LoginView(getWindowSize());
-            LoginView.Reg.addEventListener("click",function(){
-               document.body.removeChild(LoginView.self);
-               document.body.appendChild(RegView.self);
-            });
-            /*global RegisterView 實作於src/View.js*/
-            RegView = new RegisterView(getWindowSize());
-            RegView.login.addEventListener("click",function(){
-                document.body.removeChild(RegView.self);
-                document.body.appendChild(LoginView.self);
-            });
-            document.body.appendChild(LoginView.self);
-        }//登入畫面描繪
-        
-        function NewActorViewInit(){
-            SCENES = "NewActor";
-            /*global NewActorView 實作於src/View.* */
-            NewActorView = new NewActorView();
-            document.body.appendChild(NewActorView.self);
-        }
-        
-        function HallViewInit(){
-            SCENES = "hall";
-            /*global HallView 實作於View.* */
-            Hall = new HallView();
-            document.body.appendChild(Hall.self);
-        }//大廳描繪
-        
-        function GameAreaInit(){
-            SCENES = "game";
+            VARIABLE.FocalVar = 1;//焦距 最低1
+            VARIABLE.SCENES = "login";//場景
+            /*global UserData 實作於Data*/
+            VARIABLE.USER = new UserData();//用戶資料
+            VARIABLE.View = new Object();
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
+        }//初始化
+        
+        function ViewInit(View){
+            while(document.body.firstChild)
+            document.body.removeChild(document.body.firstChild);
+            document.body.appendChild(View);
+        }
+        
+        function loginViewiInit(){
+            VARIABLE.SCENES = "login";
+            /*global LoginView 實作於src/View */
+            VARIABLE.View.Login = new LoginView();
+            ViewInit(VARIABLE.View.Login.self);
+        }//登入畫面描繪
+        
+        function registerViewInit(){
+            VARIABLE.SCENES = "register";
+            /*global RegisterView 實作於src/View.* */
+            VARIABLE.View.Register = new RegisterView();
+            ViewInit(VARIABLE.View.Register.self);
+        }
+        
+        function NewActorViewInit(){
+            VARIABLE.SCENES = "newActor";
+            /*global NewActorView 實作於src/View.* */
+            VARIABLE.View.NewActor = new NewActorView();
+            ViewInit(VARIABLE.View.NewActor.self);
+        }//創建角色
+        
+        function HallViewInit(){
+            VARIABLE.SCENES = "hall";
+            /*global HallView 實作於src/View.* */
+            VARIABLE.View.Hall = new HallView();
+            /*global getActor　 實作於ajax*/
+            getActor(VARIABLE.USER.ActorID);
+            ViewInit(VARIABLE.View.Hall.self);
+        }//大廳描繪
+        
+        function CreateRoomViewInit(){
+            VARIABLE.SCENES = "createHall";
+            /*global CreateRoomView 實作於src/View.* */
+            VARIABLE.View.CreateRoom = new CreateRoomView();
+            ViewInit(VARIABLE.View.CreateRoom.self);
+        }
+        function RoomInit(){
+            VARIABLE.SCENES = "room";
+            /*global RoomView 實作於View.* */
+            VARIABLE.View.RoomView = new RoomView();
+            VARIABLE.View.RoomView.StatusRender();
+            ViewInit(VARIABLE.View.RoomView.self);
+        }
+        function GameAreaInit(){
+            ViewInit();
+            VARIABLE.SCENES = "game";
+            
             document.body.style.width = Option.GameAreaWidth;
             document.body.style.height = Option.GameAreaHeight;
             GameArea = document.createElement("div");
@@ -95,9 +115,24 @@
             GameArea.style.top = "20%";
             GameArea.style.left = "15%";
             //GameArea.style.overflow = "hidden";
-            document.body.appendChild(GameArea);
-            TopControl =new TopControl();
+            //使用frame可以內嵌另外一頁，在研究
             
+            var iframe = document.createElement('iframe');
+            iframe.style.width="70%";
+            iframe.style.height="70%";
+            iframe.style.left="15%";
+            iframe.style.top="20%";
+            iframe.style.position='absolute';
+            var html = '<body></body>';
+            document.body.appendChild(iframe);
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write(html);
+            iframe.src='src/Control/test.html';
+            iframe.contentWindow.document.close();
+            
+            //document.body.appendChild(GameArea);
+            TopControl =new TopControl();
+           
             document.body.appendChild((TopControl.self));
             
             
@@ -132,12 +167,9 @@
             addItem(player);
         }//遊戲畫面初始化
         
-        function zoom(size){
-            rendCube(player.Postion);
-        }
         function rendCube(centerPos){//centerPos = 聚焦中心位置
-            var X_num = Option.CubeX/FocalVar;//X軸顯示數量
-            var Y_num = Option.CubeY/FocalVar;//Y軸顯示數量
+            var X_num = Option.CubeX/VARIABLE.FocalVar;//X軸顯示數量
+            var Y_num = Option.CubeY/VARIABLE.FocalVar;//Y軸顯示數量
             var min_X = centerPos.X - X_num;
             var max_X = centerPos.X + X_num;
             var min_Y = centerPos.Y - Y_num;
@@ -148,8 +180,8 @@
                 for(var j=min_Y;j<max_Y;j++){
                     if(j<0) continue;
                     if(j>=Option.CubeY) break;
-                    MoveCube[i][j].Div.style.width = Option.CubeSize*FocalVar + "px";
-                    MoveCube[i][j].Div.style.height = Option.CubeSize*FocalVar + "px";
+                    MoveCube[i][j].Div.style.width = Option.CubeSize*VARIABLE.FocalVar + "px";
+                    MoveCube[i][j].Div.style.height = Option.CubeSize*VARIABLE.FocalVar + "px";
                     switch (MoveCube[i][j].Type) {
                         case 'player':
                             MoveCube[i][j].Div.style.backgroundColor = "#FF0000";//for TEST
@@ -161,11 +193,11 @@
                         default:
                             MoveCube[i][j].Div.style.backgroundColor = "#FFFFFF";//for TEST
                     }
-                    if(min_X < 0) MoveCube[i][j].Div.style.left = (i * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    else MoveCube[i][j].Div.style.left = ((i-min_X) * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    if(min_Y < 0) MoveCube[i][j].Div.style.top = (j * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    else MoveCube[i][j].Div.style.top = ((j-min_Y) * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    GameArea.appendChild(MoveCube[i][j].Div);
+                    if(min_X < 0) MoveCube[i][j].Div.style.left = (i * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
+                    else MoveCube[i][j].Div.style.left = ((i-min_X) * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
+                    if(min_Y < 0) MoveCube[i][j].Div.style.top = (j * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
+                    else MoveCube[i][j].Div.style.top = ((j-min_Y) * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
+                    //GameArea.appendChild(MoveCube[i][j].Div);
                 }
             }
         }//畫面描繪
@@ -234,22 +266,6 @@
                     break;
             }
             rendCube(player.Postion);
-        }
-        //以下為系統工具
-        function getWindowSize(){
-            var w = window,
-            d = document,
-            e = d.documentElement,
-            g = d.getElementsByTagName('body')[0],
-            x = w.innerWidth || e.clientWidth || g.clientWidth,
-            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-            return {W:x,H:y};
-        }
-        
-        function onWindowReSize(){
-            var windowSize = getWindowSize();
-            LoginView.windowReSize(windowSize);
-            RegView.windowReSize(windowSize);
         }
     </script>
 

@@ -8,36 +8,64 @@ if (request == null){
 function register(data) {
 	var url = "../Server/member/php/register.php?data="+data;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global registerMember 實作於Client/lib/ajax_res.* */
-	request.onreadystatechange = registerMember//狀態完成時所要執行的函式
+	/*global register_res 實作於Client/lib/ajax_res.* */
+	request.onreadystatechange = register_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function login(data) {
 	var url = "../Server/member/php/login.php?data="+data;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global loginMember 實作於Client/lib/ajax_res.* */
-	request.onreadystatechange = loginMember//狀態完成時所要執行的函式
+	/*global login_res 實作於ajax_res.* */
+	request.onreadystatechange = login_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function checkActorConfig(name) {
 	var url = "../Server/actor/php/checkActorConfig.php?name="+name;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global NewActorView 實作於Client/src/View/NewActor */
+	/*global NewActorView 宣告於index */
 	request.onreadystatechange = NewActorView.CheckActorName//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function newActor(name,userID) {
 	var url = "../Server/actor/php/newActor.php?name="+name+"&id="+userID;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global NewActorRequest 實作於Client/lib/ajax_res.* */
-	request.onreadystatechange = NewActorRequest//狀態完成時所要執行的函式
+	/*global newActor_res 實作於ajax_res.* */
+	request.onreadystatechange = newActor_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function getActor(actorID) {
 	var url = "../Server/actor/php/getActor.php?id="+actorID;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global getActorRequest 實作於ajax_res.* */
-	request.onreadystatechange = getActorRequest//狀態完成時所要執行的函式
+	/*global getActor_res 實作於ajax_res.* */
+	request.onreadystatechange = getActor_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function checkRoomName(name) {
+	var url = "../Server/room/php/checkRoomName.php?name="+name;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global VARIABLE 宣告於index */
+	request.onreadystatechange = VARIABLE.View.CreateRoom.checkRoomNameRes//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function createRoom(data) {
+	var url = "../Server/room/php/createRoom.php?data="+data;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global createRoom_res 實作於ajax_res */
+	request.onreadystatechange = createRoom_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function getRoomList(){
+	var url = "../Server/room/php/getRoomList.php";
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global getRoomList_res 實作於ajax_res */
+	request.onreadystatechange = getRoomList_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function getRoomData(data){
+    var url = "../Server/room/php/getRoomData.php";
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global getRoomData_res 實作於ajax_res */
+	request.onreadystatechange = getRoomData_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function creatRequestObj(){
