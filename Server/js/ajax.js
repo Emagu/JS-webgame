@@ -62,10 +62,17 @@ function getRoomList(){
 	request.send(null);//送出
 }
 function getRoomData(data){
-    var url = "../Server/room/php/getRoomData.php";
+    var url = "../Server/room/php/getRoomData.php?roomID="+data;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global getRoomData_res 實作於ajax_res */
 	request.onreadystatechange = getRoomData_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function addRoom(data){
+	var url = "../Server/room/php/addRoom.php?data="+data;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global addRoom_res 實作於ajax_res */
+	request.onreadystatechange = addRoom_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function creatRequestObj(){

@@ -1,16 +1,10 @@
-//右邊工具列
-function LoginView(){
-    var windowSize = new Object();
-    windowSize.W = Option.windowSize.W;
-    windowSize.H = Option.windowSize.H;
-    
+function LoginView(windowSize){
     //載體
     this.self = document.createElement("div");
     this.self.style.width = windowSize.W * 0.3 + "px";
     this.self.style.height = windowSize.H * 0.2 + "px";
     this.self.style.backgroundColor = "#00FFFF";
     this.self.style.position = "absolute";
-    
     this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
     this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
     this.self.style.textAlign = 'center';
@@ -76,6 +70,12 @@ function LoginView(){
 	        commit.appendChild(document.createTextNode("登入!"));
 	        this.self.appendChild(commit);
 	 
+	this.windowReSize = function(windowSize){//當視窗調整 調整版面
+        this.self.style.width = windowSize.W * 0.3 + "px";
+        //this.self.style.height = windowSize.H * 0.8 + "px";
+        this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.3 / 2) + "px";
+        this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
+    }
     commit.addEventListener("click",function(){
        	/*global login 實作於 ajax.js*/
        	var data = new Object();

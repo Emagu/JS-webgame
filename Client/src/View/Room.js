@@ -58,6 +58,18 @@ function RoomView(){
     actorList.style.position = "absolute";
     actorList.style.left = "20%";
     actorList.style.top = "10%";
+    var actorDiv = [];
+    for(var i=0;i<16;i++){
+        var temp = document.createElement("div");
+        temp.style.width = "98%";
+        temp.style.height = "5%";
+        temp.style.backgroundColor = "#FFAAAA";
+        temp.style.position = "absolute";
+        temp.style.left = "1%";
+        temp.style.top = i*5 + "%";
+        actorDiv.push(temp);
+        actorList.appendChild(actorDiv[i]);
+    }
     this.self.appendChild(actorList);
     
     var title = document.createElement("H1");
@@ -71,27 +83,12 @@ function RoomView(){
 	this.self.appendChild(title);
 	
 	this.RoomListRender = function(data){
-	    this.self.removeChild(actorList);
-	    actorList = document.createElement("div");
-        actorList.style.width = "80%";
-        actorList.style.height = "90%";
-        actorList.style.backgroundColor = "#AAAAAA";
-        actorList.style.position = "absolute";
-        actorList.style.left = "20%";
-        actorList.style.top = "10%";
-        actorList.style.overflowY = "auto";
-        for(var i=0;i<data.length;i++){
-            var roomDiv = document.createElement("div");
-            roomDiv.style.width = "98%";
-            roomDiv.style.height = "8%";
-            roomDiv.style.backgroundColor = "#BBAAAA";
-            roomDiv.style.position = "absolute";
-            roomDiv.style.left = "1%";
-            roomDiv.style.top = (1+9*i) + "%";
-            roomDiv.appendChild(document.createTextNode(data[i].ActorName + "    " + data[i].Level));
-            actorList.appendChild(roomDiv);
+	    for(var i=0;i<16;i++){
+            if(actorDiv[i].firstChild) actorDiv[i].removeChild(actorDiv[i].firstChild);
         }
-        this.self.appendChild(actorList);
+	    for(var i=0;i<data.length;i++){
+	        actorDiv[i].appendChild(document.createTextNode(data[i].ActorName+"    "+data[i].Level+"    "+data[i].Ready+"    "+data[i].Master));
+	    }
 	};
 	
 	

@@ -57,9 +57,9 @@ function NewActorView(){
     this.self.appendChild(commit);
 	
 	commit.addEventListener("click",function() {
-		/*global USER 宣告於index*/
+		/*global VARIABLE 宣告於index*/
 		/*global  newActor 實作於ajax*/
-        if(USER.UserID) newActor(actor.value,USER.UserID);
+        if(VARIABLE.USER.UserID) newActor(actor.value,VARIABLE.USER.UserID);
         else alert("未登入!");
 	});
 	

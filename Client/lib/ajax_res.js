@@ -95,7 +95,7 @@ function getRoomList_res(){
 function createRoom_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
-        if(data.match("error")!=null){
+        if(data.match("error")==null){
             VARIABLE.USER.RoomID = data;
             VARIABLE.USER.RoomMaster = true;
             /*global RoomInit 實作於index */
@@ -106,6 +106,21 @@ function createRoom_res(){
 function getRoomData_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
+        VARIABLE.View.Room.RoomListRender(JSON.parse(data));
         console.log(data);
+        /*global getRoomData 實作於ajax */
+        getRoomData(VARIABLE.USER.RoomID);
+    }
+}
+function addRoom_res(){
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+        console.log(data);
+        if(data.match("error")==null){
+            VARIABLE.USER.RoomID = data;
+            VARIABLE.USER.RoomMaster = true;
+            /*global RoomInit 實作於index */
+            RoomInit();
+        }
     }
 }

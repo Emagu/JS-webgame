@@ -1,8 +1,13 @@
-function RegisterView(){
-    var windowSize = new Object();
-    windowSize.W = Option.windowSize.W;
-    windowSize.H = Option.windowSize.H;
-    
+function RegisterView(windowSize){
+    //載體
+    this.self = document.createElement("div");
+    this.self.style.width = windowSize.W * 0.6 + "px";
+    this.self.style.height = windowSize.H * 0.2 + "px";
+    this.self.style.backgroundColor = "#00FFFF";
+    this.self.style.position = "absolute";
+    this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.6 / 2) + "px";
+    this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
+    this.self.style.textAlign = 'center';
     //載體
     this.self = document.createElement("div");
     this.self.style.width = windowSize.W * 0.6 + "px";
@@ -97,7 +102,6 @@ function RegisterView(){
 	        commit.appendChild(document.createTextNode("資料送出!"));
 	        this.self.appendChild(commit);
 	        
-	    
     this.windowReSize = function(windowSize){//當視窗調整 調整版面
         this.self.style.width = windowSize.W * 0.6 + "px";
         //this.self.style.height = windowSize.H * 0.8 + "px";

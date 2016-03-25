@@ -74,6 +74,15 @@ function HallView(){
 	})
 	
 	this.RoomListRender = function(data){
+	    function insertRoom(Div,RoomID){
+	        Div.addEventListener("click",function(){
+	            /*global addRoom 實作於ajax*/
+	            var data = new Object();
+	            data.RoomID = RoomID;
+	            data.ActorID = VARIABLE.USER.ActorID;
+	            addRoom(JSON.stringify(data));
+	        });
+	    }
 	    this.self.removeChild(roomList);
 	    roomList = document.createElement("div");
         roomList.style.width = "80%";
@@ -91,7 +100,9 @@ function HallView(){
             roomDiv.style.position = "absolute";
             roomDiv.style.left = "1%";
             roomDiv.style.top = (1+9*i) + "%";
+            roomDiv.style.cursor = "pointer";
             roomDiv.appendChild(document.createTextNode(data[i].RoomID + "    " + data[i].RoomName + "    " + data[i].Map + "    " + data[i].ActorNum));
+            insertRoom(roomDiv,data[i].RoomID);
             roomList.appendChild(roomDiv);
         }
         this.self.appendChild(roomList);

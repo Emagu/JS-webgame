@@ -26,7 +26,7 @@
         var GameArea,LeftControl,RightControl,TopControl;
         var Option;
         var player;
-        var MoveCube=[];
+        var iframe;
         var VARIABLE=new Object()//全域變數
         init();
         var testport = location.hash;//URL+testport
@@ -48,6 +48,7 @@
             VARIABLE.View = new Object();
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
+            window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
         
         function ViewInit(View){
@@ -59,14 +60,14 @@
         function loginViewiInit(){
             VARIABLE.SCENES = "login";
             /*global LoginView 實作於src/View */
-            VARIABLE.View.Login = new LoginView();
+            VARIABLE.View.Login = new LoginView(getWindowSize());
             ViewInit(VARIABLE.View.Login.self);
         }//登入畫面描繪
         
         function registerViewInit(){
             VARIABLE.SCENES = "register";
             /*global RegisterView 實作於src/View.* */
-            VARIABLE.View.Register = new RegisterView();
+            VARIABLE.View.Register = new RegisterView(getWindowSize());
             ViewInit(VARIABLE.View.Register.self);
         }
         
@@ -95,29 +96,27 @@
         function RoomInit(){
             VARIABLE.SCENES = "room";
             /*global RoomView 實作於View.* */
-            VARIABLE.View.RoomView = new RoomView();
-            VARIABLE.View.RoomView.StatusRender();
-            ViewInit(VARIABLE.View.RoomView.self);
+            VARIABLE.View.Room = new RoomView();
+            VARIABLE.View.Room.StatusRender();
+            ViewInit(VARIABLE.View.Room.self);
+            /*global getRoomData 實作於ajax */
+            getRoomData(VARIABLE.USER.RoomID);
         }
         function GameAreaInit(){
-            ViewInit();
+            //ViewInit();
             VARIABLE.SCENES = "game";
             
             document.body.style.width = Option.GameAreaWidth;
             document.body.style.height = Option.GameAreaHeight;
-            GameArea = document.createElement("div");
-            GameArea.style.width = "70%";
-            GameArea.style.height = "70%";
-            GameArea.style.backgroundColor = "#FFAC55";
-            GameArea.style.margin = "0 auto";
-            GameArea.style.position = 'absolute';
+  
+             //以下測試插入玩家
+            player = new PlayerItem(50,10,1,'A',false,3,true,5); 
+            //x,y,no,type,Moveable,MoveRange,VisiAble,ViewRange
             
-            GameArea.style.top = "20%";
-            GameArea.style.left = "15%";
             //GameArea.style.overflow = "hidden";
             //使用frame可以內嵌另外一頁，在研究
             
-            var iframe = document.createElement('iframe');
+            iframe= document.createElement('iframe');
             iframe.style.width="70%";
             iframe.style.height="70%";
             iframe.style.left="15%";
@@ -127,145 +126,53 @@
             document.body.appendChild(iframe);
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(html);
-            iframe.src='src/Control/test.html';
-            iframe.contentWindow.document.close();
-            
+            iframe.src='test.html';
+            //iframe.contentWindow.document.close();
+            //iframe.contentWindow.function(); 直接互叫子網頁.... 
             //document.body.appendChild(GameArea);
+            
             TopControl =new TopControl();
-           
             document.body.appendChild((TopControl.self));
-            
-            
             LeftControl = new LeftControl();
             LeftControl.MoveButton.addEventListener("click",function(){
-                MoveItem(); 
+                //MoveItem();
+                iframe.contentWindow.MoveItem();
+                console.log(player.Postion);
                 //取得物件下的node
                 LeftControl.MoveButton.childNodes[0].nodeValue="yee";
             });
             LeftControl.AttackButton.addEventListener("click",function(){
-               
+                iframe.contentWindow.test();
+                
             });
             document.body.appendChild(LeftControl.self);
             
             RightControl = new RightControl();
             document.body.appendChild(RightControl.self);
             /*global Item 實作於Item.js*/
-            for(var i=0;i<Option.CubeX;i++){
-                MoveCube.push([]);
-                for(var j=0;j<Option.CubeY;j++){
-                    var item = new Item(j,i,0,"space");
-                    MoveCube[i].push(item);
-                }
-            }
             var focalPos = new Object();
             focalPos.X = Option.CubeX / 2;
             focalPos.Y = Option.CubeY / 2;
-            rendCube(focalPos);
-            
-            //以下測試插入玩家
-            player = new Item(5,5,1,"player","+",2);//x,y,ID,Type,MoveType,MoveRange
-            addItem(player);
+            addPlayer();
         }//遊戲畫面初始化
+        function addPlayer(){
+            return player;
+        }
+        //以下為系統工具
+        function getWindowSize(){
+            var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+            return {W:x,H:y};
+        }
         
-        function rendCube(centerPos){//centerPos = 聚焦中心位置
-            var X_num = Option.CubeX/VARIABLE.FocalVar;//X軸顯示數量
-            var Y_num = Option.CubeY/VARIABLE.FocalVar;//Y軸顯示數量
-            var min_X = centerPos.X - X_num;
-            var max_X = centerPos.X + X_num;
-            var min_Y = centerPos.Y - Y_num;
-            var max_Y = centerPos.Y + Y_num;
-            for(var i=min_X;i<max_X;i++){
-                if(i<0) continue;
-                if(i>=Option.CubeX) break;
-                for(var j=min_Y;j<max_Y;j++){
-                    if(j<0) continue;
-                    if(j>=Option.CubeY) break;
-                    MoveCube[i][j].Div.style.width = Option.CubeSize*VARIABLE.FocalVar + "px";
-                    MoveCube[i][j].Div.style.height = Option.CubeSize*VARIABLE.FocalVar + "px";
-                    switch (MoveCube[i][j].Type) {
-                        case 'player':
-                            MoveCube[i][j].Div.style.backgroundColor = "#FF0000";//for TEST
-                            console.log(i+","+j);
-                            break;
-                        case 'move':
-                            MoveCube[i][j].Div.style.backgroundColor = "#FFFF00";//for TEST
-                            break;
-                        default:
-                            MoveCube[i][j].Div.style.backgroundColor = "#FFFFFF";//for TEST
-                    }
-                    if(min_X < 0) MoveCube[i][j].Div.style.left = (i * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
-                    else MoveCube[i][j].Div.style.left = ((i-min_X) * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
-                    if(min_Y < 0) MoveCube[i][j].Div.style.top = (j * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
-                    else MoveCube[i][j].Div.style.top = ((j-min_Y) * (Option.CubeSize + Option.CubeLine * 2) * VARIABLE.FocalVar ) + "px";
-                    //GameArea.appendChild(MoveCube[i][j].Div);
-                }
-            }
-        }//畫面描繪
-        
-        function addItem(Item){
-            var x = Item.Postion.X;
-            var y = Item.Postion.Y;
-            MoveCube[x][y] = Item;
-            var focalPos = new Object();
-            focalPos.X = x;
-            focalPos.Y = y;
-            rendCube(focalPos);
-        }//加入玩家，發射彈藥
-        
-        function MoveItem(){
-            function addEvent(x,y){//按下移動按鈕後
-                MoveCube[x][y].Div.addEventListener("click",function(){
-                    MoveCube[player.Postion.X][player.Postion.Y] = player.clone();//物件複製
-                    MoveCube[player.Postion.X][player.Postion.Y].No=0;
-                    MoveCube[player.Postion.X][player.Postion.Y].Type="space";
-                    player.Postion.X=x;
-                    player.Postion.Y=y;
-                    MoveCube[x][y] = player.clone();
-                    rendCube(player.Postion);
-                });
-            }
-            var CenterX = player.Postion.X;
-            var CenterY = player.Postion.Y;
-            switch (player.property.MoveType) {//依照移動類型描繪可移動目標
-                case '+':
-                    for(var i=0;i<4;i++){
-                        for(var j=1;j<=player.property.MoveAbility;j++){
-                            switch (i) {
-                                case 0:
-                                    //偵測是否可移動
-                                    if(CenterX+j<0 || CenterX+j>Option.CubeX) break;//邊界判定
-                                    
-                                    //移動目標描繪
-                                    MoveCube[CenterX+j][CenterY].Type = "move";
-                                    addEvent(CenterX+j,CenterY);//增加按鈕事件
-                                    break;
-                                case 1:
-                                    //偵測是否可移動
-                                    if(CenterX-j<0 || CenterX-j>Option.CubeX) break;//邊界判定
-                                    //移動目標描繪
-                                    MoveCube[CenterX-j][CenterY].Type = "move";
-                                    addEvent(CenterX-j,CenterY);//增加按鈕事件
-                                    break;
-                                case 2:
-                                    //偵測是否可移動
-                                    if(CenterY+j<0 || CenterY+j>Option.CubeY) break;//邊界判定
-                                    //移動目標描繪
-                                    MoveCube[CenterX][CenterY+j].Type = "move";
-                                    addEvent(CenterX,CenterY+j);//增加按鈕事件
-                                    break;
-                                case 3:
-                                    //偵測是否可移動
-                                    if(CenterY-j<0 || CenterY-j>Option.CubeY) break;//邊界判定
-                                    //移動目標描繪
-                                    MoveCube[CenterX][CenterY-j].Type = "move";
-                                    addEvent(CenterX,CenterY-j);//增加按鈕事件
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-            }
-            rendCube(player.Postion);
+        function onWindowReSize(){
+            var windowSize = getWindowSize();
+            VARIABLE.View.Login.windowReSize(windowSize);
+            VARIABLE.View.Register.windowReSize(windowSize);
         }
     </script>
 
