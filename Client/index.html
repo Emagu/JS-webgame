@@ -1,7 +1,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>多人射屁股大戰</title>
+        <title>全能住宅改造王</title>
         <script src="src/Item/Item.js"></script>
         <script src="src/Control/left.js"></script>
         <script src="src/Control/right.js"></script>
@@ -14,6 +14,7 @@
         <script src="src/View/Hall.js"></script>
         <script src="src/View/CreateRoom.js"></script>
         <script src="src/View/Room.js"></script>
+        <script src="src/View/GameArea.js"></script>
         
         <script src="src/Data/User.js"></script>
         
@@ -23,19 +24,12 @@
     </head>
     <body></body>
     <script>
-        var GameArea,LeftControl,RightControl,TopControl;
-        var Option;
-        var player;
-        var iframe;
         var VARIABLE=new Object()//全域變數
         init();
         var testport = location.hash;//URL+testport
         switch (testport) {
             case '#0':
                 GameAreaInit();
-                break;
-            case '#1':
-                HallViewInit();
                 break;
             default:
                 loginViewiInit();
@@ -49,51 +43,46 @@
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
             window.addEventListener( 'resize', onWindowReSize, false );
+            
         }//初始化
-        
         function ViewInit(View){
             while(document.body.firstChild)
             document.body.removeChild(document.body.firstChild);
             document.body.appendChild(View);
         }
-        
         function loginViewiInit(){
             VARIABLE.SCENES = "login";
             /*global LoginView 實作於src/View */
             VARIABLE.View.Login = new LoginView(getWindowSize());
             ViewInit(VARIABLE.View.Login.self);
         }//登入畫面描繪
-        
         function registerViewInit(){
             VARIABLE.SCENES = "register";
             /*global RegisterView 實作於src/View.* */
             VARIABLE.View.Register = new RegisterView(getWindowSize());
             ViewInit(VARIABLE.View.Register.self);
         }
-        
         function NewActorViewInit(){
             VARIABLE.SCENES = "newActor";
             /*global NewActorView 實作於src/View.* */
             VARIABLE.View.NewActor = new NewActorView();
             ViewInit(VARIABLE.View.NewActor.self);
         }//創建角色
-        
         function HallViewInit(){
             VARIABLE.SCENES = "hall";
             /*global HallView 實作於src/View.* */
             VARIABLE.View.Hall = new HallView();
-            /*global getActor　 實作於ajax*/
+            /*global getActor,getRoomList　 實作於ajax*/
             getActor(VARIABLE.USER.ActorID);
             ViewInit(VARIABLE.View.Hall.self);
         }//大廳描繪
-        
         function CreateRoomViewInit(){
             VARIABLE.SCENES = "createHall";
             /*global CreateRoomView 實作於src/View.* */
             VARIABLE.View.CreateRoom = new CreateRoomView();
             ViewInit(VARIABLE.View.CreateRoom.self);
         }
-        function RoomInit(){
+        function RoomViewInit(){
             VARIABLE.SCENES = "room";
             /*global RoomView 實作於View.* */
             VARIABLE.View.Room = new RoomView();
@@ -105,59 +94,63 @@
         function GameAreaInit(){
             //ViewInit();
             VARIABLE.SCENES = "game";
+            /*global GameAreaView 實作於View.* */
+            VARIABLE.View.GameArea = new GameAreaView();
+            ViewInit(VARIABLE.View.GameArea.self);
             
-            document.body.style.width = Option.GameAreaWidth;
-            document.body.style.height = Option.GameAreaHeight;
-  
-             //以下測試插入玩家
-            player = new PlayerItem(50,10,1,'A',false,3,true,5); 
-            //x,y,no,type,Moveable,MoveRange,VisiAble,ViewRange
-            
-            //GameArea.style.overflow = "hidden";
             //使用frame可以內嵌另外一頁，在研究
-            
-            iframe= document.createElement('iframe');
-            iframe.style.width="70%";
-            iframe.style.height="70%";
-            iframe.style.left="15%";
-            iframe.style.top="20%";
-            iframe.style.position='absolute';
             var html = '<body></body>';
-            document.body.appendChild(iframe);
-            iframe.contentWindow.document.open();
-            iframe.contentWindow.document.write(html);
-            iframe.src='test.html';
+            VARIABLE.View.GameArea.iframe.contentWindow.document.open();
+            VARIABLE.View.GameArea.iframe.contentWindow.document.write(html);
+            VARIABLE.View.GameArea.iframe.src='GameArea.html';
+            function resetButton(){
+                VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
+                VARIABLE.View.GameArea.iframe.contentWindow.MoveCancel();
+                VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
+                VARIABLE.View.GameArea.iframe.contentWindow.BulidCancel();
+                VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
+                VARIABLE.View.GameArea.iframe.contentWindow.AttackCancel();
+            }
+            VARIABLE.View.GameArea.LeftControl.MoveButton.addEventListener("click",function(){
+                
+                //取得物件下的node
+                if(VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue=="返回")
+                {
+                   resetButton();
+                }
+                else{
+                    resetButton();
+                    VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="返回";
+                    VARIABLE.View.GameArea.iframe.contentWindow.Move();
+                }
+                    
+                });
+            VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
+                if(VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue=="返回")
+                {
+                   resetButton();
+                }
+                else{
+                    resetButton();
+                    VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="返回";
+                    VARIABLE.View.GameArea.iframe.contentWindow.Attack();
+                }
+            });
+            VARIABLE.View.GameArea.LeftControl.BulidButton.addEventListener("click",function(){
+                if(VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue=="返回")
+                {
+                   resetButton();
+                }
+                else{
+                    resetButton();
+                    VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="返回";
+                    VARIABLE.View.GameArea.iframe.contentWindow.Bulid();
+                }
+            });
             //iframe.contentWindow.document.close();
             //iframe.contentWindow.function(); 直接互叫子網頁.... 
-            //document.body.appendChild(GameArea);
             
-            TopControl =new TopControl();
-            document.body.appendChild((TopControl.self));
-            LeftControl = new LeftControl();
-            LeftControl.MoveButton.addEventListener("click",function(){
-                //MoveItem();
-                iframe.contentWindow.MoveItem();
-                console.log(player.Postion);
-                //取得物件下的node
-                LeftControl.MoveButton.childNodes[0].nodeValue="yee";
-            });
-            LeftControl.AttackButton.addEventListener("click",function(){
-                iframe.contentWindow.test();
-                
-            });
-            document.body.appendChild(LeftControl.self);
-            
-            RightControl = new RightControl();
-            document.body.appendChild(RightControl.self);
-            /*global Item 實作於Item.js*/
-            var focalPos = new Object();
-            focalPos.X = Option.CubeX / 2;
-            focalPos.Y = Option.CubeY / 2;
-            addPlayer();
         }//遊戲畫面初始化
-        function addPlayer(){
-            return player;
-        }
         //以下為系統工具
         function getWindowSize(){
             var w = window,
@@ -168,11 +161,10 @@
             y = w.innerHeight|| e.clientHeight|| g.clientHeight;
             return {W:x,H:y};
         }
-        
         function onWindowReSize(){
             var windowSize = getWindowSize();
-            VARIABLE.View.Login.windowReSize(windowSize);
-            VARIABLE.View.Register.windowReSize(windowSize);
+            if(VARIABLE.SCENES == "login") VARIABLE.View.Login.windowReSize(windowSize);
+            else if(VARIABLE.SCENES == "register") VARIABLE.View.Register.windowReSize(windowSize);
         }
     </script>
 

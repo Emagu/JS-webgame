@@ -1,11 +1,8 @@
 function RoomView(){
-    var windowSize = new Object();
-    windowSize.W = Option.windowSize.W;
-    windowSize.H = Option.windowSize.H;
     
     this.self = document.createElement("div");
-    this.self.style.width = windowSize.W;
-    this.self.style.height = windowSize.H;
+    this.self.style.width = "100%";
+    this.self.style.height = "100%";
     
     var command = document.createElement("div");
     command.style.width = "20%";
@@ -87,6 +84,9 @@ function RoomView(){
             if(actorDiv[i].firstChild) actorDiv[i].removeChild(actorDiv[i].firstChild);
         }
 	    for(var i=0;i<data.length;i++){
+	        if(data[i].ActorName==VARIABLE.USER.ActorName){
+	            VARIABLE.USER.RoomMaster = data[i].Master;
+	        }
 	        actorDiv[i].appendChild(document.createTextNode(data[i].ActorName+"    "+data[i].Level+"    "+data[i].Ready+"    "+data[i].Master));
 	    }
 	};
@@ -109,7 +109,15 @@ function RoomView(){
         this.self.appendChild(status);
     }
 
-    
+    command_Quit.addEventListener("click",function(){
+        /*global quitRoom 實作於ajax*/
+        var data = new Object();
+        data.ActorID = VARIABLE.USER.ActorID;
+        data.Master = VARIABLE.USER.RoomMaster;
+        data.RoomID = VARIABLE.USER.RoomID;
+        quitRoom(JSON.stringify(data));
+    });
 }
+
 
 

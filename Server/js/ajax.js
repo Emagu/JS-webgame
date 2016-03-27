@@ -75,6 +75,13 @@ function addRoom(data){
 	request.onreadystatechange = addRoom_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
+function quitRoom(data){
+	var url = "../Server/room/php/quitRoom.php?data="+data;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global quitRoom_res 實作於ajax_res */
+	request.onreadystatechange = quitRoom_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
 function creatRequestObj(){
 	var request = null;
 	try {

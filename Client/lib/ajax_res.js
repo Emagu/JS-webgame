@@ -88,8 +88,8 @@ function getActor_res(){//取得角色成功後
 function getRoomList_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
-        VARIABLE.View.Hall.RoomListRender(JSON.parse(data));
         VARIABLE.View.Hall.StatusRender();
+        VARIABLE.View.Hall.RoomListRender(JSON.parse(data));
     }
 }
 function createRoom_res(){
@@ -98,8 +98,8 @@ function createRoom_res(){
         if(data.match("error")==null){
             VARIABLE.USER.RoomID = data;
             VARIABLE.USER.RoomMaster = true;
-            /*global RoomInit 實作於index */
-            RoomInit();
+            /*global RoomViewInit 實作於index */
+            RoomViewInit();
         }
     }
 }
@@ -107,20 +107,30 @@ function getRoomData_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
         VARIABLE.View.Room.RoomListRender(JSON.parse(data));
-        console.log(data);
         /*global getRoomData 實作於ajax */
-        getRoomData(VARIABLE.USER.RoomID);
+        if(VARIABLE.SCENES == "room") getRoomData(VARIABLE.USER.RoomID);
     }
 }
 function addRoom_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
-        console.log(data);
         if(data.match("error")==null){
             VARIABLE.USER.RoomID = data;
-            VARIABLE.USER.RoomMaster = true;
-            /*global RoomInit 實作於index */
-            RoomInit();
+            VARIABLE.USER.RoomMaster = false;
+            /*global RoomViewInit 實作於index */
+            RoomViewInit();
+        }
+    }
+}
+function quitRoom_res(){
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+        console.log(data);
+        if(data.match("error")==null){
+            VARIABLE.USER.RoomID = null;
+            VARIABLE.USER.RoomMaster = null;
+            /*global HallViewInit 實作於index */
+            HallViewInit();
         }
     }
 }

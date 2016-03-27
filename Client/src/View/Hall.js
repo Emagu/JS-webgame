@@ -1,11 +1,8 @@
 function HallView(){
-    var windowSize = new Object();
-    windowSize.W = Option.windowSize.W;
-    windowSize.H = Option.windowSize.H;
-    
+
     this.self = document.createElement("div");
-    this.self.style.width = windowSize.W;
-    this.self.style.height = windowSize.H;
+    this.self.style.width = "100%";
+    this.self.style.height = "100%";
     
     var command = document.createElement("div");
     command.style.width = "20%";
@@ -27,18 +24,6 @@ function HallView(){
     command_CreateRoom.style.textAlign = "center";
     command_CreateRoom.appendChild(document.createTextNode("創建房間"));
     command.appendChild(command_CreateRoom);
-    
-    var command_UpdateRoomList = document.createElement("div");
-    command_UpdateRoomList.style.width = "98%";
-    command_UpdateRoomList.style.height = "18%";
-    command_UpdateRoomList.style.left = "1%";
-    command_UpdateRoomList.style.top = "20%";
-    command_UpdateRoomList.style.position = "absolute";
-    command_UpdateRoomList.style.backgroundColor = "#00AFAA";
-    command_UpdateRoomList.style.cursor = "pointer";
-    command_UpdateRoomList.style.textAlign = "center";
-    command_UpdateRoomList.appendChild(document.createTextNode("刷新房間"));
-    command.appendChild(command_UpdateRoomList);
     
     var status = document.createElement("div");
     status.style.width = "20%";
@@ -68,10 +53,6 @@ function HallView(){
 	title.appendChild(document.createTextNode("房間列表"));
 	this.self.appendChild(title);
 	
-	command_UpdateRoomList.addEventListener("click",function(){
-	    /* global getRoomList 實作於ajax*/
-	    getRoomList();
-	})
 	
 	this.RoomListRender = function(data){
 	    function insertRoom(Div,RoomID){
@@ -106,9 +87,11 @@ function HallView(){
             roomList.appendChild(roomDiv);
         }
         this.self.appendChild(roomList);
+        if(VARIABLE.SCENES=="hall") {
+            /*global getRoomList　 實作於ajax*/
+            getRoomList();
+        }
 	};
-	
-	
     this.StatusRender = function() {
         this.self.removeChild(status);
         status = document.createElement("div");

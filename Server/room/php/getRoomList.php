@@ -19,5 +19,6 @@
 	        );
 	   array_push($data,$RoomData);
 	}
+	sleep(1);
 	echo json_encode($data);
 ?>

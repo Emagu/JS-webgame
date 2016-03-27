@@ -1,11 +1,8 @@
 function NewActorView(){
-    var windowSize = new Object();
-    windowSize.W = Option.windowSize.W;
-    windowSize.H = Option.windowSize.H;
     
     this.self = document.createElement("div");
-    this.self.style.width = windowSize.W;
-    this.self.style.height = windowSize.H;
+    this.self.style.width = "100%";
+    this.self.style.height = "100%";
     this.self.style.backgroundColor = "#FFFFFF";
     
     var title = document.createElement("H1");

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+     <script src="lib/jquery.js"></script>
+    <script src="src/Item/Item.js"></script>
+    <script src="src/Option.js"></script>
+    
+</head>
+<body></body>
+
+
+<script>
+/*
+重寫物件，要設定開關
+*/
+        var GameArea,LeftControl,RightControl,TopControl;
+        var Option;
+        var player;
+        var FocalVar=1;//焦距 最低1
+        var MapCube=[];//存放所有地形資訊
+        var House=[];//放房子的
+        var BulidCube=[];//顯示建築方塊範圍
+        var MoveCube=[];//放移動方塊
+        var AttackCube=[];//放攻擊方塊
+        /*global UserData 實作於Data*/
+        //var USER=new UserData();//用戶資料
+        GameAreaInit();
+        function GameAreaInit(){
+            /*global PlayerItem 實作於View*/
+            /*global OptionSet 實作於Option.js*/
+            Option = new OptionSet();
+            //document.body.style.width = Option.GameAreaWidth;
+            //document.body.style.height = Option.GameAreaHeight;
+            document.body.style.background="#000000";
+            GameArea = document.createElement("div");
+            //GameArea.style.width = "70%";
+            //GameArea.style.height ="70%";
+            GameArea.style.backgroundColor = "#000000";
+            GameArea.style.margin = "0 auto";
+            GameArea.style.position = 'absolute';
+            
+            GameArea.style.top = "0%";
+            GameArea.style.left = "0%";
+           document.body.appendChild(GameArea);
+           //document.body.style.overflow = 'hidden';
+            /*global Item 實作於Item.js*/
+            for(var i=0;i<Option.CubeX;i++){
+                MapCube.push([]);
+                for(var j=0;j<Option.CubeY;j++){
+                    /*global MapItem 實作於Item.js*/
+                    var item = new MapItem(i,j,'show',true,true);//x,y,type,Moveable,VisiAble
+                    MapCube[i].push(item);
+                }
+            }
+            player = new PlayerItem(50,10,1,'A',false,3,true,5,10); //直接宣告在這邊 ajax直接送過來
+            //x,y,no,type,Moveable,MoveRange,VisiAble,ViewRange,RadioRange
+            MapCube[50][10].insert(player);
+            var tmp=new BulidItem(30,10,'A',false,false,5,5);//我軍建築
+            House.push(tmp);
+            //x,y,type,Moveable,VisiAble,ViewRange
+            MapCube[30][10].insert(House[0]);
+            //x,y,type,Moveable,VisiAble,ViewRange
+           
+            View();
+            rendCube();
+            //直接把畫面到那邊
+            window.scrollTo(player.Postion.X* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player.Postion.Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
+            
+        }//遊戲畫面初始化
+        
+        function rendCube(){
+            //console.log(player.Postion);
+            
+            for(var i=0;i<Option.CubeX;i++){
+                for(var j=0;j<Option.CubeY;j++){
+                   if(MapCube[i][j].VisiAble==true)
+                    {
+                     MapCube[i][j].Div.style.backgroundColor = "#FFFFFF";
+                    }
+                    else
+                    {
+                       MapCube[i][j].Div.style.backgroundColor = "#012345";//for TEST
+                    }
+                    GameArea.appendChild(MapCube[i][j].Div);
+                }
+            
+            }//畫面描繪
+             for( i=0;i!=BulidCube.length;i++)
+            {
+                GameArea.appendChild(BulidCube[i]);
+            }
+             for( i=0;i!=MoveCube.length;i++)
+            {
+                GameArea.appendChild(MoveCube[i]);
+            }
+            for(i=0;i!=House.length;i++)
+            {
+                if(House[i].visiable)
+                    GameArea.appendChild(House[i].Div);
+            }
+            GameArea.appendChild(player.Div);
+            for( i=0;i!=AttackCube.length;i++)
+            {
+                GameArea.appendChild(AttackCube[i]);
+            }
+            window.scrollTo((player.Postion.X-7)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player.Postion.Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
+            }
+        function Radio(){
+            var friends=[],index=0;
+            friends.push(player);
+            while(index<friends.length)
+            {
+                var connetRange=friends[index].RadioRange;
+                var CenterX=friends[index].Postion.X,CenterY=friends[index].Postion.Y;
+                for(var x=-connetRange;x<=connetRange;x++)
+                {
+                    var tmp=connetRange-Math.abs(x);
+                    for(var y=-tmp;y<=tmp;y++)
+                    {
+                       if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定
+                       if(MapCube[CenterX+x][CenterY+y].Top!=null)//地圖上方有東西
+                        {
+                            if(MapCube[CenterX+x][CenterY+y].Top.Type==player.Type)
+                            {    
+                                var check=true;
+                                for(var i=0;i!=index+1;i++)
+                                {
+                                    if(MapCube[CenterX+x][CenterY+y].Top==friends[i])
+                                        check=false;
+                                }
+                                if(check)
+                                    friends.push(MapCube[CenterX+x][CenterY+y].Top);
+                            }
+                        }
+                    }
+                }
+                index++;
+            }
+            return friends;
+        }
+        function View(){
+            
+            //先將通訊範圍內的友軍搜尋，在依優先度顯示
+            //通訊範圍要另外寫?
+            var CenterX=player.Postion.X;
+            var CenterY=player.Postion.Y;
+            //全關掉在依優先度開啟
+            for(var i=0;i<Option.CubeX;i++){
+                for(var j=0;j<Option.CubeY;j++){
+                    MapCube[i][j].VisiAble=false;
+                }
+            }
+            for(i=0;i!=House.length;i++)
+            {
+                House[i].visiable=false;
+            }
+            var connetRange=player.RadioRange;//通訊測試範圍
+            var friends=Radio();
+            for(var i=0;i!=friends.length;i++)
+            {
+                CalHorizons(friends[i]);
+            }
+            
+                
+            function CalHorizons(friend)
+            {
+                var Horizons=friend.ViewRange;
+                var CenterX=friend.Postion.X,CenterY=friend.Postion.Y;
+                
+                for(var x=-Horizons;x<=Horizons;x++)
+                {
+                    var tmp=Horizons-Math.abs(x);
+                    for(var y=-tmp;y<=tmp;y++)
+                    {
+                        if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定
+                        {
+                            MapCube[CenterX+x][CenterY+y].VisiAble=true;
+                            if(MapCube[CenterX+x][CenterY+y].Top!=null)
+                            {    
+                                MapCube[CenterX+x][CenterY+y].Top.visiable=true;
+                                
+                            }
+                        }        
+                    }
+                }
+            }
+        }
+       
+        function Move(){
+            function addEvent(x,y){//按下移動按鈕後
+                    var Button = document.createElement("div");
+                    Button.style.textAlig='center';
+	                Button.style.position = "absolute";
+	                Button.style.backgroundColor = "#FFFF00";
+                	Button.style.width = Option.CubeSize*FocalVar + "px";
+                	Button.style.height = Option.CubeSize*FocalVar + "px";
+                	Button.style.left = (x * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    Button.style.top = (y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    Button.style.cursor = "pointer";
+                    Button.addEventListener("click",function(){
+                    MapCube[player.Postion.X][player.Postion.Y].earse();
+                    player.Move(x,y);
+                    MapCube[x][y].insert(player);
+                    MoveCube.length=0;
+                    View();
+                    rendCube();
+                    parent.VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
+                    });
+                 MoveCube.push(Button);
+                
+            }
+            var CenterX = player.Postion.X;
+            var CenterY = player.Postion.Y;
+            var Horizons=player.MoveRange;
+            
+            for(var x=-Horizons;x<=Horizons;x++)
+            {
+                var tmp=Horizons-Math.abs(x);
+               
+                for(var y=-tmp;y<=tmp;y++)
+                {
+                    if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
+                    if(MapCube[CenterX+x][CenterY+y].MoveAble==true) //地形不允許
+                    addEvent(CenterX+x,CenterY+y);
+                }
+            }
+            rendCube();
+        }
+        function  MoveCancel(){
+            MoveCube.length=0;
+            rendCube();
+        }
+        function Bulid(){
+            function addEvent(x,y){//按下移動按鈕後
+                    var Button = document.createElement("div");
+                    Button.style.textAlig='center';
+	                Button.style.position = "absolute";
+	                Button.style.backgroundColor = "#FFFF00";
+                	Button.style.width = Option.CubeSize*FocalVar + "px";
+                	Button.style.height = Option.CubeSize*FocalVar + "px";
+                	Button.style.left = (x * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    Button.style.top = (y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    Button.style.cursor = "pointer";
+                    Button.addEventListener("click",function(){
+                    var tmp=new BulidItem(x,y,'A',false,false,5,5);//我軍建築
+                    House.push(tmp);
+                    MapCube[x][y].insert(House[House.length-1]);
+                    BulidCube.length=0;
+                    View();
+                    rendCube();
+                    parent.VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
+                    });
+                 BulidCube.push(Button);
+                
+            }
+            var CenterX = player.Postion.X;
+            var CenterY = player.Postion.Y;
+            var Horizons=1;
+            
+            for(var x=-Horizons;x<=Horizons;x++)
+            {
+               
+                for(var y=-Horizons;y<=Horizons;y++)
+                {
+                    if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
+                    if(MapCube[CenterX+x][CenterY+y].MoveAble==true) //地形不允許
+                    addEvent(CenterX+x,CenterY+y);
+                }
+            }
+            rendCube();
+        }
+        function  BulidCancel(){
+            BulidCube.length=0;
+            rendCube();
+        }
+        function Attack(){
+            function addEvent(x,y){//按下移動按鈕後
+                    var Button = document.createElement("div");
+                    Button.style.textAlig='center';
+	                Button.style.position = "absolute";
+	                Button.style.backgroundColor = "#FFFF00";
+                	Button.style.width = Option.CubeSize*FocalVar + "px";
+                	Button.style.height = Option.CubeSize*FocalVar + "px";
+                	Button.style.left = (x * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    Button.style.top = (y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+                    Button.style.cursor = "pointer";
+                    Button.addEventListener("click",function(){
+                    console.log(MapCube[x][y].findTop());
+                    if(MapCube[x][y].findTop!=null){
+                        MapCube[x][y].earse();
+                    }
+                    AttackCube.length=0;
+                    View();
+                    rendCube();
+                    parent.VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
+                    });
+                 AttackCube.push(Button);
+                
+            }
+            var CenterX = player.Postion.X;
+            var CenterY = player.Postion.Y;
+            var Horizons=player.ViewRange;
+            
+            for(var x=-Horizons;x<=Horizons;x++)
+            {
+                var tmp=Horizons-Math.abs(x);
+               
+                for(var y=-tmp;y<=tmp;y++)
+                {
+                    if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
+                        addEvent(CenterX+x,CenterY+y);
+                }
+            }
+            rendCube();            
+        }
+        function AttackCancel(){
+            AttackCube.length=0;
+            rendCube();
+        }
+</script>
+
+
+</html>

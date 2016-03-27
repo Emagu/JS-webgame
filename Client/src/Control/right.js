@@ -1,5 +1,5 @@
 //右邊工具列
-function RightControl(){
+function RightControlView(){
     this.self = document.createElement("div");
     this.self.style.width = "15%";
     this.self.style.height = "100%";
