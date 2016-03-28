@@ -55,12 +55,11 @@
             player = new PlayerItem(50,10,1,'A',false,3,true,5,10); //直接宣告在這邊 ajax直接送過來
             //x,y,no,type,Moveable,MoveRange,VisiAble,ViewRange,RadioRange
             MapCube[50][10].insert(player);
+            //console.log(MapCube[50][10].findTop());
             var tmp=new BulidItem(30,10,'A',false,false,5,5);//我軍建築
             House.push(tmp);
             //x,y,type,Moveable,VisiAble,ViewRange
             MapCube[30][10].insert(House[0]);
-            //x,y,type,Moveable,VisiAble,ViewRange
-           
             View();
             rendCube();
             //直接把畫面到那邊
@@ -70,39 +69,52 @@
         
         function rendCube(){
             //console.log(player.Postion);
-            
+
             for(var i=0;i<Option.CubeX;i++){
                 for(var j=0;j<Option.CubeY;j++){
-                   if(MapCube[i][j].VisiAble==true)
+                    if(MapCube[i][j].findTop().VisiAble==true)
                     {
-                     MapCube[i][j].Div.style.backgroundColor = "#FFFFFF";
+                       switch (MapCube[i][j].findTop().Class) {
+                            case 'MapItem':
+                                 MapCube[i][j].findTop().Div.style.backgroundColor = "#FFFFFF";
+                                break;
+                            case 'PlayerItem':
+                                MapCube[i][j].findTop().Div.style.backgroundColor = "#FF0000";
+                                break;
+                            case 'BulidItem':
+                                MapCube[i][j].findTop().Div.style.backgroundColor = "#FF00FF";
+ 
+                                break;
+                            
+                            default:
+                                // code
+                        }
                     }
                     else
                     {
-                       MapCube[i][j].Div.style.backgroundColor = "#012345";//for TEST
+                       MapCube[i][j].findTop().Div.style.backgroundColor = "#012345";//for TEST
                     }
-                    GameArea.appendChild(MapCube[i][j].Div);
+                    GameArea.appendChild(MapCube[i][j].findTop().Div);
+                     
                 }
             
             }//畫面描繪
+            
              for( i=0;i!=BulidCube.length;i++)
             {
                 GameArea.appendChild(BulidCube[i]);
             }
+            
              for( i=0;i!=MoveCube.length;i++)
             {
                 GameArea.appendChild(MoveCube[i]);
             }
-            for(i=0;i!=House.length;i++)
-            {
-                if(House[i].visiable)
-                    GameArea.appendChild(House[i].Div);
-            }
-            GameArea.appendChild(player.Div);
             for( i=0;i!=AttackCube.length;i++)
             {
                 GameArea.appendChild(AttackCube[i]);
             }
+            GameArea.appendChild(player.Div);
+
             window.scrollTo((player.Postion.X-7)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player.Postion.Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
             }
         function Radio(){
@@ -118,18 +130,18 @@
                     for(var y=-tmp;y<=tmp;y++)
                     {
                        if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定
-                       if(MapCube[CenterX+x][CenterY+y].Top!=null)//地圖上方有東西
+                       if(MapCube[CenterX+x][CenterY+y].findTop()!=MapCube[CenterX+x][CenterY+y])//地圖上方有東西
                         {
-                            if(MapCube[CenterX+x][CenterY+y].Top.Type==player.Type)
+                            if(MapCube[CenterX+x][CenterY+y].findTop().Type==player.Type)
                             {    
                                 var check=true;
                                 for(var i=0;i!=index+1;i++)
                                 {
-                                    if(MapCube[CenterX+x][CenterY+y].Top==friends[i])
+                                    if(MapCube[CenterX+x][CenterY+y].findTop()==friends[i])
                                         check=false;
                                 }
                                 if(check)
-                                    friends.push(MapCube[CenterX+x][CenterY+y].Top);
+                                    friends.push(MapCube[CenterX+x][CenterY+y].findTop());
                             }
                         }
                     }
@@ -147,12 +159,8 @@
             //全關掉在依優先度開啟
             for(var i=0;i<Option.CubeX;i++){
                 for(var j=0;j<Option.CubeY;j++){
-                    MapCube[i][j].VisiAble=false;
+                    MapCube[i][j].findTop().VisiAble=false;
                 }
-            }
-            for(i=0;i!=House.length;i++)
-            {
-                House[i].visiable=false;
             }
             var connetRange=player.RadioRange;//通訊測試範圍
             var friends=Radio();
@@ -161,7 +169,6 @@
                 CalHorizons(friends[i]);
             }
             
-                
             function CalHorizons(friend)
             {
                 var Horizons=friend.ViewRange;
@@ -175,10 +182,10 @@
                         if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定
                         {
                             MapCube[CenterX+x][CenterY+y].VisiAble=true;
-                            if(MapCube[CenterX+x][CenterY+y].Top!=null)
+                           
+                            if(MapCube[CenterX+x][CenterY+y].findTop()!=MapCube[CenterX+x][CenterY+y])
                             {    
-                                MapCube[CenterX+x][CenterY+y].Top.visiable=true;
-                                
+                                MapCube[CenterX+x][CenterY+y].findTop().VisiAble=true;
                             }
                         }        
                     }
@@ -220,13 +227,13 @@
                 for(var y=-tmp;y<=tmp;y++)
                 {
                     if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
-                    if(MapCube[CenterX+x][CenterY+y].MoveAble==true) //地形不允許
+                    if(MapCube[CenterX+x][CenterY+y].findTop().MoveAble==true) //地形不允許
                     addEvent(CenterX+x,CenterY+y);
                 }
             }
             rendCube();
         }
-        function  MoveCancel(){
+        function MoveCancel(){
             MoveCube.length=0;
             rendCube();
         }
@@ -263,13 +270,13 @@
                 for(var y=-Horizons;y<=Horizons;y++)
                 {
                     if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
-                    if(MapCube[CenterX+x][CenterY+y].MoveAble==true) //地形不允許
+                    if(MapCube[CenterX+x][CenterY+y].findTop().MoveAble==true) //地形不允許
                     addEvent(CenterX+x,CenterY+y);
                 }
             }
             rendCube();
         }
-        function  BulidCancel(){
+        function BulidCancel(){
             BulidCube.length=0;
             rendCube();
         }
@@ -286,7 +293,7 @@
                     Button.style.cursor = "pointer";
                     Button.addEventListener("click",function(){
                     console.log(MapCube[x][y].findTop());
-                    if(MapCube[x][y].findTop!=null){
+                    if(MapCube[x][y].findTop()!=MapCube[x][y]){
                         MapCube[x][y].earse();
                     }
                     AttackCube.length=0;
@@ -308,7 +315,14 @@
                 for(var y=-tmp;y<=tmp;y++)
                 {
                     if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
-                        addEvent(CenterX+x,CenterY+y);
+                    if(MapCube[CenterX+x][CenterY+y].findTop()!=MapCube[CenterX+x][CenterY+y])//還沒寫可不可以攻擊自己
+                    {
+                        var tmp=new AttackItem(CenterX+x,CenterY+y,'',false,true);
+                        tmp.Under=MapCube[CenterX+x][CenterY+y].findTop();
+                        MapCube[CenterX+x][CenterY+y].insert(tmp);
+                        console.log(MapCube[CenterX+x][CenterY+y].findTop());
+                    }    
+                    //addEvent(CenterX+x,CenterY+y);
                 }
             }
             rendCube();            

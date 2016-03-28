@@ -11,22 +11,27 @@ function LeftControlView(){
     this.self.style.textAlig='center';
     
     this.listdiv=document.createElement("div");
-    this.listdiv.style="display";
-   /* this.self.style.width = "15%";
-    this.self.style.height = "50%";
-    this.self.style.backgroundColor = "#AAAAAA";
-    this.self.style.position = "absolute";
-    this.self.style.left = "0px";
-    this.self.style.top = "0px";
-    this.self.style.textAlig='center';*/
+    //this.listdiv.style="display";
+    this.listdiv.style.position = "absolute";
+    this.listdiv.style.width = "90%";
+    this.listdiv.style.height = "10%";
+    this.listdiv.style.backgroundColor = "#AAAA00";
+    this.listdiv.style.left = "5%";
+    this.listdiv.style.top = "40%";
+    this.listdiv.style.textAlig='center';
+    this.listdiv.appendChild(document.createTextNode("攻擊"));
     
     this.list=document.createElement("ul");
-    this.list.appendChild(document.createTextNode("test"));
+   // this.list.appendChild(document.createTextNode(""));
     
     this.node=document.createElement("li");
     this.node.appendChild(document.createTextNode("testnode"));
+    this.att=document.createElement("li");
+    this.att.appendChild(document.createTextNode("testnode"));
+    
     
     this.list.appendChild(this.node);
+    this.list.appendChild(this.att);
     this.listdiv.appendChild(this.list);
     this.self.appendChild(this.listdiv);
     
