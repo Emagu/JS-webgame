@@ -5,10 +5,17 @@ if (request == null){
 	//無法取得XMLHttpRequest物件時發出警告
 	alert("Error creating request object!");
 }
+function checkSave(){
+	var url = "../Server/checkSave.php";
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global checkSave_res 實作於ajax_res.* */
+	request.onreadystatechange = checkSave_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
 function register(data) {
 	var url = "../Server/member/php/register.php?data="+data;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
-	/*global register_res 實作於Client/lib/ajax_res.* */
+	/*global register_res 實作於ajax_res.* */
 	request.onreadystatechange = register_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
@@ -80,6 +87,20 @@ function quitRoom(data){
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global quitRoom_res 實作於ajax_res */
 	request.onreadystatechange = quitRoom_res//狀態完成時所要執行的函式
+	request.send(null);//送出
+}
+function sendGameCommand(data){
+	console.log(data);
+	var url = "../Server/game/php/gameCommand.php?data="+data;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global quitRoom_res 實作於ajax_res */
+	request.send(null);//送出
+}
+function getSynchronize(){
+	var url = "../Server/game/php/getSynchronize.php";
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	/*global Synchronize_res 實作於gameArea.html */
+	request.onreadystatechange = Synchronize_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
 function creatRequestObj(){

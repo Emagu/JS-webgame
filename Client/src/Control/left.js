@@ -10,30 +10,53 @@ function LeftControlView(){
     this.self.style.top = "0px";
     this.self.style.textAlig='center';
     
-    this.listdiv=document.createElement("div");
-    //this.listdiv.style="display";
-    this.listdiv.style.position = "absolute";
-    this.listdiv.style.width = "90%";
-    this.listdiv.style.height = "10%";
-    this.listdiv.style.backgroundColor = "#AAAA00";
-    this.listdiv.style.left = "5%";
-    this.listdiv.style.top = "40%";
-    this.listdiv.style.textAlig='center';
-    this.listdiv.appendChild(document.createTextNode("攻擊"));
-    
-    this.list=document.createElement("ul");
-   // this.list.appendChild(document.createTextNode(""));
-    
-    this.node=document.createElement("li");
-    this.node.appendChild(document.createTextNode("testnode"));
-    this.att=document.createElement("li");
-    this.att.appendChild(document.createTextNode("testnode"));
-    
-    
-    this.list.appendChild(this.node);
-    this.list.appendChild(this.att);
-    this.listdiv.appendChild(this.list);
-    this.self.appendChild(this.listdiv);
+    //隱藏選單
+	var openList = document.createElement("div")
+    openList.style.left = "5%";
+	openList.style.top = "65%";
+	openList.style.height = "0%";
+	openList.style.width = "90%";
+	openList.style.position = 'absolute';
+	openList.style.overflow = 'auto';
+	openList.style.backgroundColor = "#DCDCDC";
+	
+	
+	//開啟按鈕
+	var openButton = document.createElement("div");
+	openButton.style.left = "5%";
+	openButton.style.top = "60%";
+	openButton.style.height = "5%";
+	openButton.style.width = "90%";
+	openButton.style.position = 'absolute';
+	openButton.innerHTML = "點我展開";
+	openButton.style.backgroundColor = "#AAAA00";
+	openButton.addEventListener("click",function(){
+		//判斷是否展開
+		if(openList.style.height=="0%") OpenList();//未展開時 展開
+		else if(openList.style.height=="20%") CloseList();//展開時 隱藏
+	});
+	this.self.appendChild(openList);
+	this.self.appendChild(openButton);
+	
+	//方法
+	function OpenList(){//作業區
+		openButton.innerHTML = "點我隱藏!";
+		openList.style.height = "20%";
+		//新增node到openList
+		/*
+			for(var i = 0; i <node.lenght;i++){
+				openList.appendChild(node[i]);
+			}
+		*/
+		
+	}
+	function CloseList(){
+		openButton.innerHTML = "點我展開!";
+		while (openList.firstChild) {
+			openList.removeChild(openButton.firstChild);
+		}
+		openList.style.height = "0%";
+	}
     
     this.MoveButton = document.createElement("div");
     this.MoveButton.style.textAlig='center';
@@ -70,4 +93,17 @@ function LeftControlView(){
     this.BulidButton.style.top = "29%";
     this.BulidButton.style.cursor = "pointer";
     this.self.appendChild(this.BulidButton);
+        
+    //之後換名子
+    //換好惹OAO
+    this.stay = document.createElement("div");
+	this.stay.appendChild(document.createTextNode("代命!!"));
+	this.stay.style.position = "absolute";
+	this.stay.style.backgroundColor = "#AAAA00";
+	this.stay.style.width = "90%";
+	this.stay.style.height = "10%";
+	this.stay.style.left = "5%";
+    this.stay.style.top = "45%";
+    this.stay.style.cursor = "pointer";
+    this.self.appendChild(this.stay);
 }

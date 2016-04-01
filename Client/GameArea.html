@@ -4,18 +4,15 @@
      <script src="lib/jquery.js"></script>
     <script src="src/Item/Item.js"></script>
     <script src="src/Option.js"></script>
-    
+    <script src="../Server/js/ajax.js"></script>
 </head>
 <body></body>
 
 
 <script>
-/*
-重寫物件，要設定開關
-*/
         var GameArea,LeftControl,RightControl,TopControl;
-        var Option;
-        var player;
+        var Option,Turn=0;
+        var player=[];
         var FocalVar=1;//焦距 最低1
         var MapCube=[];//存放所有地形資訊
         var House=[];//放房子的
@@ -25,6 +22,7 @@
         /*global UserData 實作於Data*/
         //var USER=new UserData();//用戶資料
         GameAreaInit();
+        UpLoad();
         function GameAreaInit(){
             /*global PlayerItem 實作於View*/
             /*global OptionSet 實作於Option.js*/
@@ -52,43 +50,65 @@
                     MapCube[i].push(item);
                 }
             }
-            player = new PlayerItem(50,10,1,'A',false,3,true,5,10); //直接宣告在這邊 ajax直接送過來
+            var tmp=new PlayerItem(50,10,1,'A',false,3,true,5,10); //直接宣告在這邊 ajax直接送過來
+            player.push(tmp);
+            tmp=new PlayerItem(40,10,1,'B',false,3,true,5,10); //直接宣告在這邊 ajax直接送過來
             //x,y,no,type,Moveable,MoveRange,VisiAble,ViewRange,RadioRange
-            MapCube[50][10].insert(player);
-            //console.log(MapCube[50][10].findTop());
-            var tmp=new BulidItem(30,10,'A',false,false,5,5);//我軍建築
+            player.push(tmp);
+            
+            MapCube[50][10].insert(player[0]);
+            MapCube[40][10].insert(player[1]);
+             tmp=new BulidingItem(30,10,'A',false,false,5,5);//我軍建築
             House.push(tmp);
-            //x,y,type,Moveable,VisiAble,ViewRange
+             tmp=new BulidingItem(30,11,'A',false,false,5,5);
+            House.push(tmp);
+             //x,y,type,Moveable,VisiAble,ViewRange
             MapCube[30][10].insert(House[0]);
             View();
             rendCube();
             //直接把畫面到那邊
-            window.scrollTo(player.Postion.X* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player.Postion.Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
+            window.scrollTo(player[Turn%player.length].X* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player[Turn%player.length].Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
             
         }//遊戲畫面初始化
-        
+        function Synchronize_res(){
+            /*global request 實作於 ajax.js*/
+            if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+                var data = request.responseText;//取得傳回的資料存在變數中
+        		data = JSON.parse(data);
+        		console.log(data);
+            }
+        }//資料同步結果
         function rendCube(){
-            //console.log(player.Postion);
-
             for(var i=0;i<Option.CubeX;i++){
                 for(var j=0;j<Option.CubeY;j++){
                     if(MapCube[i][j].findTop().VisiAble==true)
                     {
-                       switch (MapCube[i][j].findTop().Class) {
+                        switch (MapCube[i][j].findTop().Class) {
                             case 'MapItem':
                                  MapCube[i][j].findTop().Div.style.backgroundColor = "#FFFFFF";
                                 break;
                             case 'PlayerItem':
                                 MapCube[i][j].findTop().Div.style.backgroundColor = "#FF0000";
                                 break;
-                            case 'BulidItem':
+                            case 'BulidingItem':
                                 MapCube[i][j].findTop().Div.style.backgroundColor = "#FF00FF";
- 
                                 break;
-                            
+                            case'MoveItem':
+                                MapCube[i][j].findTop().Div.style.backgroundColor = "#FFFF00";
+                                break;
+                            case 'AttackItem':
+                                if(MapCube[i][j].findTop().Under.Class=='MapItem')
+                                MapCube[i][j].findTop().Div.style.backgroundColor = "#FFFF00";
+                                else
+                                MapCube[i][j].findTop().Div.style.backgroundColor = MapCube[i][j].findTop().Under.Div.style.backgroundColor;
+                                break;
+                            case 'BulidItem':
+                                MapCube[i][j].findTop().Div.style.backgroundColor = "#FFFF00";
+                                break;
                             default:
                                 // code
                         }
+                        MapCube[i][j].findTop().getinfo(MapCube[i][j].findTop());
                     }
                     else
                     {
@@ -99,31 +119,15 @@
                 }
             
             }//畫面描繪
-            
-             for( i=0;i!=BulidCube.length;i++)
-            {
-                GameArea.appendChild(BulidCube[i]);
-            }
-            
-             for( i=0;i!=MoveCube.length;i++)
-            {
-                GameArea.appendChild(MoveCube[i]);
-            }
-            for( i=0;i!=AttackCube.length;i++)
-            {
-                GameArea.appendChild(AttackCube[i]);
-            }
-            GameArea.appendChild(player.Div);
-
-            window.scrollTo((player.Postion.X-7)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player.Postion.Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
+            window.scrollTo((player[Turn%player.length].X-7)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (player[Turn%player.length].Y-5)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
             }
         function Radio(){
             var friends=[],index=0;
-            friends.push(player);
+            friends.push(player[Turn%player.length]);
             while(index<friends.length)
             {
                 var connetRange=friends[index].RadioRange;
-                var CenterX=friends[index].Postion.X,CenterY=friends[index].Postion.Y;
+                var CenterX=friends[index].X,CenterY=friends[index].Y;
                 for(var x=-connetRange;x<=connetRange;x++)
                 {
                     var tmp=connetRange-Math.abs(x);
@@ -132,7 +136,7 @@
                        if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定
                        if(MapCube[CenterX+x][CenterY+y].findTop()!=MapCube[CenterX+x][CenterY+y])//地圖上方有東西
                         {
-                            if(MapCube[CenterX+x][CenterY+y].findTop().Type==player.Type)
+                            if(MapCube[CenterX+x][CenterY+y].findTop().Type==player[Turn%player.length].Type)
                             {    
                                 var check=true;
                                 for(var i=0;i!=index+1;i++)
@@ -151,18 +155,13 @@
             return friends;
         }
         function View(){
-            
-            //先將通訊範圍內的友軍搜尋，在依優先度顯示
-            //通訊範圍要另外寫?
-            var CenterX=player.Postion.X;
-            var CenterY=player.Postion.Y;
-            //全關掉在依優先度開啟
+            //全關掉
             for(var i=0;i<Option.CubeX;i++){
                 for(var j=0;j<Option.CubeY;j++){
-                    MapCube[i][j].findTop().VisiAble=false;
+                   MapCube[i][j].findTop().VisiAble=false;
                 }
             }
-            var connetRange=player.RadioRange;//通訊測試範圍
+            var connetRange=player[Turn%player.length].RadioRange;//通訊測試範圍
             var friends=Radio();
             for(var i=0;i!=friends.length;i++)
             {
@@ -172,7 +171,7 @@
             function CalHorizons(friend)
             {
                 var Horizons=friend.ViewRange;
-                var CenterX=friend.Postion.X,CenterY=friend.Postion.Y;
+                var CenterX=friend.X,CenterY=friend.Y;
                 
                 for(var x=-Horizons;x<=Horizons;x++)
                 {
@@ -192,33 +191,41 @@
                 }
             }
         }
-       
         function Move(){
-            function addEvent(x,y){//按下移動按鈕後
-                    var Button = document.createElement("div");
-                    Button.style.textAlig='center';
-	                Button.style.position = "absolute";
-	                Button.style.backgroundColor = "#FFFF00";
-                	Button.style.width = Option.CubeSize*FocalVar + "px";
-                	Button.style.height = Option.CubeSize*FocalVar + "px";
-                	Button.style.left = (x * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    Button.style.top = (y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    Button.style.cursor = "pointer";
-                    Button.addEventListener("click",function(){
-                    MapCube[player.Postion.X][player.Postion.Y].earse();
-                    player.Move(x,y);
-                    MapCube[x][y].insert(player);
+            //按下移動按鈕後,先計算MoveRange來放MoveItem
+            //在對MoveItem加功能，要刪掉只要把MoveCube清空就行
+            //未來可以加移動type如十字
+            function addEvent(x,y){
+                    var tmp=new MoveItem(x,y,'',false,true);
+                    MoveCube.push(tmp);
+                    MapCube[x][y].insert(MoveCube[MoveCube.length-1]);
+                    tmp.Div.style.cursor='pointer';
+                    //滑鼠進入、離開顯示
+                    tmp.Div.addEventListener('mouseover',function() {
+                        tmp.Div.style.backgroundColor='#FF0000';
+                    });
+                    tmp.Div.addEventListener('mouseleave',function() {
+                        tmp.Div.style.backgroundColor="#FFFF00";
+                    });
+                    
+                    tmp.Div.addEventListener('click',function(){
+                    for(var i=0;i!=MoveCube.length;i++){
+                        MoveCube[i].earse();
+                    }
+                    MapCube[player[Turn%player.length].X][player[Turn%player.length].Y].earse(player[Turn%player.length]);
+                    player[Turn%player.length].Move(x,y);
+                    MapCube[x][y].insert(player[Turn%player.length]);
+
                     MoveCube.length=0;
                     View();
                     rendCube();
                     parent.VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
                     });
-                 MoveCube.push(Button);
-                
+                    
             }
-            var CenterX = player.Postion.X;
-            var CenterY = player.Postion.Y;
-            var Horizons=player.MoveRange;
+            var CenterX = player[Turn%player.length].X;
+            var CenterY = player[Turn%player.length].Y;
+            var Horizons=player[Turn%player.length].MoveRange;
             
             for(var x=-Horizons;x<=Horizons;x++)
             {
@@ -228,40 +235,53 @@
                 {
                     if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
                     if(MapCube[CenterX+x][CenterY+y].findTop().MoveAble==true) //地形不允許
-                    addEvent(CenterX+x,CenterY+y);
+                    {
+                        addEvent(CenterX+x,CenterY+y);
+                    }
                 }
             }
             rendCube();
         }
         function MoveCancel(){
+            for(var i=0;i!=MoveCube.length;i++){
+                MoveCube[i].earse();
+            }
             MoveCube.length=0;
             rendCube();
         }
         function Bulid(){
-            function addEvent(x,y){//按下移動按鈕後
-                    var Button = document.createElement("div");
-                    Button.style.textAlig='center';
-	                Button.style.position = "absolute";
-	                Button.style.backgroundColor = "#FFFF00";
-                	Button.style.width = Option.CubeSize*FocalVar + "px";
-                	Button.style.height = Option.CubeSize*FocalVar + "px";
-                	Button.style.left = (x * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    Button.style.top = (y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    Button.style.cursor = "pointer";
-                    Button.addEventListener("click",function(){
-                    var tmp=new BulidItem(x,y,'A',false,false,5,5);//我軍建築
-                    House.push(tmp);
-                    MapCube[x][y].insert(House[House.length-1]);
+             function addEvent(x,y){
+                 //按下蓋房子按鈕後,放BulidItem
+                //在對BulidItem加功能，要刪掉只要對BulidCude清空
+                    var tmp=new BulidItem(x,y,'',false,true);
+                    BulidCube.push(tmp);
+                    MapCube[x][y].insert(BulidCube[BulidCube.length-1]);
+                    tmp.Div.style.cursor='pointer';
+                    //滑鼠進入、離開顯示
+                    tmp.Div.addEventListener('mouseover',function() {
+                        tmp.Div.style.backgroundColor='#FF0000';
+                    });
+                    tmp.Div.addEventListener('mouseleave',function() {
+                        tmp.Div.style.backgroundColor="#FFFF00";
+                    });
+                    tmp.Div.addEventListener('click',function(){
+                    for(var i=0;i!=BulidCube.length;i++){
+                        BulidCube[i].earse();
+                    }
                     BulidCube.length=0;
+                    var buliding=new BulidingItem(x,y,player[Turn%player.length].Type,false,true,5,5);
+                    //x,y,type,Moveable,VisiAble,ViewRange,RadioRange
+                    MapCube[x][y].insert(buliding);
+                    
                     View();
                     rendCube();
                     parent.VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
                     });
-                 BulidCube.push(Button);
-                
+                    
+                    
             }
-            var CenterX = player.Postion.X;
-            var CenterY = player.Postion.Y;
+            var CenterX = player[Turn%player.length].X;
+            var CenterY = player[Turn%player.length].Y;
             var Horizons=1;
             
             for(var x=-Horizons;x<=Horizons;x++)
@@ -277,36 +297,19 @@
             rendCube();
         }
         function BulidCancel(){
+            for(var i=0;i!=BulidCube.length;i++){
+                BulidCube[i].earse();
+            }
             BulidCube.length=0;
             rendCube();
         }
         function Attack(){
-            function addEvent(x,y){//按下移動按鈕後
-                    var Button = document.createElement("div");
-                    Button.style.textAlig='center';
-	                Button.style.position = "absolute";
-	                Button.style.backgroundColor = "#FFFF00";
-                	Button.style.width = Option.CubeSize*FocalVar + "px";
-                	Button.style.height = Option.CubeSize*FocalVar + "px";
-                	Button.style.left = (x * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    Button.style.top = (y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
-                    Button.style.cursor = "pointer";
-                    Button.addEventListener("click",function(){
-                    console.log(MapCube[x][y].findTop());
-                    if(MapCube[x][y].findTop()!=MapCube[x][y]){
-                        MapCube[x][y].earse();
-                    }
-                    AttackCube.length=0;
-                    View();
-                    rendCube();
-                    parent.VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
-                    });
-                 AttackCube.push(Button);
-                
-            }
-            var CenterX = player.Postion.X;
-            var CenterY = player.Postion.Y;
-            var Horizons=player.ViewRange;
+            //按下移動按鈕後,來放AttackItem
+            //在對AttackItem加功能，要刪掉只要把AttackCube清空就行
+            //未來可以加範圍攻擊
+            var CenterX = player[Turn%player.length].X;
+            var CenterY = player[Turn%player.length].Y;
+            var Horizons=player[Turn%player.length].ViewRange;
             
             for(var x=-Horizons;x<=Horizons;x++)
             {
@@ -315,21 +318,70 @@
                 for(var y=-tmp;y<=tmp;y++)
                 {
                     if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
-                    if(MapCube[CenterX+x][CenterY+y].findTop()!=MapCube[CenterX+x][CenterY+y])//還沒寫可不可以攻擊自己
                     {
-                        var tmp=new AttackItem(CenterX+x,CenterY+y,'',false,true);
-                        tmp.Under=MapCube[CenterX+x][CenterY+y].findTop();
-                        MapCube[CenterX+x][CenterY+y].insert(tmp);
-                        console.log(MapCube[CenterX+x][CenterY+y].findTop());
-                    }    
-                    //addEvent(CenterX+x,CenterY+y);
+                        var Attack=new AttackItem(CenterX+x,CenterY+y,'',false,true);
+                        AttackCube.push(Attack);
+                        MapCube[CenterX+x][CenterY+y].insert(Attack);
+                        Attack.Div.style.cursor='pointer';
+                        
+                    }
                 }
             }
-            rendCube();            
+            addEvent();
+            rendCube();
+            function addEvent(){//要使用迴圈加eventlistener要這樣寫
+                for(var i=0;i!=AttackCube.length;i++){
+                (function(){
+                 var tmp=AttackCube[i];
+                  tmp.Div.addEventListener('mouseover',function() {
+                        tmp.Div.style.backgroundColor='#FF0000';
+                    });
+                    tmp.Div.addEventListener('mouseleave',function() {
+                        if(tmp.Under.Class=='MapItem')
+                        tmp.Div.style.backgroundColor="#FFFF00";
+                        else
+                        tmp.Div.style.backgroundColor=tmp.Under.Div.style.backgroundColor;
+                    });
+                    tmp.Div.addEventListener('click',function(){
+                    for(var j=0;j!=AttackCube.length;j++)
+                        AttackCube[j].earse();
+                    
+                    MapCube[tmp.X][tmp.Y].earse();
+                    AttackCube.length=0;
+                    View();
+                    rendCube();
+                    parent.VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊"; },false);
+                }());
+                
+            }
+            }
         }
         function AttackCancel(){
+            for(var i=0;i!=AttackCube.length;i++)
+                AttackCube[i].earse();
             AttackCube.length=0;
             rendCube();
+        }
+        function Stay() {
+            Turn++;
+            View();
+            rendCube();
+        }
+        function UpLoad(){
+            var updata = new Object();
+            updata.House = [];
+            updata.Player = [];
+            for(var i=0;i!=House.length;i++)
+            {
+                updata.House.push(House[i].getData());
+            }
+            for(var i=0;i!=player.length;i++)
+            {
+                updata.Player.push(player[i].getData());
+            }
+            //最後在json
+            /*global sendGameCommand 實作於ajax*/
+            sendGameCommand(JSON.stringify(updata));
         }
 </script>
 

@@ -1,8 +1,28 @@
 /*global VARIABLE 宣告於index*/
+function checkSave_res(){
+    /*global request 實作於 ajax.js*/
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+		console.log(data);
+		data = JSON.parse(data);
+		if(data.status == "Success"){
+		    VARIABLE.USER.UserID = data.data.UserID;
+            if(data.data.ActorID == 0){//登入成功但未有角色
+                NewActorViewInit();  
+            }else{//登入成功且已有角色
+                VARIABLE.USER.ActorID = data.data.ActorID;
+				HallViewInit();
+		    }
+		}else{
+		    /*global loginViewiInit 實作於index*/
+		    loginViewiInit();
+		}
+    }
+}//登入系統函式
 function login_res(){
     /*global request 實作於 ajax.js*/
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-    var data = request.responseText;//取得傳回的資料存在變數中
+        var data = request.responseText;//取得傳回的資料存在變數中
 		data = JSON.parse(data);
 		if(data.status == "Success"){
 		    /*global VARIABLE,LoginView 宣告於index*/

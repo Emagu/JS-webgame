@@ -1,8 +1,7 @@
-<?php
+<?php session_start();
 	//連接資料庫
 	include("../../connect/function.php");//引入函數庫
 	$connect = ConnectSql();
-	mysqli_query($connect,"SET CHARACTER SET UTF8");
 	
 	include("config.php");//引入設定檔
 	include("function.php");//引入函數庫
@@ -28,6 +27,8 @@
 		}elseif($error[0] == "2"){
 			echo json_encode(array("status" => 'error#4'));
 		}elseif($error[0] == "0"){
+			$_SESSION['password_md5'] = $password_md5;
+			$_SESSION['user'] = $id;
 			echo json_encode(array("status" => "Success","data" => array("UserID" => $error[1],"ActorID" => $error[2])));
 		}
 	}

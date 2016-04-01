@@ -1,7 +1,6 @@
 <?php
 	include("../../connect/function.php");//引入函數庫
 	$connect = ConnectSql();
-	mysqli_query($connect,"SET CHARACTER SET UTF8");
 	include("function.php");//引入函數庫
 //抓取資料
 	$id = $_GET['id'];

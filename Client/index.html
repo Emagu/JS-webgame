@@ -32,7 +32,9 @@
                 GameAreaInit();
                 break;
             default:
-                loginViewiInit();
+                /*global checkSave 實作於ajax*/
+                checkSave();
+                break;
         }
         function init(){
             VARIABLE.FocalVar = 1;//焦距 最低1
@@ -43,7 +45,6 @@
             /*global OptionSet 實作於Option.js*/
             Option = new OptionSet();
             window.addEventListener( 'resize', onWindowReSize, false );
-            
         }//初始化
         function ViewInit(View){
             while(document.body.firstChild)
@@ -136,6 +137,10 @@
                     VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="返回";
                     VARIABLE.View.GameArea.iframe.contentWindow.Attack();
                 }
+            });
+            VARIABLE.View.GameArea.LeftControl.stay.addEventListener("click",function(){
+                console.log("1");
+                VARIABLE.View.GameArea.iframe.contentWindow.Stay();
             });
             VARIABLE.View.GameArea.LeftControl.BulidButton.addEventListener("click",function(){
                 if(VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue=="返回")
