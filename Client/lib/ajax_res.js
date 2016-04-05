@@ -3,7 +3,6 @@ function checkSave_res(){
     /*global request 實作於 ajax.js*/
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
-		console.log(data);
 		data = JSON.parse(data);
 		if(data.status == "Success"){
 		    VARIABLE.USER.UserID = data.data.UserID;
@@ -93,14 +92,12 @@ function getActor_res(){//取得角色成功後
         case 'error#2':
             break;
 	    default:
-		    /*global HallViewInit 實作於index*/
+		    /*global HallViewInit,ViewInit 實作於index*/
 		    var data_res = JSON.parse(data);
             VARIABLE.USER.ActorName = data_res.actorName;
             VARIABLE.USER.Level = data_res.LV;
-            if(VARIABLE.SCENES=="hall") {
-                /*global getRoomList　 實作於ajax*/
-                getRoomList();
-            }
+            /*global getRoomList　 實作於ajax*/
+            getRoomList();
             break;
         }
     }
@@ -108,8 +105,9 @@ function getActor_res(){//取得角色成功後
 function getRoomList_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
+        if(VARIABLE.SCENES=="hall") ViewInit(VARIABLE.View.Hall.self);
         VARIABLE.View.Hall.StatusRender();
-        VARIABLE.View.Hall.RoomListRender(JSON.parse(data));
+        VARIABLE.View.Hall.update(JSON.parse(data));
     }
 }
 function createRoom_res(){
@@ -126,9 +124,11 @@ function createRoom_res(){
 function getRoomData_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
-        VARIABLE.View.Room.RoomListRender(JSON.parse(data));
-        /*global getRoomData 實作於ajax */
-        if(VARIABLE.SCENES == "room") getRoomData(VARIABLE.USER.RoomID);
+        if(VARIABLE.SCENES=="room") ViewInit(VARIABLE.View.Room.self);
+        if(data == "error") console.log("error");
+        else{
+            VARIABLE.View.Room.update(JSON.parse(data));
+        }
     }
 }
 function addRoom_res(){
@@ -145,12 +145,25 @@ function addRoom_res(){
 function quitRoom_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
-        console.log(data);
         if(data.match("error")==null){
             VARIABLE.USER.RoomID = null;
             VARIABLE.USER.RoomMaster = null;
             /*global HallViewInit 實作於index */
             HallViewInit();
         }
+    }
+}
+function RoomStatus_res(){
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+        /*global getRoomData 實作於ajax */
+        if(data!="error" && VARIABLE.SCENES == "room") getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
+    }
+}
+function gameStart_res(){
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+        console.log(data);
+        
     }
 }

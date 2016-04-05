@@ -8,8 +8,8 @@ function RightControlView(){
     this.self.style.left = "85%";
     this.self.style.top = "0px";
     
-    var ul = document.createElement("ul");
-    this.button = document.createElement("dev");
+    //var ul = document.createElement("ul");
+    this.button = document.createElement("div");
 	this.button.appendChild(document.createTextNode("player's movement"));
 	this.button.style.backgroundColor="#FFFFFF";
     this.button.style.height="98%";

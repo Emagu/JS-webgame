@@ -10,6 +10,7 @@
     if(quitRoom($connect,$ActorID)){
         if($Master=="true"){
             $data = getRoomData($connect,$RoomID);
+            echo count($data); 
             if(count($data)==0) {
                 if(!delRoom($connect,$RoomID)){
                     echo "error#2";

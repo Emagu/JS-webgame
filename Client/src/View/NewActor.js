@@ -1,8 +1,8 @@
-function NewActorView(){
+function NewActorView(windowSize,OptionSize){
+    /*global OriginView */
+    OriginView.call(this,windowSize,OptionSize);//繼承 
     
-    this.self = document.createElement("div");
-    this.self.style.width = "100%";
-    this.self.style.height = "100%";
+    //宣告變數
     this.self.style.backgroundColor = "#FFFFFF";
     
     var title = document.createElement("H1");
@@ -14,7 +14,6 @@ function NewActorView(){
     title.style.top = "0px";
     title.style.textAlign = "center";
     title.appendChild(document.createTextNode("創建角色"));
-    this.self.appendChild(title);
     
     var actortxt = document.createElement("P");
 	actortxt.style.position = "absolute";
@@ -22,15 +21,17 @@ function NewActorView(){
 	actortxt.style.width = "10%";
 	actortxt.style.left = "2%";
 	actortxt.appendChild(document.createTextNode("角色名稱:"));
-	this.self.appendChild(actortxt);
-	        
+	
 	var actor = document.createElement("input");
 	actor.setAttribute("type", "text");
 	actor.style.position = "absolute";
 	actor.style.top = "31.5%";
 	actor.style.width = "10%";
 	actor.style.left = "14%";
-	this.self.appendChild(actor);
+	actor.addEventListener("change",function(){//確認角色名稱可否使用
+	    /*global  checkActorConfig 實作於ajax*/
+	    checkActorConfig(actor.value);
+	});
 	
 	var actorCheckMsg = document.createTextNode("角色名稱長度5~10字");
 	
@@ -41,7 +42,6 @@ function NewActorView(){
 	actorCheckMsgBox.style.left = "26%";
 	actorCheckMsgBox.style.color = "red";
 	actorCheckMsgBox.appendChild(actorCheckMsg);
-	this.self.appendChild(actorCheckMsgBox);
 	
 	var commit = document.createElement("P");
 	commit.style.position = "absolute";
@@ -51,20 +51,21 @@ function NewActorView(){
     commit.style.cursor = "pointer";
     commit.style.textAlign = "center";
     commit.appendChild(document.createTextNode("建立!"));
-    this.self.appendChild(commit);
-	
-	commit.addEventListener("click",function() {
+    commit.addEventListener("click",function() {
 		/*global VARIABLE 宣告於index*/
 		/*global  newActor 實作於ajax*/
         if(VARIABLE.USER.UserID) newActor(actor.value,VARIABLE.USER.UserID);
         else alert("未登入!");
 	});
 	
-	actor.addEventListener("change",function(){//確認角色名稱可否使用
-	    /*global  checkActorConfig 實作於ajax*/
-	    checkActorConfig(actor.value);
-	});
+    this.self.appendChild(title);
+    this.self.appendChild(actortxt);
+    this.self.appendChild(actorCheckMsgBox);
+	this.self.appendChild(commit);
+	this.self.appendChild(actor);
+	//變數宣告完畢
 	
+	//宣告函式
 	this.CheckActorName = function(){
 		/*global  request 實作於ajax*/
 	    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
@@ -94,6 +95,10 @@ function NewActorView(){
     	            break;
 			}
 		}
-	}	        
+	};
+    //函式宣告完畢
+    
+    //初始化函式執行
+    //執行初始化函式完畢
 }
 

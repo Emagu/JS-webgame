@@ -1,7 +1,8 @@
 function GameAreaView(){
     this.self = document.createElement("div");
-    this.self.style.width = "100%";
-    this.self.style.height = "100%";
+    /*global Option 宣告於index*/
+    this.self.style.width = Option.windowSize.W+"px";
+    this.self.style.height = Option.windowSize.H+"px";
     
     this.iframe = document.createElement('iframe');
     this.iframe.style.width="70%";
@@ -21,7 +22,7 @@ function GameAreaView(){
     this.self.appendChild(this.LeftControl.self);
     
     /*global RightControlView 實作於Control*/
-    var RightControl = new RightControlView();
-    this.self.appendChild(RightControl.self);
+    this.RightControl = new RightControlView();
+    this.self.appendChild(this.RightControl.self);
     
 }

@@ -1,19 +1,22 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>全能住宅改造王</title>
+        <title>全民射屁股王</title>
         <script src="src/Item/Item.js"></script>
         <script src="src/Control/left.js"></script>
         <script src="src/Control/right.js"></script>
         <script src="src/Control/top.js"></script>
         <script src="src/Option.js"></script>
         
+        <script src="src/View/Origin.js"></script>
+        <script src="src/View/Block.js"></script>
         <script src="src/View/Login.js"></script>
         <script src="src/View/Register.js"></script>
         <script src="src/View/NewActor.js"></script>
         <script src="src/View/Hall.js"></script>
         <script src="src/View/CreateRoom.js"></script>
         <script src="src/View/Room.js"></script>
+        <script src="src/View/OptionEdit.js"></script>
         <script src="src/View/GameArea.js"></script>
         
         <script src="src/Data/User.js"></script>
@@ -21,10 +24,16 @@
         <script src="lib/ajax_res.js"></script>
         <script src="lib/jquery.js"></script>
         <script src="../Server/js/ajax.js"></script>
+        <style type="text/css">
+            body {
+              background-color: #000000;
+            }
+        </style>>
     </head>
     <body></body>
     <script>
         var VARIABLE=new Object()//全域變數
+        var Option = new OptionSet();/*global OptionSet 實作於Option.js*/
         init();
         var testport = location.hash;//URL+testport
         switch (testport) {
@@ -39,11 +48,14 @@
         function init(){
             VARIABLE.FocalVar = 1;//焦距 最低1
             VARIABLE.SCENES = "login";//場景
+            VARIABLE.View = new Object();
+            
+            /*global BlockView 實作於Block.js*/
+            VARIABLE.View.Block = new BlockView(getWindowSize(),Option.getWindowSize());
+            ViewInit(VARIABLE.View.Block.self);
             /*global UserData 實作於Data*/
             VARIABLE.USER = new UserData();//用戶資料
-            VARIABLE.View = new Object();
-            /*global OptionSet 實作於Option.js*/
-            Option = new OptionSet();
+            
             window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
         function ViewInit(View){
@@ -62,57 +74,50 @@
             /*global RegisterView 實作於src/View.* */
             VARIABLE.View.Register = new RegisterView(getWindowSize());
             ViewInit(VARIABLE.View.Register.self);
-        }
+        }//註冊
         function NewActorViewInit(){
             VARIABLE.SCENES = "newActor";
             /*global NewActorView 實作於src/View.* */
-            VARIABLE.View.NewActor = new NewActorView();
+            VARIABLE.View.NewActor = new NewActorView(getWindowSize(),Option.getWindowSize());
             ViewInit(VARIABLE.View.NewActor.self);
         }//創建角色
         function HallViewInit(){
             VARIABLE.SCENES = "hall";
             /*global HallView 實作於src/View.* */
-            VARIABLE.View.Hall = new HallView();
+            VARIABLE.View.Hall = new HallView(getWindowSize(),Option.getWindowSize());
             /*global getActor,getRoomList　 實作於ajax*/
             getActor(VARIABLE.USER.ActorID);
-            ViewInit(VARIABLE.View.Hall.self);
         }//大廳描繪
         function CreateRoomViewInit(){
             VARIABLE.SCENES = "createHall";
             /*global CreateRoomView 實作於src/View.* */
-            VARIABLE.View.CreateRoom = new CreateRoomView();
+            VARIABLE.View.CreateRoom = new CreateRoomView(getWindowSize(),Option.getWindowSize());
             ViewInit(VARIABLE.View.CreateRoom.self);
-        }
+        }//建立房間
         function RoomViewInit(){
             VARIABLE.SCENES = "room";
             /*global RoomView 實作於View.* */
-            VARIABLE.View.Room = new RoomView();
+            VARIABLE.View.Room = new RoomView(getWindowSize(),Option.getWindowSize());
             VARIABLE.View.Room.StatusRender();
-            ViewInit(VARIABLE.View.Room.self);
-            /*global getRoomData 實作於ajax */
-            getRoomData(VARIABLE.USER.RoomID);
-        }
+        }//房間內
+        function OptionEditViewInit(){
+            VARIABLE.SCENES = "optionEdit";
+            /*global OptionEditView 實作於View.* */
+            VARIABLE.View.OptionEdit = new OptionEditView(getWindowSize(),Option);
+            ViewInit(VARIABLE.View.OptionEdit.self);
+        }//遊戲設定
         function GameAreaInit(){
             //ViewInit();
             VARIABLE.SCENES = "game";
             /*global GameAreaView 實作於View.* */
             VARIABLE.View.GameArea = new GameAreaView();
             ViewInit(VARIABLE.View.GameArea.self);
-            
             //使用frame可以內嵌另外一頁，在研究
-            var html = '<body></body>';
+             var html = '<body></body>';
             VARIABLE.View.GameArea.iframe.contentWindow.document.open();
             VARIABLE.View.GameArea.iframe.contentWindow.document.write(html);
             VARIABLE.View.GameArea.iframe.src='GameArea.html';
             //
-            function resetButton(){
-                VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
-                VARIABLE.View.GameArea.iframe.contentWindow.MoveCancel();
-                VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
-                VARIABLE.View.GameArea.iframe.contentWindow.BulidCancel();
-                VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
-                VARIABLE.View.GameArea.iframe.contentWindow.AttackCancel();
-            }
             VARIABLE.View.GameArea.LeftControl.MoveButton.addEventListener("click",function(){
                 
                 //取得物件下的node
@@ -139,7 +144,6 @@
                 }
             });
             VARIABLE.View.GameArea.LeftControl.stay.addEventListener("click",function(){
-                console.log("1");
                 VARIABLE.View.GameArea.iframe.contentWindow.Stay();
             });
             VARIABLE.View.GameArea.LeftControl.BulidButton.addEventListener("click",function(){
@@ -157,6 +161,14 @@
             //iframe.contentWindow.function(); 直接互叫子網頁.... 
             
         }//遊戲畫面初始化
+        function resetButton(){
+                VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
+                VARIABLE.View.GameArea.iframe.contentWindow.MoveCancel();
+                VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
+                VARIABLE.View.GameArea.iframe.contentWindow.BulidCancel();
+                VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
+                VARIABLE.View.GameArea.iframe.contentWindow.AttackCancel();
+            }
         //以下為系統工具
         function getWindowSize(){
             var w = window,
@@ -169,8 +181,30 @@
         }
         function onWindowReSize(){
             var windowSize = getWindowSize();
-            if(VARIABLE.SCENES == "login") VARIABLE.View.Login.windowReSize(windowSize);
-            else if(VARIABLE.SCENES == "register") VARIABLE.View.Register.windowReSize(windowSize);
+            VARIABLE.View.Block.windowReSize(windowSize,Option.getWindowSize());
+            switch (VARIABLE.SCENES) {
+                case 'login':
+                    VARIABLE.View.Login.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+                case 'register':
+                    VARIABLE.View.Register.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+                case 'newActor':
+                    VARIABLE.View.NewActor.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+                case 'hall':
+                    VARIABLE.View.Hall.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+                case 'createHall':
+                    VARIABLE.View.CreateRoom.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+                case 'room':
+                    VARIABLE.View.Room.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+                case 'optionEdit':
+                    VARIABLE.View.OptionEdit.windowReSize(windowSize,Option.getWindowSize());
+                    break;
+            }
         }
     </script>
 

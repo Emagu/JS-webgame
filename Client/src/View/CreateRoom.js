@@ -1,11 +1,11 @@
-function CreateRoomView(){
+function CreateRoomView(windowSize,OptionSize){
+	/*global OriginView */
+    OriginView.call(this,windowSize,OptionSize);//繼承
     
-    this.self = document.createElement("div");
-    this.self.style.width = "100%";
-    this.self.style.height = "100%";
+    //宣告變數
     this.self.style.backgroundColor = "#FFFFFF";
     
-    var title = document.createElement("H1");
+    var title = document.createElement("div");
     title.style.width = "100%";
     title.style.height = "10%";
     title.style.backgroundColor = "#00AAAA";
@@ -30,7 +30,10 @@ function CreateRoomView(){
 	roomname.style.top = "31.5%";
 	roomname.style.width = "10%";
 	roomname.style.left = "14%";
-	this.self.appendChild(roomname);
+	roomname.addEventListener("change",function(){//確認角色名稱可否使用
+	    /*global  checkRoomName 實作於ajax*/
+	    checkRoomName(roomname.value);
+	});
 	
 	var roomnameCheckMsg = document.createTextNode("");
 	
@@ -41,7 +44,6 @@ function CreateRoomView(){
 	roomnameCheckMsgBox.style.left = "26%";
 	roomnameCheckMsgBox.style.color = "red";
 	roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
-	this.self.appendChild(roomnameCheckMsgBox);
 	
 	var commit = document.createElement("P");
 	commit.style.position = "absolute";
@@ -51,7 +53,18 @@ function CreateRoomView(){
     commit.style.cursor = "pointer";
     commit.style.textAlign = "center";
     commit.appendChild(document.createTextNode("建立!"));
-    this.self.appendChild(commit);
+    commit.addEventListener("click",function() {
+		/*global ViewInit,VARIABLE 宣告於index*/
+		/*global createRoom 實作於ajax*/
+		if(VARIABLE.USER.ActorID){
+			var data = new Object();
+			data.ActorID = VARIABLE.USER.ActorID;
+			data.Map = 0;//測試
+			data.RoomName = roomname.value;
+			ViewInit(VARIABLE.View.Block.self);
+         	createRoom(JSON.stringify(data));
+		}
+	});
     
     var canncel = document.createElement("P");
 	canncel.style.position = "absolute";
@@ -61,31 +74,20 @@ function CreateRoomView(){
     canncel.style.cursor = "pointer";
     canncel.style.textAlign = "center";
     canncel.appendChild(document.createTextNode("返回!"));
-    this.self.appendChild(canncel);
-	
-	commit.addEventListener("click",function() {
-		/*global VARIABLE 宣告於index*/
-		/*global createRoom 實作於ajax*/
-		if(VARIABLE.USER.ActorID){
-			var data = new Object();
-			data.ActorID = VARIABLE.USER.ActorID;
-			data.Map = 0;//測試
-			data.RoomName = roomname.value;
-         	createRoom(JSON.stringify(data));
-		}
-	});
-	
-	canncel.addEventListener("click",function() {
+    canncel.addEventListener("click",function() {
 		/*global HallViewInit 實作於index*/
+		ViewInit(VARIABLE.View.Block.self);
 	    HallViewInit();
-	})
-	
-	roomname.addEventListener("change",function(){//確認角色名稱可否使用
-	    /*global  checkRoomName 實作於ajax*/
-	    checkRoomName(roomname.value);
 	});
 	
-	this.checkRoomNameRes = function(){
+	this.self.appendChild(roomnameCheckMsgBox);
+	this.self.appendChild(commit);
+	this.self.appendChild(roomname);
+	this.self.appendChild(canncel);
+    //變數宣告完畢
+    
+    //宣告函式
+    this.checkRoomNameRes = function(){
 		/*global  request 實作於ajax*/
 	    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
 			var data = request.responseText;//取得傳回的資料存在變數中
@@ -101,6 +103,10 @@ function CreateRoomView(){
     	        roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
 			}
 		}
-	}	        
+	};//確認房名是否重複      
+    //函式宣告完畢
+	
+	//初始化函式執行
+	//執行初始化函式完畢
 }
 

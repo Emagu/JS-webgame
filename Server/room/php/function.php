@@ -35,7 +35,7 @@
     	while($row = mysqli_fetch_assoc($resq)){
     		$time = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
     		$actorID = $row["actorID"];
-    		if((strtotime($time) - strtotime($row['lasttime']))>600){
+    		if((strtotime($time) - strtotime($row['lasttime']))>10){
     			quitRoom($connect,$actorID);
     		}else{
     			$sql = "SELECT * FROM `actor_list` WHERE `NO` = '$actorID';";
@@ -62,5 +62,11 @@
     		}
     	}
     	return $data;
+    }
+    function update($connect,$actorID){
+        $datetime = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
+        $sql = "UPDATE `room_actor_list` SET `lasttime` = '$datetime' WHERE `actorID` = '$actorID';";
+        if(mysqli_query($connect,$sql)) return true;
+        else return false;
     }
 ?>

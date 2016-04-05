@@ -1,7 +1,7 @@
 <?php
 	include("../../connect/function.php");//引入函數庫
 	$connect = ConnectSql();
-	mysqli_query($connect,"SET CHARACTER SET UTF8");
+	include("./function.php");//引入函數庫
 //抓取資料
 	$data = [];
 	$sql = "SELECT * FROM room_list";
@@ -10,7 +10,19 @@
 	    $roomID = $row['NO'];
 	    $sql = "SELECT * FROM `room_actor_list` WHERE `roomID` = '$roomID';";
 	    $resq = mysqli_query($connect,$sql);
-	    $actorNum = mysqli_num_rows($resq);
+	    $actorNum = 0;
+	    while($rw = mysqli_fetch_assoc($resq)){
+    		$time = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
+    		$actorID = $rw["actorID"];
+    		if((strtotime($time) - strtotime($rw['lasttime']))>10){
+    			quitRoom($connect,$actorID);
+    		}else{
+    			$actorNum++;
+    		}
+    	}
+    	if($actorNum==0) {
+            if(!delRoom($connect,$roomID))	echo "error#2";
+        }
 	    $RoomData = array(
 	            "RoomID" => $roomID,
 	            "RoomName" => $row['Name'],
