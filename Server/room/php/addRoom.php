@@ -6,11 +6,16 @@
     $data_res = json_decode($data,true);
     $RoomID = $data_res["RoomID"];
     $ActorID = $data_res["ActorID"];
-    if(addRoom($connect,$RoomID,$ActorID)){
-        echo $RoomID;
+    $pos = addRoom($connect,$RoomID,$ActorID);
+    if(!$pos){
+        echo "error#1";
         mysqli_close($connect);
     }else{
-        echo "error#1";
+        $data = array(
+            "RoomID" => $RoomID,
+            "Position" => $pos
+        );
+        echo json_encode($data);
         mysqli_close($connect);
     }
 ?>

@@ -4,22 +4,28 @@ function LeftControlView(){
     
     this.self.style.width = "15%";
     this.self.style.height = "100%";
-    this.self.style.backgroundColor = "#AAAAAA";
+    //this.self.style.backgroundColor = "#AAAAAA";
+    this.self.style.backgroundColor = "#FFFFFF";
     this.self.style.position = "absolute";
     this.self.style.left = "0px";
     this.self.style.top = "0px";
     this.self.style.textAlig='center';
     
     //變數區
-    //var ItemList=["重生徽章","轟炸坐標","核彈(?)","雙頭龍"];//道具清單
-    var ItemList=["Grass","Forest","Mountain","Sea"];//道具清單
+    var ItemList=["HOUSE","RADIO_POINT","WATCH_POINT","TIME_BOMB","HEAL","Melee","Pelt","RPG","Mortar","Nuclear"];//道具清單
+    //var ItemList=["Grass","Forest","Mountain","Sea"];//道具清單
     var arms=["通訊兵","工程師","狙擊手","醫護兵","野戰兵","水鬼","裝甲兵"];//兵種清單
     //移動按鈕
     this.MoveButton = document.createElement("div");
     this.MoveButton.style.textAlig='center';
-	this.MoveButton.appendChild(document.createTextNode("開始移動"));
+	//this.MoveButton.appendChild(document.createTextNode("開始移動"));
+	var moveimg = document.createElement("img");
+	moveimg.setAttribute("src","/Client/src/Control/ButtomImg/movebuttom.jpg");
+    moveimg.setAttribute("width", "100%");
+    moveimg.setAttribute("height", "100%");
+	this.MoveButton.appendChild(moveimg);
 	this.MoveButton.style.position = "absolute";
-	this.MoveButton.style.backgroundColor = "#AAAA00";
+	//this.MoveButton.style.backgroundColor = "#AAAA00";
 	this.MoveButton.style.width = "90%";
 	this.MoveButton.style.height = "9%";
 	this.MoveButton.style.left = "5%";
@@ -91,7 +97,7 @@ function LeftControlView(){
 			function addEvent(node,i){
 				node.addEventListener("click",function(){
 					resetButton();
-					VARIABLE.View.GameArea.iframe.contentWindow.Paint(ItemList[i]);
+					VARIABLE.View.GameArea.iframe.contentWindow.Skill(ItemList[i]);
 				});
 			}
 			for(var i = 0; i <ItemList.length;i++){

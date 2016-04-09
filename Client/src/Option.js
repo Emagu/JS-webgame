@@ -1,8 +1,8 @@
 function OptionSet(){//存放設定檔
     this.windowSize = new Object();
     var windowSizeSet = 0;
-    var windowSizeArray = [{W:1280, H:720},{W:1280, H:960},{W:1400, H:810},{W:1440, H:900}];
-    
+    var windowSizeArray = [{W:1280, H:720},{W:1280, H:960},{W:1360, H:768},{W:1440, H:900}];
+    var ActorTypeArray = ["通訊兵","工程師","狙擊手","醫護兵","野戰兵","水鬼","裝甲兵"];
     this.getWindowSet = function(){
         return windowSizeSet;
     };
@@ -14,9 +14,13 @@ function OptionSet(){//存放設定檔
     };
     this.WindowSizeAdd = function(_set){
         if(windowSizeSet<(windowSizeArray.length-1)) windowSizeSet += _set;
-    }
+    };
     this.WindowSizeSub = function(_set){
         if(windowSizeSet>0) windowSizeSet -= _set;
+    };
+    
+    this.getActorTypeArray = function(){
+        return ActorTypeArray;
     }
     
     this.GameAreaWidth = 900;//遊戲區域寬度

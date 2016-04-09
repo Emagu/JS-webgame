@@ -114,7 +114,7 @@ function HallView(windowSize,OptionSize){
         this.self.appendChild(roomList);
         if(VARIABLE.SCENES=="hall") {
             /*global getRoomList　 實作於ajax*/
-            //getRoomList();
+            getRoomList();
         }
 	};//刷新
     this.StatusRender = function() {

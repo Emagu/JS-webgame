@@ -14,8 +14,9 @@
 	    while($rw = mysqli_fetch_assoc($resq)){
     		$time = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
     		$actorID = $rw["actorID"];
-    		if((strtotime($time) - strtotime($rw['lasttime']))>10){
-    			quitRoom($connect,$actorID);
+    		if((strtotime($time) - strtotime($rw['lasttime']))>2){
+    			if($row['RoomMaster']==$actorID) quitRoom($connect,$actorID,"true",$roomID);
+    			else quitRoom($connect,$actorID,"false",$roomID);
     		}else{
     			$actorNum++;
     		}
@@ -31,6 +32,6 @@
 	        );
 	   array_push($data,$RoomData);
 	}
-	sleep(1);
+	usleep(500000);
 	echo json_encode($data);
 ?>

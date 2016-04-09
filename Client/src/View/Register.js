@@ -3,12 +3,19 @@ function RegisterView(windowSize){
     //宣告變數
     //載體
     this.self = document.createElement("div");
-    this.self.style.height = windowSize.H * 0.2 + "px";
-    this.self.style.backgroundColor = "#00FFFF";
+    this.self.style.height = 600;
+    this.self.style.width = 800;
+    this.self.style.backgroundColor = "#000000";
     this.self.style.position = "absolute";
     this.self.style.textAlign = 'center';
+    var registerimg = document.createElement("img");
+	registerimg.setAttribute("src","/Client/src/pic/registerpageimg/registerimg.png");
+    registerimg.setAttribute("width", "100%");
+    registerimg.setAttribute("height", "100%");
+    this.self.appendChild(registerimg);
+    
     //輸入端口
-	this.self.appendChild(document.createTextNode("----註冊----"));//標題
+	//this.self.appendChild(document.createTextNode("----註冊----"));//標題
 	//標籤
 	var nametxt = document.createElement("P");
 	nametxt.style.position = "absolute";
@@ -19,10 +26,15 @@ function RegisterView(windowSize){
 
 	var name = document.createElement("input");
 	name.setAttribute("type", "text");
+	name.style.backgroundColor = "transparent";
+	name.style.color = "#FFFFFF";
+	name.style.fontSize = "x-large";
 	name.style.position = "absolute";
-	name.style.top = "21%";
-	name.style.width = "60%";
-	name.style.left = "26%";
+	name.style.top = "175";
+	name.style.border = "0px";
+	name.style.width = "330";
+	name.style.height ="50";
+	name.style.left = "330";
 	
 	var pwtxt = document.createElement("P");
 	pwtxt.style.position = "absolute";
@@ -34,23 +46,34 @@ function RegisterView(windowSize){
 	var pw = document.createElement("input");
 	pw.setAttribute("type", "password");
 	pw.style.position = "absolute";
-	pw.style.top = "34%";
-	pw.style.width = "60%";
-	pw.style.left = "26%";
+	pw.style.color = "#FFFFFF";
+	pw.style.backgroundColor = "transparent";
+	pw.style.border = "0px";
+	pw.style.fontSize = "x-large";
+	pw.style.top = "245";
+	pw.style.width = "330";
+	pw.style.height =50;
+	pw.style.left = 330;
 	
 	var pwtxt2 = document.createElement("P");
 	pwtxt2.style.position = "absolute";
 	pwtxt2.style.top = "39%";
 	pwtxt2.style.width = "20%";
+	
 	pwtxt2.style.left = "1%";
 	pwtxt2.appendChild(document.createTextNode("再次輸入密碼:"));
 	
 	var pw2 = document.createElement("input");
 	pw2.setAttribute("type", "password");
 	pw2.style.position = "absolute";
-	pw2.style.top = "47%";
-	pw2.style.width = "60%";
-	pw2.style.left = "26%";
+	pw2.style.color = "#FFFFFF";
+	pw2.style.backgroundColor = "transparent";
+	pw2.style.fontSize = "x-large";
+	pw2.style.border = "0px";
+	pw2.style.top = "315";
+	pw2.style.width = "330";
+	pw2.style.height=50;
+	pw2.style.left = "330";
 	
 	var mailtxt = document.createElement("P");
 	mailtxt.style.position = "absolute";
@@ -62,17 +85,23 @@ function RegisterView(windowSize){
 	var mail = document.createElement("input");
 	mail.setAttribute("type", "email");
 	mail.style.position = "absolute";
-	mail.style.top = "60%";
-	mail.style.width = "60%";
-	mail.style.left = "26%";
+	mail.style.backgroundColor = "transparent";
+	mail.style.border = "0px";
+	mail.style.color = "#FFFFFF";
+	mail.style.fontSize = "x-large";
+	mail.style.top = "385";
+	mail.style.width = "330";
+	mail.style.height=50;
+	mail.style.left = "330";
 	
 	var login = document.createElement("P");
 	login.style.position = "absolute";
-	login.style.top = "70%";
-	login.style.width = "50%";
-	login.style.left = "0%";
+	login.style.top = "475";
+	login.style.width = "250";
+	login.style.left = "125";
 	login.style.cursor = "pointer";
-	login.appendChild(document.createTextNode("前往登入!"));
+	login.appendChild(document.createTextNode("　"));
+	//login.appendChild(document.createTextNode("前往登入!"));
 	login.addEventListener("click",function(){
 		/*global loginViewiInit 實作於 index*/
 		loginViewiInit();
@@ -80,11 +109,12 @@ function RegisterView(windowSize){
 	
 	var commit = document.createElement("P");
 	commit.style.position = "absolute";
-	commit.style.top = "70%";
-	commit.style.width = "50%";
-	commit.style.left = "50%";
+	commit.style.top = "470";
+	commit.style.width = "250";
+	commit.style.left = "420";
 	commit.style.cursor = "pointer";
-	commit.appendChild(document.createTextNode("資料送出!"));
+	commit.appendChild(document.createTextNode("　"));
+	//commit.appendChild(document.createTextNode("資料送出!"));
 	commit.addEventListener("click",function(){		
 		var data = new Object();
 	   	data.Name = name.value;
@@ -94,24 +124,24 @@ function RegisterView(windowSize){
 		register(JSON.stringify(data));/*global register 實作於 ajax.js*/
 	});
 	
-	this.self.appendChild(pwtxt);
+	//this.self.appendChild(pwtxt);
 	this.self.appendChild(pw);
-	this.self.appendChild(pwtxt2);
+	//this.self.appendChild(pwtxt2);
 	this.self.appendChild(pw2);
-	this.self.appendChild(mailtxt);
+	//this.self.appendChild(mailtxt);
 	this.self.appendChild(mail);
 	this.self.appendChild(login);
 	this.self.appendChild(name);
-	this.self.appendChild(nametxt);
+	//this.self.appendChild(nametxt);
 	this.self.appendChild(commit);
 	//變數宣告完畢
 
 	//宣告函式
     this.windowReSize = function(windowSize){//當視窗調整 調整版面
-        this.self.style.width = windowSize.W * 0.6 + "px";
+        //this.self.style.width = windowSize.W * 0.6 + "px";
         //this.self.style.height = windowSize.H * 0.8 + "px";
-        this.self.style.left = (windowSize.W / 2 - windowSize.W * 0.6 / 2) + "px";
-        this.self.style.top = (windowSize.H / 2 - windowSize.H * 0.8 / 2) + "px";
+        this.self.style.left = (windowSize.W/ 2 - 400) + "px";
+        this.self.style.top = (windowSize.H /2- 300) + "px";
     };
     //函式宣告完畢
     

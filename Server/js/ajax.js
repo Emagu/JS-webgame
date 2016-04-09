@@ -102,18 +102,38 @@ function getSynchronize(){
 	request.onreadystatechange = Synchronize_res//狀態完成時所要執行的函式
 	request.send(null);//送出
 }
+function gameStart_command(roomID){
+	var url = "../Server/room/php/gameStart.php?roomID="+roomID;
+	/*global gameStart_command_res 實作於ajax_res */
+	request.onreadystatechange = gameStart_command_res//狀態完成時所要執行的函式
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	request.send(null);//送出
+}
 function gameStart(roomID){
-	console.log(roomID);
 	var url = "../Server/game/php/gameStart.php?roomID="+roomID;
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global gameStart_res 實作於ajax_res */
 	request.onreadystatechange = gameStart_res//狀態完成時所要執行的函式
-	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	request.send(null);//送出
 }
 function RoomStatus(ActorID,Status){
 	var url = "../Server/room/php/RoomStatus.php?ActorID="+ActorID+"&Status="+Status;
 	/*global RoomStatus_res 實作於ajax_res */
 	request.onreadystatechange = RoomStatus_res//狀態完成時所要執行的函式
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	request.send(null);//送出
+}
+function changePos_Room(data){
+	var url = "../Server/room/php/changePostion.php?data="+data;
+	/*global changePos_Room_res 實作於ajax_res */
+	request.onreadystatechange = changePos_Room_res//狀態完成時所要執行的函式
+	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
+	request.send(null);//送出
+}
+function changeType_Room(data){
+	var url = "../Server/room/php/changeType.php?data="+data;
+	/*global changeType_Room_res 實作於ajax_res */
+	request.onreadystatechange = changeType_Room_res//狀態完成時所要執行的函式
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	request.send(null);//送出
 }

@@ -5,5 +5,6 @@ function UserData(){
     this.Level=null;
     this.RoomID=null;
     this.RoomMaster=false;
+    this.RoomPostion=null;
 }
 

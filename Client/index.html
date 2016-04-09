@@ -32,7 +32,8 @@
     </head>
     <body></body>
     <script>
-        var VARIABLE=new Object()//全域變數
+        var VARIABLE=new Object();//全域變數
+        VARIABLE.Game = new Object();
         var Option = new OptionSet();/*global OptionSet 實作於Option.js*/
         init();
         var testport = location.hash;//URL+testport
@@ -97,7 +98,7 @@
         function RoomViewInit(){
             VARIABLE.SCENES = "room";
             /*global RoomView 實作於View.* */
-            VARIABLE.View.Room = new RoomView(getWindowSize(),Option.getWindowSize());
+            VARIABLE.View.Room = new RoomView(getWindowSize(),Option);
             VARIABLE.View.Room.StatusRender();
         }//房間內
         function OptionEditViewInit(){
@@ -132,7 +133,7 @@
                 }
                     
                 });
-            VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
+                VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
                 if(VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue=="返回")
                 {
                    resetButton();
@@ -140,7 +141,7 @@
                 else{
                     resetButton();
                     VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="返回";
-                    VARIABLE.View.GameArea.iframe.contentWindow.Attack();
+                    VARIABLE.View.GameArea.iframe.contentWindow.Nuclear();
                 }
             });
             VARIABLE.View.GameArea.LeftControl.stay.addEventListener("click",function(){
@@ -162,12 +163,11 @@
             
         }//遊戲畫面初始化
         function resetButton(){
+                VARIABLE.View.GameArea.iframe.contentWindow.ActionCancel();
                 VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
-                VARIABLE.View.GameArea.iframe.contentWindow.MoveCancel();
                 VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
-                VARIABLE.View.GameArea.iframe.contentWindow.BulidCancel();
                 VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
-                VARIABLE.View.GameArea.iframe.contentWindow.AttackCancel();
+      
             }
         //以下為系統工具
         function getWindowSize(){
@@ -184,10 +184,10 @@
             VARIABLE.View.Block.windowReSize(windowSize,Option.getWindowSize());
             switch (VARIABLE.SCENES) {
                 case 'login':
-                    VARIABLE.View.Login.windowReSize(windowSize,Option.getWindowSize());
+                    VARIABLE.View.Login.windowReSize(windowSize);
                     break;
                 case 'register':
-                    VARIABLE.View.Register.windowReSize(windowSize,Option.getWindowSize());
+                    VARIABLE.View.Register.windowReSize(windowSize);
                     break;
                 case 'newActor':
                     VARIABLE.View.NewActor.windowReSize(windowSize,Option.getWindowSize());

@@ -1,14 +1,10 @@
 var FocalVar=1;
 //物件類型
-/*優先度排序:
-    地形0;補包1;移動、攻擊範圍2;建築物、玩家
 
-*/
 //父物件，基本上所有物件都繼承這個
 //使用方式就是地圖物件為最底層，用串列列起來Top指上方的東西，Under
 //在用insert插入靜態物件，一層一層貼上去
 //基本上只要用findTop()找出最上面那一個物件來做操作
-//之後重寫靜態物件和動態物件兩種類別，把所有都用成私有變數，用set,get存取
 function MapItem(x,y,T){
     
     //x,y,type,Moveable,VisiAble
@@ -44,27 +40,44 @@ function MapItem(x,y,T){
         this.Type=Data.Type;
     };
     this.setType=function(){
-    switch(this.Type){//給予消耗AP,特性
-    case 'Grass'://草原
-        this.MoveAble=true;
-        this.AP=1;
-        this.Div.style.backgroundColor = "#77FF00";
-        break;
-    case 'Forest'://森林
-        this.MoveAble=true;
-        this.Div.style.backgroundColor = "#008800";
-        this.AP=2;
-        break;
-    case 'Mountain':
-        this.MoveAble=false;
-        this.Div.style.backgroundColor="#AA7700"; 
-        break;
-    case 'Sea':
-       this.Div.style.backgroundColor ="#0000AA"; 
-        this.MoveAble=false;
-        break;
-    break;
+        switch(this.Type){//給予消耗AP,特性
+        case 'Grass'://草原
+            this.MoveAble=true;
+            this.AP=1;
+            break;
+        case 'Forest'://森林
+            this.MoveAble=true;
+            this.AP=2;
+            break;
+        case 'Mountain':
+            this.MoveAble=false;
+            this.AP=2;
+            break;
+        case 'Sea':
+            this.MoveAble=false;
+            this.AP=2;
+            break;
+        }
     }
+    this.show=function(){
+        switch(this.Type){
+        case 'Grass'://草原
+            this.Div.style.backgroundColor = "transparent";
+            this.Div.style.backgroundImage = "url(./src/pic/草地.png)";
+            break;
+        case 'Forest'://森林
+            this.Div.style.backgroundColor = "transparent";
+            this.Div.style.backgroundImage = "url(./src/pic/樹木.png)";
+            break;
+        case 'Mountain':
+            this.Div.style.backgroundColor = "transparent";
+            this.Div.style.backgroundImage = "url(./src/pic/山.png)";
+            break;
+        case 'Sea':
+            this.Div.style.backgroundColor = "transparent"; 
+            this.Div.style.backgroundImage = "url(./src/pic/河.png)";
+            break;
+        }
     }
     this.setType();
     this.Div.addEventListener("mouseover",function(){//滑鼠移入，觸發事件
@@ -138,8 +151,8 @@ function MapItem(x,y,T){
         }
         else
         {
-            console.log(input1);
             input1.Under.Top=input;
+            input.Under=input1.Under;
             input.Top=input1;
             input1.Under=input;
         }
@@ -150,8 +163,10 @@ function MapItem(x,y,T){
         var son;
         if(typeof(input)=='undefined'){
             son=father.findTop();
-            if(son.Class!='MapItem')
-            son.Under.Top=null;
+            if(son.Class!='MapItem'){
+                son.Under.Top=null;
+                son.Under=null;
+            }
         }
         else
         {
@@ -168,6 +183,7 @@ function MapItem(x,y,T){
             else
             {
                 father.Top=null;
+                input.Under=null;
             }
             
         }
@@ -187,16 +203,8 @@ function PlayerItem(x,y,no,T,S) {
   this.Class='PlayerItem';
   this.AP;
   this.HP;
-  switch(this.Type){//兵種初始特性
-    case 'MAN' :
-        this.MoveRange=5;
-        this.ViewRange=5;
-        this.RadioRange=10;
-        this.MoveAble=false;
-        this.AP=15;
-        this.HP=100;
-        break;
-    }
+  this.APRecover;
+  this.Hidden;
   var Data=new Object();
   this.getData=function() {
      var tmp=this;
@@ -205,7 +213,6 @@ function PlayerItem(x,y,no,T,S) {
       Data.Type=tmp.Type;
       Data.No=tmp.No;
       Data.Side=tmp.Side;
-
       return Data;
   };
   this.setData=function(Data) {
@@ -215,9 +222,29 @@ function PlayerItem(x,y,no,T,S) {
       this.No=Data.No;
       this.Side=Data.Side;
   };
+  this.setType=function(){//兵種初始特性,只用一次,放圖的在下面
+    switch(this.Type){
+        case 'MAN' :
+            this.MoveRange=5;
+            this.ViewRange=5;
+            this.RadioRange=10;
+            this.MoveAble=false;
+            this.AP=15;
+            this.HP=100;
+            break;
+        }
+  }
+  this.show=function(){
+      switch(this.Type){
+        case 'MAN' :
+            this.Div.style.backgroundColor = "transparent"; 
+            this.Div.style.backgroundImage = "url(./src/pic/河.png)";
+            break;
+      }
+  }
+  this.setType();
+  this.show();
   
-  this.Div.style.backgroundColor = "#FF0000";
-  this.Div.style.cursor='default';
   this.Move=function(x,y)//移動...
    {
      this.X=x;
@@ -225,8 +252,10 @@ function PlayerItem(x,y,no,T,S) {
      this.Div.style.left = (this.X * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
      this.Div.style.top = (this.Y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
    }
+   this.Hide=function(){
+       //躲起來?
+   }
 }
-PlayerItem.prototype=new MapItem();
 PlayerItem.prototype.constructor=PlayerItem;
 
 function BulidingItem(x,y,T,S) {
@@ -235,19 +264,12 @@ function BulidingItem(x,y,T,S) {
   this.VisiAble=true;
   this.Type=T;
   this.Side=S;
-  this.AP;
+  this.AP;//移動到這個建築物下
+  this.Cost;
   this.HP;
+  this.RadioRange=0;
+  this.ViewRange=0;
   this.Class='BulidingItem';
-  this.Div.style.backgroundColor='#FF00FF';
-  switch(this.Type){//設屬性
-    case 'HOUSE' :
-        this.ViewRange=5;
-        this.RadioRange=10;
-        this.MoveAble=true;
-        this.AP=5;
-        this.HP=100;
-        break;
-    }
   var Data=new Object();
   this.getData=function() {
      var tmp=this;
@@ -261,68 +283,125 @@ function BulidingItem(x,y,T,S) {
       this.Y=Data.Y;
       this.Type=Data.Type;
   };
-}
-BulidingItem.prototype=new MapItem();
-BulidingItem.prototype.constructor=BulidingItem;
-
-function DropItem(x,y) {
-  //x,y,type,VisiAble,
-  MapItem.call(this,x,y);
-  this.VisiAble=false;
-  switch(this.Type){//兵種初始特性
-    case '' :
+  this.setType=function(){
+    switch(this.Type){//設屬性,
+    case 'HOUSE' :
+        this.ViewRange=5;
+        this.RadioRange=10;
         this.MoveAble=true;
+        this.AP=5;
+        this.HP=100;
+        this.Cost=10;
+        break;
+    case 'RADIO_POINT':
+        this.ViewRange=0;
+        this.RadioRange=10;
+        this.MoveAble=true;
+        this.AP=5;
+        this.HP=100;
+        this.Cost=10;
+        break;
+    case 'WATCH_POINT':
+        this.ViewRange=5;
+        this.RadioRange=0;
+        this.MoveAble=true;
+        this.AP=5;
+        this.HP=100;
+        this.Cost=10;
+        break;
+    case 'HEAL':
+        this.ViewRange=0;
+        this.RadioRange=0;
+        this.MoveAble=true;
+        this.AP=0;
+        this.HP=1;
+        this.Cost=10;
+        break;
+    case 'TIME_BOMB':
+        this.ViewRange=0;
+        this.RadioRange=0;
+        this.MoveAble=true;
+        this.AP=0;
+        this.HP=1;
+        this.Cost=10;
         break;
     }
-  this.Class='DropItem';
-  this.Div.style.backgroundColor='#F0000F';
+  }
+  this.show=function(){//放圖
+      switch(this.Type){
+        case 'HOUSE' :
+            this.Div.style.backgroundColor="#000000";
+            break;
+
+            if(this.Under.Class=='MapItem')
+                this.Div.style.backgroundColor="#000000";
+            else{
+                this.Under.show();
+                this.Div.style.backgroundColor="transparent";
+            }
+            if(this.Under.Class=='MapItem')
+                this.Div.style.backgroundColor="#000000";
+            else{
+                this.Under.show();
+                this.Div.style.backgroundColor="transparent";
+            }
+        case'HEAL':
+            if(this.Under.Class=='MapItem')
+            this.Div.style.backgroundColor="#000000";
+            else{
+            this.Under.show();
+            this.Div.style.backgroundColor="transparent";
+            }
+            break;
+        case'TIME_BOMB':
+            if(this.Under.Class=='MapItem')
+            this.Div.style.backgroundColor="#000000";
+            else{
+            this.Under.show();
+            this.Div.style.backgroundColor="transparent";
+            }
+            break;      }
+  }
+  this.setType();
 }
-DropItem.prototype=new MapItem();
-DropItem.prototype.constructor=DropItem
+BulidingItem.prototype.constructor=BulidingItem;
+
+
+function TurnItem(x,y,T,S,start,long) {
+    //計時炸彈類,還沒想到要存甚麼
+  //x,y,type
+  this.X=x;
+  this.Y=y;
+  this.Type=T;
+  this.StartTurn=start;
+  this.Side=S;
+  this.EndTurn=start+long;
+  
+}
 
 //動態物件
-function MoveItem(x,y) {
+function ActionItem(x,y) {
   //x,y,type,Moveable,VisiAble,ViewRange
-  MapItem.call(this,x,y);
+    MapItem.call(this,x,y);
     this.VisiAble=true;
-  this.MoveAble=true;
-   this.Class='MoveItem';
+    this.MoveAble=true;
+    this.Class='ActionItem';
     this.earse=function(){
-      this.Under.Top=null;
-  }
-}
-MoveItem.prototype=new MoveItem();
-MoveItem.prototype.constructor=MoveItem;
-
-function AttackItem(x,y) {
-  //x,y,type,Moveable,VisiAble,ViewRange
-
-  MapItem.call(this,x,y);
-    this.VisiAble=true;
-  this.MoveAble=true;
-  var AttackCube;
-    this.setCube=function(input){
-        AttackCube=input;
+        this.Under.Top=null;
     }
-    this.Class='AttackItem';
-    
-    this.earse=function(){
-    this.Under.Top=null;
-  }
+    this.show=function(){//放圖
+        if(this.Under.Class=='MapItem')
+            this.Div.style.backgroundColor="#FFFF00";
+        else{
+            if(this.Under.VisiAble){
+                this.Under.show();
+                this.Div.style.backgroundColor="transparent"; 
+            }
+            else
+            {
+               this.Div.style.backgroundColor="#FFFF00"; 
+            }
+        }
+    }
 }
-AttackItem.prototype=new AttackItem();
-AttackItem.prototype.constructor=AttackItem;
-
-function BulidItem(x,y) {
-  //x,y,type,Moveable,VisiAble,ViewRange
- 
-  MapItem.call(this,x,y);
-    this.VisiAble=true;
-  this.MoveAble=true;
-    this.Class='BulidItem';
-    this.earse=function(){
-    this.Under.Top=null;
-  }
-}
-BulidItem.prototype=new BulidItem();
-BulidItem.prototype.constructor=BulidItem;
+ActionItem.prototype.constructor=ActionItem;

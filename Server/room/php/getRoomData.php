@@ -8,7 +8,7 @@
 	if(update($connect,$actorID)){
 		$data = getRoomData($connect,$roomID);
 		mysqli_close($connect);
-		sleep(1);
+		usleep(500000);
 		echo json_encode($data);
 	}else{
 		mysqli_close($connect);

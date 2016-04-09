@@ -4,13 +4,11 @@
 	$connect = ConnectSql();
     $data = $_GET['data'];
     $data_res = json_decode($data,true);
-    $Master = $data_res["Master"];
     $ActorID = $data_res["ActorID"];
     $RoomID = $data_res["RoomID"];
-    if(quitRoom($connect,$ActorID,$Master,$RoomID)){
-        mysqli_close($connect);
-    }else{
-        echo "error#1";
-        mysqli_close($connect);
-    }
+    $newPos = $data_res["Type"];
+    $sql = "update `room_actor_list` set `Type` = '$newPos' where `roomID` = '$RoomID' and `actorID` = '$ActorID';";
+    if(mysqli_query($connect,$sql)) echo "secess";
+    else echo "fail";
+    
 ?>

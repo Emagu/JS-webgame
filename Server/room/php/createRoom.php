@@ -28,12 +28,17 @@
 		    $sql="INSERT INTO room_list (Name, Map, StartTime,RoomMaster) VALUES ('$name', '$Map', 'null','$id');";
 	        if(mysqli_query($connect,$sql)){
 	            $roomID = mysqli_insert_id($connect);
-	            if(addRoom($connect,$roomID,$id)){
-	            	echo $roomID;
-	            	mysqli_close($connect);
-	            }else{
+	            $pos = addRoom($connect,$roomID,$id);
+	            if($pos== -1){
 	            	mysqli_close($connect);
 	            	echo "error#4";
+	            }else{
+	            	$data = array(
+    		            "RoomID" => $roomID,
+    		            "Position" => $pos
+    		        );
+	            	echo json_encode($data);
+	            	mysqli_close($connect);
 	            }
 	        }else{
 		        mysqli_close($connect);
