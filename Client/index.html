@@ -107,14 +107,14 @@
             VARIABLE.View.OptionEdit = new OptionEditView(getWindowSize(),Option);
             ViewInit(VARIABLE.View.OptionEdit.self);
         }//遊戲設定
-        function GameAreaInit(){
-            //ViewInit();
-            VARIABLE.SCENES = "game";
+        function GameAreaInit(initData){
+            
             /*global GameAreaView 實作於View.* */
             VARIABLE.View.GameArea = new GameAreaView();
+            VARIABLE.SCENES = "game";
             ViewInit(VARIABLE.View.GameArea.self);
             //使用frame可以內嵌另外一頁，在研究
-             var html = '<body></body>';
+            var html = '<body></body>';
             VARIABLE.View.GameArea.iframe.contentWindow.document.open();
             VARIABLE.View.GameArea.iframe.contentWindow.document.write(html);
             VARIABLE.View.GameArea.iframe.src='GameArea.html';

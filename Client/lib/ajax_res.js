@@ -123,13 +123,6 @@ function createRoom_res(){
         }
     }
 }
-function gameStart_command_res(){
-    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-        var data = request.responseText;//取得傳回的資料存在變數中
-        if(data.match("error")==null) getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
-        else console.log("error");
-    }
-}
 function getRoomData_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
@@ -175,14 +168,6 @@ function RoomStatus_res(){
         if(data!="error" && VARIABLE.SCENES == "room") getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
     }
 }
-function gameStart_res(){
-    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-        var data = request.responseText;//取得傳回的資料存在變數中
-        console.log(data);
-        VARIABLE.Game.Map = JSON.parse(data);
-        if(VARIABLE.SCENES == "room") GameAreaInit();/*global GameAreaInit in index*/
-    }
-}
 function changePos_Room_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
@@ -193,5 +178,22 @@ function changeType_Room_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
         getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
+    }
+}
+function gameStart_command_res(){
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+        if(data.match("error")==null) getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
+        else console.log("error");
+    }
+}
+function gameStart_res(){
+    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
+        var data = request.responseText;//取得傳回的資料存在變數中
+        var data_res = JSON.parse(data);
+        if(data.match("error")==null){
+            /*global GameAreaInit in ajax*/
+            GameAreaInit(data_res);
+        }else console.log(data);
     }
 }

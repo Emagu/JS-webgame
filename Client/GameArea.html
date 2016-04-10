@@ -4,7 +4,7 @@
      <script src="lib/jquery.js"></script>
     <script src="src/Item/Item.js"></script>
     <script src="src/Option.js"></script>
-    <script src="../Server/js/ajax.js"></script>
+    <script src="../Server/game/js/ajax.js"></script>
 </head>
 <body></body>
 
@@ -20,6 +20,7 @@
         var ActionCube=[];//動作方塊都放這
         var TurnCube=[];//放倒數回合觸發
         var ViewCube=[];//放額外視野
+        var needSend = 0;
         /*global UserData 實作於Data*/
         //var USER=new UserData();//用戶資料
         GameAreaInit();
@@ -66,15 +67,33 @@
             me=player[0];
             View();
             rendCube(); 
+            getSynchronize();/*global getSynchronize in ajax*/
         }//遊戲畫面初始化
-        function Synchronize_res(){
-            /*global request 實作於 ajax.js*/
+        function getSynchronize_res(){
+            /*global request in ajax*/
             if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
                 var data = request.responseText;//取得傳回的資料存在變數中
-        		data = JSON.parse(data);
-        		console.log(data);
+                console.log(data);
+                update(data);
             }
         }//資料同步結果
+        function update(data){
+            /*
+                        同步處理
+                            .
+                            .
+                            .
+            */
+            /*繼續同步*/
+            switch(needSend){
+                case 1:
+                    needSend = 0;
+                    break;
+                default:
+                    getSynchronize();/*global getSynchronize in ajax*/
+                    break;
+            }
+        }
         function Star(){
             if(Turn%3==0)
             {
@@ -154,7 +173,9 @@
                     break;
                 case 'TIME_BOMB':
                     Bulid('TIME_BOMB');
+                case 'Air_Support_Attack':
                     break;
+                
             }
             rendCube();
         }
