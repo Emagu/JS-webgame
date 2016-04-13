@@ -9,16 +9,14 @@
 <body></body>
 
 <script>
-        //還沒寫倒數事件
         var GameArea,LeftControl,RightControl,TopControl;
         var Option,Turn=0;
         var player=[],me;//放所有玩家和自己
         var FocalVar=1;//焦距 最低1
         var MapCube=[];//存放所有地形資訊
-        var House=[];//放房子的
-        var Loot=[];//放掉落物的(補包)
+        var House=[];//放靜態物件的
+        var TurnCube=[];//放倒數的事件
         var ActionCube=[];//動作方塊都放這
-        var TurnCube=[];//放倒數回合觸發
         var ViewCube=[];//放額外視野
         var needSend = 0;
         /*global UserData 實作於Data*/
@@ -31,11 +29,11 @@
             Option = new OptionSet();
             //document.body.style.width = Option.GameAreaWidth;
             //document.body.style.height = Option.GameAreaHeight;
-            document.body.style.background="#000000";
+            document.body.style.background="#0123DDD";
             GameArea = document.createElement("div");
             //GameArea.style.width = "70%";
             //GameArea.style.height ="70%";
-            GameArea.style.backgroundColor = "#000000";
+            GameArea.style.backgroundColor = "#001212";
             GameArea.style.margin = "0 auto";
             GameArea.style.position = 'absolute';
             GameArea.style.top = "0%";
@@ -73,7 +71,7 @@
             /*global request in ajax*/
             if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
                 var data = request.responseText;//取得傳回的資料存在變數中
-                console.log(data);
+                //console.log(data);
                 update(data);
             }
         }//資料同步結果
@@ -94,49 +92,67 @@
                     break;
             }
         }
-        function Star(){
+        function Start(){
+            ViewCube.length=0;
             if(Turn%3==0)
             {
                 me=player[0];
-                if(player[0].Under==null)//HP
+                if(player[0].HP<=0)//HP
                 {
                    Turn++
-                    Star();
+                    Start();
                 }
             }
             if(Turn%3==1)
             {
                 me=player[1];
-                if(player[1].Under==null)
+                if(player[1].HP<=0)
                 {
                    Turn++
-                    Star();
+                    Start();
                 }
             }
             if(Turn%3==2)
             {
                 me=player[2];
-                if(player[2].Under==null)
+                if(player[2].HP<=0)
                 {
                    Turn++
-                    Star();
+                   Start();
                 }
             }
-            console.log(JSON.stringify(me));
-            for(var i=0;i!=TurnCube.length;i++)
-            {
-                if(Turn>=TurnCube[i].StartTurn && Turn<=TurnCube[i].EndTurn)
-                {
-                    switch(TurnCube[i].Type){
-                        case 'TIME_BOMB':
-                            console.log(TurnCube[i]);
-                            Area_Attack(3,TurnCube[i].X,TurnCube[i].Y);
-                            break;
-                    }
+            for(var i=0;i!=TurnCube.length;i++){
+                switch (TurnCube[i].Type) {
+                    case '空中偵察':
+                        if(Turn>= TurnCube[i].Turn &&Turn<=TurnCube[i].EndTurn)
+                        if(me.Side==TurnCube[i].Side)
+                        {
+                            ViewCube.push(TurnCube[i]);
+                        }
+                        break;
+                    
+                    default:
+                        // code
                 }
             }
             View();
             rendCube();
+        }
+        function Attack_Check(input){
+            console.log(input);
+            if(input.HP<=0){
+                switch(input.Type){
+                        case 'TIME_BOMB':
+                            input.earse();
+                            Area_Attack(3,input.X,input.Y);
+                            break;
+                    }
+                if(input.Class=='PlayerItem')
+                {
+                    input.earse();
+                }
+                
+            }
         }
         function Skill(name,cost){
             //未來規劃都放在這裡，我決定通通分開寫啦!!jojo
@@ -166,14 +182,15 @@
                         Mortar();
                     break;
                 case 'Nuclear':
-                        Nuclear();
+                        Nuclear('',100);
                     break;
                 case 'RPG':
                     RPG();
                     break;
                 case 'TIME_BOMB':
                     Bulid('TIME_BOMB');
-                case 'Air_Support_Attack':
+                case '空中偵察':
+                        Nuclear(name,5);
                     break;
                 
             }
@@ -186,17 +203,12 @@
                     {
                         switch (MapCube[i][j].findTop().Class) {//通通改成show()
                             case 'AttackItem':
-                                if(MapCube[i][j].findTop().Under.Class=='MapItem')
-                                    MapCube[i][j].findTop().Div.style.backgroundColor = "#FFFF00";
-                                else
-                                    MapCube[i][j].findTop().Div.style.backgroundColor = MapCube[i][j].findTop().Under.Div.style.backgroundColor;
                                  //未畫圖而改
                                  //MapCube[i][j].setType();
                                  //MapCube[i][j].findTop().Div.style.backgroundColor = MapCube[i][j].Div.style.backgroundColor;
                                 break;
                             default:
                                MapCube[i][j].findTop().show();
-
                         }
                         MapCube[i][j].findTop().getinfo(MapCube[i][j].findTop());
                     }
@@ -254,6 +266,9 @@
             }
             var connetRange=me.RadioRange;//通訊測試範圍
             var friends=Radio();//可以另外取得物件視野
+            for(var i=0;i!=ViewCube.length;i++){
+                friends.push(ViewCube[i]);//額外視野
+            }
             for(var i=0;i!=friends.length;i++)
             {
                 CalHorizons(friends[i]);
@@ -263,6 +278,7 @@
             {
                 var Horizons=friend.ViewRange;
                 var CenterX=friend.X,CenterY=friend.Y;
+                if(friend.Class=='PlayerItem')
                 switch (MapCube[friend.X][friend.Y].Type)
                 {
                     case 'Forest'://森林
@@ -424,7 +440,7 @@
                         for(var j=0;j!=bestpath.length;j++)
                         {
                             if(MapCube[bestpath[j].x][bestpath[j].y].findTop().Class=='ActionItem'){
-                            MapCube[bestpath[j].x][bestpath[j].y].findTop().Div.style.backgroundColor='#FF0000';
+                                MapCube[bestpath[j].x][bestpath[j].y].findTop().Div.style.backgroundColor='#FF0000';
                             }
                         
                         }
@@ -503,14 +519,7 @@
                     for(var j=0;j!=ActionCube.length;j++){
                         ActionCube[j].earse();
                     }
-                    switch(input)
-                    {
-                        case 'TIME_BOMB':
-                            var t=new TurnItem(tmp.X,tmp.Y,input,me.Side,(Turn+1),0);
-                            console.log(t);
-                            TurnCube.push(t);
-                            break;
-                    }
+                    
                     var buliding=new BulidingItem(tmp.X,tmp.Y,input,me.Side);
                     House.push(buliding);
                     MapCube[tmp.X][tmp.Y].insert(buliding);
@@ -559,16 +568,20 @@
                            ActionCube[j].show();     
                       }
                      MapCube[tmp.X][tmp.Y].findTop().Div.style.backgroundColor='#FF0000';
+                     
                     });
                     tmp.Div.addEventListener('click',function(){
                     //武器差異放這裡改
-                        MapCube[tmp.X][tmp.Y].findTop().earse();
-                        MapCube[tmp.X][tmp.Y].findTop().earse();
-
+                    MapCube[tmp.X][tmp.Y].findTop().earse();
+                    
+                    if(MapCube[tmp.X][tmp.Y].findTop().Invincible==false){
+                        MapCube[tmp.X][tmp.Y].findTop().HP-=50;;
+                        Attack_Check(MapCube[tmp.X][tmp.Y].findTop());
+                    }
                     for(var j=0;j!=ActionCube.length;j++)
                         ActionCube[j].earse();
                     ActionCube.length=0;
-                    View();
+                    
                     rendCube();
                     parent.VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊"; },false);
                 }());
@@ -726,9 +739,10 @@
                     for(var y=-_tmp;y<=_tmp;y++)
                     {
                         if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
+                        if(MapCube[CenterX+x][CenterY+y].findTop().Invincible==false)
                         {
-                            MapCube[CenterX+x][CenterY+y].findTop().earse();
-                            MapCube[CenterX+x][CenterY+y].findTop().earse();
+                            MapCube[CenterX+x][CenterY+y].findTop().HP-=100;
+                            Attack_Check(MapCube[CenterX+x][CenterY+y].findTop());
                         }
                     }
                     }
@@ -788,7 +802,7 @@
                     });
                     tmp.Div.addEventListener('click',function(){
                     //武器差異放這裡改
-                    console.log(tmp);
+                    
                     if(tmp.X>me.X)
                     {
                         for(var j=0;j!=ActionCube.length;j++){
@@ -845,7 +859,7 @@
             }
             }
         }
-        function Nuclear(){
+        function Nuclear(input,H){
             var CenterX = me.X;
             var CenterY = me.Y;
             var Horizons=100;//攻擊距離顯示範圍大小
@@ -864,16 +878,16 @@
                     }
                 }
             }
-            addEvent();
+            addEvent(input,H);
             View();
             rendCube();
-            function addEvent(){//要使用迴圈加eventlistener要這樣寫
+            function addEvent(input,H){//要使用迴圈加eventlistener要這樣寫
                 for(var i=0;i!=ActionCube.length;i++){
                 (function(){
                 var tmp=ActionCube[i];
                 var CenterX = tmp.X;
                 var CenterY = tmp.Y;
-                
+                var Horizons=H;
                   tmp.Div.addEventListener('mouseover',function() {
                       for(var j=0;j!=ActionCube.length;j++){
                            ActionCube[j].show();     
@@ -894,7 +908,16 @@
                     }});
                     tmp.Div.addEventListener('click',function(){
                     //武器差異放這裡改
-                    Area_Attack(100,tmp.X,tmp.Y);
+                    switch (input) {
+                        case '空中偵察':
+                            var turn_tmp= new TurnItem(tmp.X,tmp.Y,input,me.Side,Turn);
+                                TurnCube.push(turn_tmp);
+                            break;
+                        
+                        default:
+                            Area_Attack(100,tmp.X,tmp.Y);
+                    }
+                    
                     for(var j=0;j!=ActionCube.length;j++)
                         ActionCube[j].earse();
                     ActionCube.length=0;
@@ -1134,7 +1157,7 @@
             }
             View();
             rendCube();
-            setTimeout(Star, 1000);
+            Start();
         }
         function UpLoad(){
             var updata = new Object();
