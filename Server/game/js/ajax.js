@@ -18,6 +18,8 @@ function getSynchronize(){
 function sendGameCommand(data){
 	console.log(data);
 	var url = "../Server/game/php/gameCommand.php?data="+data;
+	/*global sendGameCommand_res 實作於gameArea.html */
+	request.onreadystatechange = sendGameCommand_res//狀態完成時所要執行的函式
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	request.send(null);//送出
 }

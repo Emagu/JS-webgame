@@ -22,11 +22,17 @@
                 $itemID = mysqli_insert_id($connect);
                 $sql = "insert into `game_table` ( RoomID, ItemID, X, Y, type) VALUES ( '$roomID', '$itemID', '$XPos', '$YPos', 'player')";
                 if(mysqli_query($connect,$sql)){
-                    $sql = "update `room_list` set `status` = 1 where NO = '$roomID'";
+                    $time = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
+                    $sql = "update `room_list` set `StartTime` = '$time' where NO = '$roomID'";
                     if(mysqli_query($connect,$sql)){
-                		echo "scess";
+                        $sql = "update `room_list` set `status` = 1 where NO = '$roomID'";
+                        if(mysqli_query($connect,$sql)){
+                    		echo "scess";
+                        }else{
+                    		echo "error#4";
+                        }
                     }else{
-                		echo "error#3";
+                    		echo "error#3";
                     }
                 }else{
 		            echo "error#2";

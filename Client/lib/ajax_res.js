@@ -6,11 +6,20 @@ function checkSave_res(){
 		data = JSON.parse(data);
 		if(data.status == "Success"){
 		    VARIABLE.USER.UserID = data.data.UserID;
+		    VARIABLE.Map = [];
+		    for(var i=0;i<data.Map.length;i++){
+		        VARIABLE.Map.push(data.Map[i]);
+		    }
             if(data.data.ActorID == 0){//登入成功但未有角色
                 NewActorViewInit();  
             }else{//登入成功且已有角色
                 VARIABLE.USER.ActorID = data.data.ActorID;
-				HallViewInit();
+                if(data.data.RoomID != 0){
+                    VARIABLE.USER.RoomID = data.data.RoomID;
+                    gameStart(VARIABLE.USER.RoomID);/*global gameStart in ajax*/
+                }else{
+				    HallViewInit();
+                }
 		    }
 		}else{
 		    /*global loginViewiInit 實作於index*/
@@ -23,6 +32,7 @@ function login_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
 		data = JSON.parse(data);
+		
 		if(data.status == "Success"){
 		    /*global VARIABLE,LoginView 宣告於index*/
 		    /*global NewActorViewInit,HallViewInit 實作於index*/
@@ -113,6 +123,7 @@ function getRoomList_res(){
 function createRoom_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
+        
         if(data.match("error")==null){
             var data_res = JSON.parse(data);
             VARIABLE.USER.RoomID = data_res.RoomID;
@@ -120,7 +131,7 @@ function createRoom_res(){
             VARIABLE.USER.RoomMaster = true;
             /*global RoomViewInit 實作於index */
             RoomViewInit();
-        }
+        }else console.log(data);
     }
 }
 function getRoomData_res(){
@@ -190,6 +201,7 @@ function gameStart_command_res(){
 function gameStart_res(){
     if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
         var data = request.responseText;//取得傳回的資料存在變數中
+        console.log(data);
         var data_res = JSON.parse(data);
         if(data.match("error")==null){
             /*global GameAreaInit in ajax*/

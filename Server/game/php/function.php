@@ -1,9 +1,19 @@
 <?php
-    function update($connect,$actorID){
-        $datetime = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
-        $sql = "UPDATE `room_actor_list` SET `lasttime` = '$datetime' WHERE `actorID` = '$actorID';";
-        if(mysqli_query($connect,$sql)) return true;
-        else return false;
+    function getTurn($connect,$roomID){
+        $sql = "select * from `room_list` where `NO` = '$roomID';";
+        $res = mysqli_query($connect,$sql);
+        $row = mysqli_fetch_assoc($res);
+        if($row != null){
+            return $row['turn'];
+        }
+    }
+    function getRecount($connect,$roomID){
+        $sql = "select * from `room_list` where `NO` = '$roomID';";
+        $res = mysqli_query($connect,$sql);
+        $row = mysqli_fetch_assoc($res);
+        if($row != null){
+            return $row['reciprocal'];
+        }
     }
     function getActor($connect,$roomData){
         $sql = "select `ItemID`,`X`,`Y`,`type` from `game_table` where `RoomID` = '$roomData';";
@@ -31,5 +41,32 @@
             }
         }
         return $data;
+    }
+    function quitGame($connect,$actorID){
+        //找到userID
+        $sql = "select `userID` from `actor_list` where `NO` = '$actorID';";
+        $res = mysqli_query($connect,$sql);
+        $data = mysqli_fetch_assoc($res);
+        $userID = $data['userID'];
+        //找到itemID
+        $sql = "SELECT `NO` FROM `game_player_table` WHERE `ActorID` = '$actorID';";
+        $res = mysqli_query($connect,$sql);
+        $data = mysqli_fetch_assoc($res);
+        $itemID = $data['NO'];
+        //開始砍
+        $sql="DELETE FROM `game_player_table` WHERE `ActorID` = '$actorID';";
+        if(mysqli_query($connect,$sql)){
+            $sql="DELETE FROM `game_table` WHERE `ItemID` = '$itemID';";
+            if(mysqli_query($connect,$sql)){
+                $sql = "update `member_list` set `RoomID` = '0' where `NO` = '$userID';";
+                if(mysqli_query($connect,$sql)) return true;
+                else return false;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+        
     }
 ?>

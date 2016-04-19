@@ -54,43 +54,32 @@
     	$sql = "SELECT * FROM `room_actor_list` WHERE `roomID` = '$roomID';";
     	$resq = mysqli_query($connect,$sql);
     	while($row = mysqli_fetch_assoc($resq)){
-    		$time = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
     		$actorID = $row["actorID"];
-    		if((strtotime($time) - strtotime($row['lasttime']))>2){
-    			if($MasterID==$actorID) quitRoom($connect,$actorID,"true",$roomID);
-    			else quitRoom($connect,$actorID,"false",$roomID);
+    		$sql = "SELECT * FROM `actor_list` WHERE `NO` = '$actorID';";
+    		$result = mysqli_query($connect,$sql);
+    		$actorData = mysqli_fetch_assoc($result);
+    		if($actorID==$roomData["RoomMaster"]){
+    			$ActorOut = array(
+    		           "ActorName" => $actorData["actorName"],
+    		           "ActorID" => $actorData["NO"],
+    		           "Level" => $actorData["LV"],
+    		           "State" => $row["state"],
+    		           "Position" => $row["position"],
+    		           "Master" => "true"
+    		       );
     		}else{
-    			$sql = "SELECT * FROM `actor_list` WHERE `NO` = '$actorID';";
-    			$result = mysqli_query($connect,$sql);
-    			$actorData = mysqli_fetch_assoc($result);
-    			if($actorID==$roomData["RoomMaster"]){
-    				$ActorOut = array(
-    		            "ActorName" => $actorData["actorName"],
-    		            "ActorID" => $actorData["NO"],
-    		            "Level" => $actorData["LV"],
-    		            "Ready" => $row["ready"],
-    		            "Position" => $row["position"],
-    		            "Master" => "true"
-    		        );
-    			}else{
-    				$ActorOut = array(
-    		            "ActorName" => $actorData["actorName"],
-    		            "ActorID" => $actorData["NO"],
-    		            "Level" => $actorData["LV"],
-    		            "Ready" => $row["ready"],
-    		            "Position" => $row["position"],
-    		            "Master" => "false"
-    		        );
-    			}
-    		    array_push($data,$ActorOut);
+    		    $ActorOut = array(
+    		           "ActorName" => $actorData["actorName"],
+    		           "ActorID" => $actorData["NO"],
+    		           "Level" => $actorData["LV"],
+    		           "State" => $row["state"],
+    		           "Position" => $row["position"],
+    		           "Master" => "false"
+    		       );
     		}
+    		array_push($data,$ActorOut);
     	}
     	return array("RoomStatus" => $roomData['status'], "PlayerData" => $data);
     }
-    function update($connect,$actorID){
-        $datetime = date ("Y-m-d H:i:s" , mktime(date('H')+8, date('i'), date('s'), date('m'), date('d'), date('Y')));
-        $sql = "UPDATE `room_actor_list` SET `lasttime` = '$datetime' WHERE `actorID` = '$actorID';";
-        if(mysqli_query($connect,$sql)) return true;
-        else return false;
-    }
+    
 ?>

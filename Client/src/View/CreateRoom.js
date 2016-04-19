@@ -1,35 +1,20 @@
-function CreateRoomView(windowSize,OptionSize){
+function CreateRoomView(windowSize,Option){
 	/*global OriginView */
-    OriginView.call(this,windowSize,OptionSize);//繼承
+    OriginView.call(this,windowSize,Option.getWindowSize());//繼承
     
     //宣告變數
-    this.self.style.backgroundColor = "#FFFFFF";
-    
-    var title = document.createElement("div");
-    title.style.width = "100%";
-    title.style.height = "10%";
-    title.style.backgroundColor = "#00AAAA";
-    title.style.position = "absolute";
-    title.style.left = "0px";
-    title.style.top = "0px";
-    title.style.textAlign = "center";
-    title.appendChild(document.createTextNode("新建房間"));
-    this.self.appendChild(title);
-    
-    var roomnametxt = document.createElement("P");
-	roomnametxt.style.position = "absolute";
-	roomnametxt.style.top = "30%";
-	roomnametxt.style.width = "10%";
-	roomnametxt.style.left = "2%";
-	roomnametxt.appendChild(document.createTextNode("房間名稱:"));
-	this.self.appendChild(roomnametxt);
-	        
+    this.self.style.backgroundImage = "url('./src/pic/CreateRoom/BackGround.png')";
+            
 	var roomname = document.createElement("input");
 	roomname.setAttribute("type", "text");
 	roomname.style.position = "absolute";
-	roomname.style.top = "31.5%";
-	roomname.style.width = "10%";
-	roomname.style.left = "14%";
+	roomname.style.top = "230px";
+	roomname.style.width = "230px";
+	roomname.style.left = "300px";
+	roomname.style.backgroundColor = "transparent";
+	roomname.style.border = "0px";
+	roomname.style.fontSize = "x-large";
+	roomname.style.color = "#FFFFFF";
 	roomname.addEventListener("change",function(){//確認角色名稱可否使用
 	    /*global  checkRoomName 實作於ajax*/
 	    checkRoomName(roomname.value);
@@ -39,27 +24,27 @@ function CreateRoomView(windowSize,OptionSize){
 	
 	var roomnameCheckMsgBox = document.createElement("P");
 	roomnameCheckMsgBox.style.position = "absolute";
-	roomnameCheckMsgBox.style.top = "30%";
-	roomnameCheckMsgBox.style.width = "15%";
-	roomnameCheckMsgBox.style.left = "26%";
+	roomnameCheckMsgBox.style.top = "270px";
+	roomnameCheckMsgBox.style.width = "300px";
+	roomnameCheckMsgBox.style.left = "280px";
 	roomnameCheckMsgBox.style.color = "red";
 	roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
 	
 	var commit = document.createElement("P");
 	commit.style.position = "absolute";
-	commit.style.top = "90%";
-    commit.style.width = "50%";
-    commit.style.left = "0%";
+	commit.style.top = "595px";
+    commit.style.width = "140px";
+    commit.style.height = "50px";
+    commit.style.left = "260px";
     commit.style.cursor = "pointer";
-    commit.style.textAlign = "center";
-    commit.appendChild(document.createTextNode("建立!"));
     commit.addEventListener("click",function() {
 		/*global ViewInit,VARIABLE 宣告於index*/
 		/*global createRoom 實作於ajax*/
 		if(VARIABLE.USER.ActorID){
 			var data = new Object();
 			data.ActorID = VARIABLE.USER.ActorID;
-			data.Map = 0;//測試
+			data.Mode = GameMode.value;
+			data.Map = MapSelect.value;//測試
 			data.RoomName = roomname.value;
 			ViewInit(VARIABLE.View.Block.self);
          	createRoom(JSON.stringify(data));
@@ -68,18 +53,47 @@ function CreateRoomView(windowSize,OptionSize){
     
     var canncel = document.createElement("P");
 	canncel.style.position = "absolute";
-	canncel.style.top = "90%";
-    canncel.style.width = "50%";
-    canncel.style.left = "50%";
+	canncel.style.top = "595px";
+    canncel.style.width = "140px";
+    canncel.style.height = "40px";
+    canncel.style.left = "895px";
     canncel.style.cursor = "pointer";
-    canncel.style.textAlign = "center";
-    canncel.appendChild(document.createTextNode("返回!"));
     canncel.addEventListener("click",function() {
 		/*global HallViewInit 實作於index*/
 		ViewInit(VARIABLE.View.Block.self);
 	    HallViewInit();
 	});
 	
+	var GameMode = document.createElement("select");
+	GameMode.style.position = "absolute";
+	GameMode.style.top = "315px";
+    GameMode.style.width = "230px";
+    GameMode.style.height = "33px";
+    GameMode.style.left = "300px";
+    var GameModeArray = Option.getGameModeArray();
+    for(var i=0;i<GameModeArray.length;i++){
+    	var temp = document.createElement("option");
+    	temp.setAttribute("value",i);
+		temp.appendChild(document.createTextNode(GameModeArray[i]));
+    	GameMode.appendChild(temp);
+    }
+    
+    var MapSelect = document.createElement("select");
+	MapSelect.style.position = "absolute";
+	MapSelect.style.top = "400px";
+    MapSelect.style.width = "230px";
+    MapSelect.style.height = "33px";
+    MapSelect.style.left = "300px";
+    var MapArray = VARIABLE.Map;
+    for(var i=0;i<MapArray.length;i++){
+    	var temp = document.createElement("option");
+    	temp.setAttribute("value",i);
+		temp.appendChild(document.createTextNode(MapArray[i]));
+    	MapSelect.appendChild(temp);
+    }
+    
+    this.self.appendChild(MapSelect);
+	this.self.appendChild(GameMode);
 	this.self.appendChild(roomnameCheckMsgBox);
 	this.self.appendChild(commit);
 	this.self.appendChild(roomname);

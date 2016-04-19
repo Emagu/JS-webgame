@@ -12,7 +12,7 @@ function LeftControlView(){
     this.self.style.textAlig='center';
     
     //變數區
-    var ItemList=["HOUSE","RADIO_POINT","WATCH_POINT","TIME_BOMB","HEAL","Melee","Pelt","RPG","Mortar","Nuclear","空中偵察"];//道具清單
+    var ItemList=["HOUSE","RADIO_POINT","WATCH_POINT","TIME_BOMB","HEAL","Melee","Pelt","RPG","Mortar","Nuclear","空中偵察","躲藏","現身"];//道具清單
     //var ItemList=["Grass","Forest","Mountain","Sea"];//道具清單
     var arms=["通訊兵","工程師","狙擊手","醫護兵","野戰兵","水鬼","裝甲兵"];//兵種清單
     //移動按鈕

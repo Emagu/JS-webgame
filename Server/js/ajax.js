@@ -117,8 +117,8 @@ function gameStart_command(roomID){
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	request.send(null);//送出
 }
-function gameStart(roomID){
-	var url = "../Server/game/php/gameStart.php?roomID="+roomID;
+function gameStart(){
+	var url = "../Server/game/php/gameStart.php?roomID="+VARIABLE.USER.RoomID+"&actorID="+VARIABLE.USER.ActorID;
 	request.open("GET", url, true);//開啟連線，選擇連線方式GET,POST
 	/*global gameStart_res 實作於ajax_res */
 	request.onreadystatechange = gameStart_res//狀態完成時所要執行的函式

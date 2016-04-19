@@ -22,13 +22,60 @@
         <script src="src/Data/User.js"></script>
         
         <script src="lib/ajax_res.js"></script>
-        <script src="lib/jquery.js"></script>
         <script src="../Server/js/ajax.js"></script>
+        <script src="lib/jquery.js"></script>
+        
         <style type="text/css">
+            /* The CSS */
             body {
-              background-color: #000000;
+                background:#000000;
             }
-        </style>>
+            select {
+                padding:3px;
+                margin: 0;
+                -webkit-border-radius:4px;
+                -moz-border-radius:4px;
+                border-radius:4px;
+                -webkit-box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+                -moz-box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+                box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+                background: #f8f8f8;
+                color:#888;
+                border:none;
+                outline:none;
+                display: inline-block;
+                -webkit-appearance:none;
+                -moz-appearance:none;
+                appearance:none;
+                cursor:pointer;
+            }
+            /* Targetting Webkit browsers only. FF will show the dropdown arrow with so much padding. */
+            @media screen and (-webkit-min-device-pixel-ratio:0) {
+                select {padding-right:18px}
+            }
+            label {position:relative}
+            label:after {
+                content:'<>';
+                font:11px "Consolas", monospace;
+                color:#aaa;
+                -webkit-transform:rotate(90deg);
+                -moz-transform:rotate(90deg);
+                -ms-transform:rotate(90deg);
+                transform:rotate(90deg);
+                right:8px; top:2px;
+                padding:0 0 2px;
+                border-bottom:1px solid #ddd;
+                position:absolute;
+                pointer-events:none;
+            }
+            label:before {
+                content:'';
+                right:6px; top:0px;
+                width:20px; height:20px;
+                background:#3f85c0;
+                position:absolute;
+            }
+        </style>
     </head>
     <body></body>
     <script>
@@ -36,27 +83,16 @@
         VARIABLE.Game = new Object();
         var Option = new OptionSet();/*global OptionSet 實作於Option.js*/
         init();
-        var testport = location.hash;//URL+testport
-        switch (testport) {
-            case '#0':
-                GameAreaInit();
-                break;
-            default:
-                /*global checkSave 實作於ajax*/
-                checkSave();
-                break;
-        }
+        checkSave();/*global checkSave 實作於ajax*/
         function init(){
             VARIABLE.FocalVar = 1;//焦距 最低1
             VARIABLE.SCENES = "login";//場景
             VARIABLE.View = new Object();
-            
             /*global BlockView 實作於Block.js*/
             VARIABLE.View.Block = new BlockView(getWindowSize(),Option.getWindowSize());
             ViewInit(VARIABLE.View.Block.self);
             /*global UserData 實作於Data*/
             VARIABLE.USER = new UserData();//用戶資料
-            
             window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
         function ViewInit(View){
@@ -92,7 +128,7 @@
         function CreateRoomViewInit(){
             VARIABLE.SCENES = "createHall";
             /*global CreateRoomView 實作於src/View.* */
-            VARIABLE.View.CreateRoom = new CreateRoomView(getWindowSize(),Option.getWindowSize());
+            VARIABLE.View.CreateRoom = new CreateRoomView(getWindowSize(),Option);
             ViewInit(VARIABLE.View.CreateRoom.self);
         }//建立房間
         function RoomViewInit(){
@@ -108,8 +144,10 @@
             ViewInit(VARIABLE.View.OptionEdit.self);
         }//遊戲設定
         function GameAreaInit(initData){
-            
+            //初始化資料
             /*global GameAreaView 實作於View.* */
+            VARIABLE.Game.Item=initData['Item'];
+            VARIABLE.Game.Map=initData['Map'];
             VARIABLE.View.GameArea = new GameAreaView();
             VARIABLE.SCENES = "game";
             ViewInit(VARIABLE.View.GameArea.self);
@@ -133,7 +171,7 @@
                 }
                     
                 });
-                VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
+            VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
                 if(VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue=="返回")
                 {
                    resetButton();

@@ -3,7 +3,7 @@
 	$connect = ConnectSql();
 	$ActorID = $_GET['ActorID'];
 	$Status = $_GET['Status'];
-	$sql = "UPDATE `room_actor_list` SET `ready` = '$Status' WHERE `actorID` = '$ActorID';";
+	$sql = "UPDATE `room_actor_list` SET `state` = '$Status' WHERE `actorID` = '$ActorID';";
     if(mysqli_query($connect,$sql)){
         echo $sql;
         mysqli_close($connect);

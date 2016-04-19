@@ -8,6 +8,7 @@
 	$id = $data_res['ActorID'];
 	$name = $data_res['RoomName'];
 	$Map = $data_res['Map'];
+	$Mode = $data_res['Mode'];
 	/*
 		error #1	未輸入角色編號
 		error #2	未輸入房名
@@ -25,7 +26,7 @@
 	    if($row){
     		echo "error#3";
     	}else{
-		    $sql="INSERT INTO room_list (Name, Map, StartTime,RoomMaster) VALUES ('$name', '$Map', 'null','$id');";
+		    $sql="INSERT INTO room_list (Name, Map, Mode, StartTime,RoomMaster) VALUES ('$name', '$Map', '$Mode','null','$id');";
 	        if(mysqli_query($connect,$sql)){
 	            $roomID = mysqli_insert_id($connect);
 	            $pos = addRoom($connect,$roomID,$id);

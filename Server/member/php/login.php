@@ -15,6 +15,7 @@
 		error #2 密碼未輸入
 		error #3 查無使用者
 		error #4 密碼錯誤
+		error #5 位置更新錯誤
 	*/
 	if($id==""){
 		echo json_encode(array("status" => 'error#1'));

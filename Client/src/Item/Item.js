@@ -16,7 +16,7 @@ function MapItem(x,y,T){
     this.Class='MapItem';//類別名
     this.Top =null;//上方物件
     this.Under=null;//下方物件
-    this.AP;
+    this.Move_AP;
     this.Invincible=true;
     var info_on=false;
     var info=null;
@@ -44,19 +44,19 @@ function MapItem(x,y,T){
         switch(this.Type){//給予消耗AP,特性
         case 'Grass'://草原
             this.MoveAble=true;
-            this.AP=1;
+            this.Move_AP=1;
             break;
         case 'Forest'://森林
             this.MoveAble=true;
-            this.AP=2;
+            this.Move_AP=2;
             break;
         case 'Mountain':
             this.MoveAble=false;
-            this.AP=2;
+            this.Move_AP=2;
             break;
         case 'Sea':
             this.MoveAble=false;
-            this.AP=2;
+            this.Move_AP=2;
             break;
         }
     }
@@ -84,11 +84,13 @@ function MapItem(x,y,T){
     this.setType();
     this.Div.addEventListener("mouseover",function(){//滑鼠移入，觸發事件
         if(info_on){
-            console.log(info);
             //用來改右邊的控制列
             while(parent.VARIABLE.View.GameArea.RightControl.button.firstChild) parent.VARIABLE.View.GameArea.RightControl.button.removeChild(parent.VARIABLE.View.GameArea.RightControl.button.firstChild);
             parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("座標:"+info.X+","+info.Y));
             parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
+            if(info.Class=='ActionItem')
+                info=info.Under;
+            console.log(info);
             switch (info.Class) {
                 case 'PlayerItem':
                     parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode(info.Side+"方玩家"));
@@ -97,9 +99,6 @@ function MapItem(x,y,T){
                     parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode(info.Side+"方建築物"));
                     // code
                     break;
-                
-                default:
-                    // code
             }
         }
     });
@@ -108,7 +107,7 @@ function MapItem(x,y,T){
         if(tmp.Class!='MapItem')
         {
             info_on=true;
-            if(tmp.Class=='MoveItem' || tmp.Class=='AttackItem' ||tmp.Class=='BulidItem')
+            if(tmp.Class=='ActionItem')
                 if(tmp.Under.Class!='MapItem')
                     info=tmp.Under;
                 else
@@ -118,6 +117,7 @@ function MapItem(x,y,T){
                 }
             else
                 info=tmp;
+            
         }
         else
         {
@@ -195,7 +195,9 @@ function MapItem(x,y,T){
 
 function PlayerItem(x,y,no,T,S) {
   //x,y,號碼,兵種,陣營
-  //要新增狀態類
+  //要新增狀態類,置盲、中毒等每個都要獨立有回合變數、函式
+  var Arms_init0=[];
+  
   MapItem.call(this,x,y);
   this.Invincible=false;
   this.VisiAble=true;
@@ -208,8 +210,10 @@ function PlayerItem(x,y,no,T,S) {
   this.Class='PlayerItem';
   this.AP;
   this.HP;
+  this.Move_AP=0;
   this.APRecover;
-  this.Hidden;
+  this.Hidden=false;
+  
   var Data=new Object();
   this.getData=function() {
      var tmp=this;
@@ -243,11 +247,21 @@ function PlayerItem(x,y,no,T,S) {
   this.show=function(){
       switch(this.Type){
         case 'MAN' :
-            
-            this.Under.show();
             this.Div.style.backgroundColor = "transparent"; 
-            this.Div.style.backgroundImage = "url(./src/pic/房子.png)";
+            this.Div.style.backgroundImage = "url(./src/pic/房子1.png)";
+            this.Under.show();
             break;
+      }
+      if(this.Hidden){
+          
+          if(this.Under.Class=='MapItem'){
+                this.Div.style.backgroundColor = "transparent"; 
+                this.Div.style.backgroundImage = "";
+            }
+            else{
+                this.Under.show();
+                this.Div.style.backgroundColor="transparent";
+            }
       }
   }
   this.setType();
@@ -261,21 +275,36 @@ function PlayerItem(x,y,no,T,S) {
    }
    this.Hide=function(){
        //躲起來?
+       if(this.Hidden){
+            this.Hidden=false;
+            this.MoveAble=false;
+       }
+       else
+       {
+           
+            this.Hidden=true;
+            this.MoveAble=true; 
+            this.Move_AP=this.Under.Move_AP;
+       }
+       
    }
 }
 PlayerItem.prototype.constructor=PlayerItem;
 
-function BulidingItem(x,y,T,S) {
+function BulidingItem(x,y,T,S,Turn) {
   //x,y,type,Moveable,VisiAble,ViewRange,RadioRange
+  //要有結束回合
   MapItem.call(this,x,y);
   this.VisiAble=true;
   this.Type=T;
   this.Side=S;
   this.EndTurn=-1;
-  this.AP;//移動到這個建築物下
+  this.AP;
+  this.Move_AP;//移動到這個建築物下
   this.Cost;
   this.HP;
   this.Invincible=false;
+  this.EndTurn=-1;
   this.RadioRange=0;
   this.ViewRange=0;
   this.Class='BulidingItem';
@@ -298,7 +327,7 @@ function BulidingItem(x,y,T,S) {
         this.ViewRange=5;
         this.RadioRange=10;
         this.MoveAble=true;
-        this.AP=5;
+        this.Move_AP=5;
         this.HP=100;
         this.Cost=10;
         break;
@@ -306,7 +335,7 @@ function BulidingItem(x,y,T,S) {
         this.ViewRange=0;
         this.RadioRange=10;
         this.MoveAble=true;
-        this.AP=5;
+        this.Move_AP=5;
         this.HP=100;
         this.Cost=10;
         break;
@@ -314,7 +343,7 @@ function BulidingItem(x,y,T,S) {
         this.ViewRange=5;
         this.RadioRange=0;
         this.MoveAble=true;
-        this.AP=5;
+        this.Move_AP=5;
         this.HP=100;
         this.Cost=10;
         break;
@@ -322,7 +351,7 @@ function BulidingItem(x,y,T,S) {
         this.ViewRange=0;
         this.RadioRange=0;
         this.MoveAble=true;
-        this.AP=0;
+        this.Move_AP=0;
         this.HP=1;
         this.Cost=10;
         break;
@@ -330,9 +359,10 @@ function BulidingItem(x,y,T,S) {
         this.ViewRange=0;
         this.RadioRange=0;
         this.MoveAble=true;
-        this.AP=0;
+        this.Move_AP=0;
         this.HP=1;
         this.Cost=10;
+        this.EndTurn=Turn;
         break;
     }
   }
@@ -340,48 +370,52 @@ function BulidingItem(x,y,T,S) {
     if(this.VisiAble)
       switch(this.Type){
         case 'HOUSE' :
-            this.Div.style.backgroundColor="#000000";
-            break;
+                this.Div.style.backgroundColor="#000000";
+                break;
             case 'RADIO_POINT':
-            if(this.Under.Class=='MapItem')
-                this.Div.style.backgroundColor="#000000";
-            else{
-                this.Under.show();
-                this.Div.style.backgroundColor="transparent";
-            }
-            break;
+                this.Div.style.backgroundColor = "transparent"; 
+                this.Div.style.backgroundImage = "url(./src/pic/房子.png)";
+                break;
             case 'WATCH_POINT':
-            if(this.Under.Class=='MapItem')
-                this.Div.style.backgroundColor="#000000";
-            else{
-                this.Under.show();
-                this.Div.style.backgroundColor="transparent";
-            }
-            break;
+                this.Div.style.backgroundColor = "transparent"; 
+                this.Div.style.backgroundImage = "url(./src/pic/房子.png)";
+                break;
         case'HEAL':
-            if(this.Under.Class=='MapItem')
-            this.Div.style.backgroundColor="#000000";
-            else{
-            this.Under.show();
-            this.Div.style.backgroundColor="transparent";
-            }
+                this.Div.style.backgroundColor = "transparent"; 
+                this.Div.style.backgroundImage = "url(./src/pic/房子.png)";
             break;
         case'TIME_BOMB':
-            if(this.Under.Class=='MapItem')
                 this.Div.style.backgroundColor="#000000";
-            else{
-            this.Under.show();
-                this.Div.style.backgroundColor="transparent";
-            }
             break;      }
   }
-  this.setTurn=function(Turn) {
-      
-      // 需要紀時間的
-  }
+  
   this.setType();
 }
 BulidingItem.prototype.constructor=BulidingItem;
+
+function AiItem(x,y) {
+    MapItem.call(this,x,y);
+    this.VisiAble=true;
+    this.MoveAble=false;
+    this.Invincible=false;
+    this.Class='AiItem';
+    this.HP=100;
+    this.AP=10;
+    this.Move_AP=0;
+    this.Move=function(x,y)//移動...
+   {
+     this.X=x;
+     this.Y=y;
+     this.Div.style.left = (this.X * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+     this.Div.style.top = (this.Y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+   }
+    this.show=function(){//放圖
+    this.Div.style.backgroundColor = "transparent"; 
+    this.Div.style.backgroundImage = "url(./src/pic/房子1.png)";
+    this.Under.show();
+    }
+}
+AiItem.prototype.constructor=AiItem;
 
 function TurnItem(x,y,T,S,turn){
     //來放不用靜態物件又要記回合的，像是空襲
@@ -419,8 +453,7 @@ function ActionItem(x,y) {
         else{
             if(this.Under.VisiAble){
                 this.Under.show();
-                this.Div.style.backgroundColor="transparent"; 
-               
+                this.Under.Div.style.backgroundColor="#FFFF00";
             }
             else
             {

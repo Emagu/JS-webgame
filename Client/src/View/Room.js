@@ -318,7 +318,7 @@ function RoomView(windowSize,Option){
 	        }
 	        actorDiv[pos].appendChild(document.createTextNode(data[i].ActorName));
 	        LevelDiv[pos].appendChild(document.createTextNode(data[i].Level));
-	        if(data[i].Ready == 0){
+	        if(data[i].State == 0){
 	            canStart = false;
 	        }else{
 	            readyDiv[pos].appendChild(document.createTextNode("準備"));
@@ -333,7 +333,8 @@ function RoomView(windowSize,Option){
                 break;
             case 2://開始
                 needsend = 0;
-                gameStart_command(VARIABLE.USER.RoomID);
+                if(canStart) gameStart_command(VARIABLE.USER.RoomID);
+                else getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
                 break;
             case 3://換位
                 needsend = 0;
