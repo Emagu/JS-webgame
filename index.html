@@ -79,31 +79,49 @@
     <script>
         var VARIABLE=new Object();//全域變數
         init();
-        //checkSave();/*global checkSave 實作於ajax*/
+        function setCookie(c_name,value,expiredays) {
+        	var exdate=new Date();
+            exdate.setDate(exdate.getDate()+expiredays);
+        	document.cookie = c_name+ "=" +escape(value) + ((expiredays==null) ? "" : ";expires="+exdate.toGMTString());
+        }
+        function getcookie(name){
+            console.log(document.cookie);
+            if (document.cookie.length>0){
+                var c_start=document.cookie.indexOf(name + "=")
+                if (c_start!=-1){ 
+                    c_start=c_start + name.length+1 
+                    var c_end = document.cookie.indexOf(";",c_start)
+                    if (c_end==-1) c_end=document.cookie.length
+                    return unescape(document.cookie.substring(c_start,c_end))
+                } 
+            }
+            return ""
+        }
         function init(){
-            function checkSave_res(data){
+            function checkSave(){
+                VARIABLE.USER.UserID = getcookie("UserID");
+                VARIABLE.USER.RoomID = getcookie("roomID");
+                VARIABLE.Socket.emit("getMap",VARIABLE.USER);
+            }
+            function getMap_res(data){
                 console.log(data);
-                /*if(data.status == "Success"){
-        		    VARIABLE.USER.UserID = data.data.UserID;
-        		    VARIABLE.Map = [];
-        		    for(var i=0;i<data.Map.length;i++){
-        		        VARIABLE.Map.push(data.Map[i]);
-        		    }
-                    if(data.data.ActorID == 0){//登入成功但未有角色
-                        NewActorViewInit();  
-                    }else{//登入成功且已有角色
-                        VARIABLE.USER.ActorID = data.data.ActorID;
-                        if(data.data.RoomID != 0){
-                            VARIABLE.USER.RoomID = data.data.RoomID;
-                            gameStart(VARIABLE.USER.RoomID);/*global gameStart in ajax*/
-                        /*}else{
-            			    HallViewInit();
-                        }
+                if(data.status == "secss"){
+                    VARIABLE.Map = data.Map
+                }
+                console.log(VARIABLE.USER.UserID);
+        		if(VARIABLE.USER.UserID!=""){
+        		    if(data.ActorID==0) NewActorViewInit();
+        		    else{
+        		        VARIABLE.USER.ActorID = data.ActorID;
+        		        if(VARIABLE.USER.RoomID!=""){
+        		            
+        		        }else{
+        		            HallViewInit();
+        		        }
         		    }
         		}else{
-        		    /*global loginViewiInit 實作於index*/
         		    loginViewiInit();
-        		//}
+        		}
             }
             function register_res(data){
                 console.log(data);
@@ -113,6 +131,7 @@
                 console.log(data);
                 if(data.status=='secss'){
                     VARIABLE.USER.UserID = data.UserID;
+                    setCookie('UserID',data.UserID,7);
                     if(!data.ActorID) NewActorViewInit();
                     else {
                         VARIABLE.USER.ActorID = data.ActorID;
@@ -134,6 +153,9 @@
                 if(data.status=='secss'){
                     VARIABLE.USER.ActorName = data.actorName;
                     VARIABLE.USER.Level = data.LV;
+                    VARIABLE.View.Hall.StatusRender();
+                    if(data.RoomList) VARIABLE.View.Hall.update(data.RoomList);
+                    setTimeout(function(){ViewInit(VARIABLE.View.Hall.self)}, 3000);
                 }
             }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
@@ -144,13 +166,13 @@
             ViewInit(VARIABLE.View.Block.self);
             VARIABLE.USER = new UserData();/*global UserData 實作於Data*///用戶資料
             VARIABLE.Socket = io();/*global io in socket.io*/
-            VARIABLE.Socket.on('check save',checkSave_res);
             VARIABLE.Socket.on('register',register_res);
             VARIABLE.Socket.on('login',login_res);
             VARIABLE.Socket.on('newActor',newActor_res);
             VARIABLE.Socket.on('getActor',getActor_res);
             VARIABLE.Socket.on('getRoomList',getActor_res);
-            VARIABLE.Socket.emit("check save");
+            VARIABLE.Socket.on('getMap',getMap_res);
+            checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
         function ViewInit(View){
@@ -183,6 +205,13 @@
             VARIABLE.View.Hall = new HallView(getWindowSize(),VARIABLE.Option.getWindowSize());
             VARIABLE.Socket.emit("getActor",VARIABLE.USER.ActorID);
         }//大廳描繪
+        function CreateRoomViewInit(){
+            VARIABLE.SCENES = "createHall";
+            /*global CreateRoomView 實作於src/View.* */
+            VARIABLE.View.CreateRoom = new CreateRoomView(getWindowSize(),VARIABLE.Option);
+            VARIABLE.Socket.on('checkRoomName',VARIABLE.View.CreateRoom.checkRoomNameRes);
+            ViewInit(VARIABLE.View.CreateRoom.self);
+        }//建立房間
         //以下為系統工具
         function getWindowSize(){
             var w = window,

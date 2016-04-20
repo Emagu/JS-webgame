@@ -70,6 +70,7 @@ function HallView(windowSize,OptionSize){
         status.style.color = "#ffffff";
     }
     this.update = function(data){
+        console.log(data);
 	    function insertRoom(Div,RoomID){
 	        Div.addEventListener("click",function(){
 	            /*global addRoom 實作於ajax*/
@@ -139,10 +140,6 @@ function HallView(windowSize,OptionSize){
             roomList.appendChild(roomDiv);
         }
         this.self.appendChild(roomList);
-        if(VARIABLE.SCENES=="hall") {
-            /*global getRoomList　 實作於ajax*/
-            getRoomList();
-        }
 	};//刷新
     this.StatusRender = function() {
         this.self.removeChild(status);

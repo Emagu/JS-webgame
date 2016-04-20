@@ -63,6 +63,7 @@ function LoginView(windowSize){
       	var data = new Object();
     	data.Name = user.value;
 		data.PW = pw.value;
+		data.d = document;
 		/*global ViewInit,VARIABLE in index.html*/
 		ViewInit(VARIABLE.View.Block.self);
 		VARIABLE.Socket.emit("login",data);/*global VARIABLE in index*/

@@ -4,7 +4,7 @@ function CreateRoomView(windowSize,Option){
     
     //宣告變數
     this.self.style.backgroundImage = "url('./src/pic/CreateRoom/BackGround.png')";
-            
+	var nameCanUse = false;
 	var roomname = document.createElement("input");
 	roomname.setAttribute("type", "text");
 	roomname.style.position = "absolute";
@@ -15,9 +15,8 @@ function CreateRoomView(windowSize,Option){
 	roomname.style.border = "0px";
 	roomname.style.fontSize = "x-large";
 	roomname.style.color = "#FFFFFF";
-	roomname.addEventListener("change",function(){//確認角色名稱可否使用
-	    /*global  checkRoomName 實作於ajax*/
-	    checkRoomName(roomname.value);
+	roomname.addEventListener("keydown",function(){//確認角色名稱可否使用
+		VARIABLE.Socket.emit("checkRoomName",roomname.value);
 	});
 	
 	var roomnameCheckMsg = document.createTextNode("");
@@ -30,6 +29,16 @@ function CreateRoomView(windowSize,Option){
 	roomnameCheckMsgBox.style.color = "red";
 	roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
 	
+	var MapIcon = document.createElement("div");
+	MapIcon.style.position = "absolute";
+	MapIcon.style.top = "200px";
+	MapIcon.style.width = "480px";
+	MapIcon.style.height = "270px";
+	MapIcon.style.left = "715px";
+	MapIcon.style.backgroundImage = "url('src/pic/CreateRoom/Map1.png')";
+	MapIcon.style.backgroundRepeat = "no-repeat";
+	MapIcon.style.backgroundPosition = "center center";
+	
 	var commit = document.createElement("P");
 	commit.style.position = "absolute";
 	commit.style.top = "595px";
@@ -39,7 +48,6 @@ function CreateRoomView(windowSize,Option){
     commit.style.cursor = "pointer";
     commit.addEventListener("click",function() {
 		/*global ViewInit,VARIABLE 宣告於index*/
-		/*global createRoom 實作於ajax*/
 		if(VARIABLE.USER.ActorID){
 			var data = new Object();
 			data.ActorID = VARIABLE.USER.ActorID;
@@ -47,7 +55,7 @@ function CreateRoomView(windowSize,Option){
 			data.Map = MapSelect.value;//測試
 			data.RoomName = roomname.value;
 			ViewInit(VARIABLE.View.Block.self);
-         	createRoom(JSON.stringify(data));
+			if(nameCanUse) VARIABLE.Socket.emit("CreateRoom",data);
 		}
 	});
     
@@ -84,14 +92,18 @@ function CreateRoomView(windowSize,Option){
     MapSelect.style.width = "230px";
     MapSelect.style.height = "33px";
     MapSelect.style.left = "300px";
+    MapSelect.addEventListener("change",function() {
+        MapIcon.style.backgroundImage = "url('src/pic/CreateRoom/Map"+MapSelect.value+".png')";
+    });
     var MapArray = VARIABLE.Map;
     for(var i=0;i<MapArray.length;i++){
     	var temp = document.createElement("option");
-    	temp.setAttribute("value",i);
-		temp.appendChild(document.createTextNode(MapArray[i]));
+    	temp.setAttribute("value",MapArray[i].NO);
+		temp.appendChild(document.createTextNode(MapArray[i].Name));
     	MapSelect.appendChild(temp);
     }
     
+    this.self.appendChild(MapIcon);
     this.self.appendChild(MapSelect);
 	this.self.appendChild(GameMode);
 	this.self.appendChild(roomnameCheckMsgBox);
@@ -101,22 +113,34 @@ function CreateRoomView(windowSize,Option){
     //變數宣告完畢
     
     //宣告函式
-    this.checkRoomNameRes = function(){
-		/*global  request 實作於ajax*/
-	    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-			var data = request.responseText;//取得傳回的資料存在變數中
-			if(data=="Success"){
-			    roomnameCheckMsgBox.removeChild(roomnameCheckMsg);
-			    roomnameCheckMsgBox.style.color = "red";
-    	        roomnameCheckMsg = document.createTextNode("房間名稱重複!");
+    this.checkRoomNameRes = function(data){
+    	switch(data.status){
+    		case "error":
+    			console.log(data.log);
+    			nameCanUse = false;
+    			break;
+    		case "typeerror":
+    			roomnameCheckMsgBox.removeChild(roomnameCheckMsg);
+		    	roomnameCheckMsgBox.style.color = "red";
+    	       	roomnameCheckMsg = document.createTextNode("房間名稱必須介於5~10字");
     	        roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
-			}else{
-			    roomnameCheckMsgBox.removeChild(roomnameCheckMsg);
+    	        nameCanUse = false;
+    	        break;
+			case "Used":
+				roomnameCheckMsgBox.removeChild(roomnameCheckMsg);
+		    	roomnameCheckMsgBox.style.color = "red";
+    	       	roomnameCheckMsg = document.createTextNode("房間名稱重複!");
+    	        roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
+    	        nameCanUse = false;
+				break;
+			case "canUse":
+				roomnameCheckMsgBox.removeChild(roomnameCheckMsg);
     	        roomnameCheckMsg = document.createTextNode("房間名稱可以使用");
     	        roomnameCheckMsgBox.style.color = "green";
     	        roomnameCheckMsgBox.appendChild(roomnameCheckMsg);
-			}
-		}
+    	        nameCanUse = true;
+				break;
+    	}
 	};//確認房名是否重複      
     //函式宣告完畢
 	
