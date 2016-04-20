@@ -1,0 +1,225 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>全民射屁股王</title>
+        <script src="src/Item/Item.js"></script>
+        <script src="src/Control/left.js"></script>
+        <script src="src/Control/right.js"></script>
+        <script src="src/Control/top.js"></script>
+        <script src="src/Option.js"></script>
+        
+        <script src="src/View/Origin.js"></script>
+        <script src="src/View/Block.js"></script>
+        <script src="src/View/Login.js"></script>
+        <script src="src/View/Register.js"></script>
+        <script src="src/View/NewActor.js"></script>
+        <script src="src/View/Hall.js"></script>
+        <script src="src/View/CreateRoom.js"></script>
+        <script src="src/View/Room.js"></script>
+        <script src="src/View/OptionEdit.js"></script>
+        <script src="src/View/GameArea.js"></script>
+        
+        <script src="src/Data/User.js"></script>
+        
+        <script src="lib/socket.io.js"></script>
+        
+        <style type="text/css">
+            /* The CSS */
+            body {
+                background:#000000;
+            }
+            select {
+                padding:3px;
+                margin: 0;
+                -webkit-border-radius:4px;
+                -moz-border-radius:4px;
+                border-radius:4px;
+                -webkit-box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+                -moz-box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+                box-shadow: 0 3px 0 #ccc, 0 -1px #fff inset;
+                background: #f8f8f8;
+                color:#888;
+                border:none;
+                outline:none;
+                display: inline-block;
+                -webkit-appearance:none;
+                -moz-appearance:none;
+                appearance:none;
+                cursor:pointer;
+            }
+            /* Targetting Webkit browsers only. FF will show the dropdown arrow with so much padding. */
+            @media screen and (-webkit-min-device-pixel-ratio:0) {
+                select {padding-right:18px}
+            }
+            label {position:relative}
+            label:after {
+                content:'<>';
+                font:11px "Consolas", monospace;
+                color:#aaa;
+                -webkit-transform:rotate(90deg);
+                -moz-transform:rotate(90deg);
+                -ms-transform:rotate(90deg);
+                transform:rotate(90deg);
+                right:8px; top:2px;
+                padding:0 0 2px;
+                border-bottom:1px solid #ddd;
+                position:absolute;
+                pointer-events:none;
+            }
+            label:before {
+                content:'';
+                right:6px; top:0px;
+                width:20px; height:20px;
+                background:#3f85c0;
+                position:absolute;
+            }
+        </style>
+    </head>
+    <body></body>
+    <script>
+        var VARIABLE=new Object();//全域變數
+        init();
+        //checkSave();/*global checkSave 實作於ajax*/
+        function init(){
+            function checkSave_res(data){
+                console.log(data);
+                /*if(data.status == "Success"){
+        		    VARIABLE.USER.UserID = data.data.UserID;
+        		    VARIABLE.Map = [];
+        		    for(var i=0;i<data.Map.length;i++){
+        		        VARIABLE.Map.push(data.Map[i]);
+        		    }
+                    if(data.data.ActorID == 0){//登入成功但未有角色
+                        NewActorViewInit();  
+                    }else{//登入成功且已有角色
+                        VARIABLE.USER.ActorID = data.data.ActorID;
+                        if(data.data.RoomID != 0){
+                            VARIABLE.USER.RoomID = data.data.RoomID;
+                            gameStart(VARIABLE.USER.RoomID);/*global gameStart in ajax*/
+                        /*}else{
+            			    HallViewInit();
+                        }
+        		    }
+        		}else{
+        		    /*global loginViewiInit 實作於index*/
+        		    loginViewiInit();
+        		//}
+            }
+            function register_res(data){
+                console.log(data);
+                if(data.status=='secss') alert('註冊成功!');
+            }
+            function login_res(data){
+                console.log(data);
+                if(data.status=='secss'){
+                    VARIABLE.USER.UserID = data.UserID;
+                    if(!data.ActorID) NewActorViewInit();
+                    else {
+                        VARIABLE.USER.ActorID = data.ActorID;
+                        HallViewInit();
+                    }
+                }
+            }
+            function newActor_res(data){
+                console.log(data);
+                if(data.status=='secss'){
+                    VARIABLE.USER.ActorID = data.ActorID;
+                    HallViewInit();
+                }else{
+                    alert("建立失敗");
+                }
+            }
+            function getActor_res(data){
+                console.log(data);
+                if(data.status=='secss'){
+                    VARIABLE.USER.ActorName = data.actorName;
+                    VARIABLE.USER.Level = data.LV;
+                }
+            }
+            VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
+            VARIABLE.Game = new Object();
+            VARIABLE.SCENES = "login";//場景
+            VARIABLE.View = new Object();
+            VARIABLE.View.Block = new BlockView(getWindowSize(),VARIABLE.Option.getWindowSize()); /*global BlockView 實作於Block.js*/
+            ViewInit(VARIABLE.View.Block.self);
+            VARIABLE.USER = new UserData();/*global UserData 實作於Data*///用戶資料
+            VARIABLE.Socket = io();/*global io in socket.io*/
+            VARIABLE.Socket.on('check save',checkSave_res);
+            VARIABLE.Socket.on('register',register_res);
+            VARIABLE.Socket.on('login',login_res);
+            VARIABLE.Socket.on('newActor',newActor_res);
+            VARIABLE.Socket.on('getActor',getActor_res);
+            VARIABLE.Socket.on('getRoomList',getActor_res);
+            VARIABLE.Socket.emit("check save");
+            window.addEventListener( 'resize', onWindowReSize, false );
+        }//初始化
+        function ViewInit(View){
+            while(document.body.firstChild)
+            document.body.removeChild(document.body.firstChild);
+            document.body.appendChild(View);
+        }
+        function loginViewiInit(){
+            VARIABLE.SCENES = "login";
+            /*global LoginView 實作於src/View */
+            VARIABLE.View.Login = new LoginView(getWindowSize());
+            ViewInit(VARIABLE.View.Login.self);
+        }//登入畫面描繪
+        function registerViewInit(){
+            VARIABLE.SCENES = "register";
+            /*global RegisterView 實作於src/View.* */
+            VARIABLE.View.Register = new RegisterView(getWindowSize());
+            ViewInit(VARIABLE.View.Register.self);
+        }//註冊
+        function NewActorViewInit(){
+            VARIABLE.SCENES = "newActor";
+            /*global NewActorView 實作於src/View.* */
+            VARIABLE.View.NewActor = new NewActorView(getWindowSize(),VARIABLE.Option.getWindowSize());
+            VARIABLE.Socket.on('newActorNameCheck',VARIABLE.View.NewActor.CheckActorName);
+            ViewInit(VARIABLE.View.NewActor.self);
+        }//創建角色
+        function HallViewInit(){
+            VARIABLE.SCENES = "hall";
+            /*global HallView 實作於src/View.* */
+            VARIABLE.View.Hall = new HallView(getWindowSize(),VARIABLE.Option.getWindowSize());
+            VARIABLE.Socket.emit("getActor",VARIABLE.USER.ActorID);
+        }//大廳描繪
+        //以下為系統工具
+        function getWindowSize(){
+            var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+            return {W:x,H:y};
+        }
+        function onWindowReSize(){
+            var windowSize = getWindowSize();
+            VARIABLE.View.Block.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+            switch (VARIABLE.SCENES) {
+                case 'login':
+                    VARIABLE.View.Login.windowReSize(windowSize);
+                    break;
+                case 'register':
+                    VARIABLE.View.Register.windowReSize(windowSize);
+                    break;
+                case 'newActor':
+                    VARIABLE.View.NewActor.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+                case 'hall':
+                    VARIABLE.View.Hall.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+                case 'createHall':
+                    VARIABLE.View.CreateRoom.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+                case 'room':
+                    VARIABLE.View.Room.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+                case 'optionEdit':
+                    VARIABLE.View.OptionEdit.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+            }
+        }
+    </script>
+
+</html>

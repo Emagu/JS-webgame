@@ -3,28 +3,12 @@ function RegisterView(windowSize){
     //宣告變數
     //載體
     this.self = document.createElement("div");
-    this.self.style.height = 600;
-    this.self.style.width = 800;
-    this.self.style.backgroundColor = "#000000";
+    this.self.style.height = "600px";
+    this.self.style.width = "800px";
+    this.self.style.backgroundImage = "url('src/pic/registerpageimg/registerimg.png')";
     this.self.style.position = "absolute";
-    this.self.style.textAlign = 'center';
-    var registerimg = document.createElement("img");
-	registerimg.setAttribute("src","/Client/src/pic/registerpageimg/registerimg.png");
-    registerimg.setAttribute("width", "100%");
-    registerimg.setAttribute("height", "100%");
-    this.self.appendChild(registerimg);
     
-    //輸入端口
-	//this.self.appendChild(document.createTextNode("----註冊----"));//標題
-	//標籤
-	var nametxt = document.createElement("P");
-	nametxt.style.position = "absolute";
-	nametxt.style.top = "13%";
-	nametxt.style.width = "20%";
-	nametxt.style.left = "1%";
-	nametxt.appendChild(document.createTextNode("帳號:"));
-
-	var name = document.createElement("input");
+    var name = document.createElement("input");
 	name.setAttribute("type", "text");
 	name.style.backgroundColor = "transparent";
 	name.style.color = "#FFFFFF";
@@ -121,25 +105,19 @@ function RegisterView(windowSize){
 	   	data.PW = pw.value;
 	   	data.PW2 = pw2.value;
 	   	data.Mail = mail.value;
-		register(JSON.stringify(data));/*global register 實作於 ajax.js*/
+	   	VARIABLE.Socket.emit("register",data);/*global VARIABLE in index*/
 	});
 	
-	//this.self.appendChild(pwtxt);
 	this.self.appendChild(pw);
-	//this.self.appendChild(pwtxt2);
 	this.self.appendChild(pw2);
-	//this.self.appendChild(mailtxt);
 	this.self.appendChild(mail);
 	this.self.appendChild(login);
 	this.self.appendChild(name);
-	//this.self.appendChild(nametxt);
 	this.self.appendChild(commit);
 	//變數宣告完畢
 
 	//宣告函式
     this.windowReSize = function(windowSize){//當視窗調整 調整版面
-        //this.self.style.width = windowSize.W * 0.6 + "px";
-        //this.self.style.height = windowSize.H * 0.8 + "px";
         this.self.style.left = (windowSize.W/ 2 - 400) + "px";
         this.self.style.top = (windowSize.H /2- 300) + "px";
     };

@@ -65,7 +65,7 @@ function LoginView(windowSize){
 		data.PW = pw.value;
 		/*global ViewInit,VARIABLE in index.html*/
 		ViewInit(VARIABLE.View.Block.self);
-		login(JSON.stringify(data));	/*global login 實作於 ajax.js*/
+		VARIABLE.Socket.emit("login",data);/*global VARIABLE in index*/
 	});
 	
 	this.self.appendChild(user);

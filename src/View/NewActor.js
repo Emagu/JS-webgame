@@ -4,7 +4,7 @@ function NewActorView(windowSize,OptionSize){
     
     //宣告變數
     this.self.style.backgroundColor = "#FFFFFF";
-    
+    var NameCanUse = false;
     var title = document.createElement("H1");
     title.style.width = "100%";
     title.style.height = "10%";
@@ -28,9 +28,8 @@ function NewActorView(windowSize,OptionSize){
 	actor.style.top = "31.5%";
 	actor.style.width = "10%";
 	actor.style.left = "14%";
-	actor.addEventListener("change",function(){//確認角色名稱可否使用
-	    /*global  checkActorConfig 實作於ajax*/
-	    checkActorConfig(actor.value);
+	actor.addEventListener("keydown",function(){//確認角色名稱可否使用
+	    VARIABLE.Socket.emit("newActorNameCheck",actor.value);/*global VARIABLE in index*/
 	});
 	
 	var actorCheckMsg = document.createTextNode("角色名稱長度5~10字");
@@ -52,10 +51,11 @@ function NewActorView(windowSize,OptionSize){
     commit.style.textAlign = "center";
     commit.appendChild(document.createTextNode("建立!"));
     commit.addEventListener("click",function() {
-		/*global VARIABLE 宣告於index*/
-		/*global  newActor 實作於ajax*/
-        if(VARIABLE.USER.UserID) newActor(actor.value,VARIABLE.USER.UserID);
-        else alert("未登入!");
+		if(!NameCanUse) return;
+		var data = new Object();
+		data.actorName = actor.value;
+		data.userID = VARIABLE.USER.UserID;
+		VARIABLE.Socket.emit("newActor",data);/*global VARIABLE in index*/
 	});
 	
     this.self.appendChild(title);
@@ -66,34 +66,36 @@ function NewActorView(windowSize,OptionSize){
 	//變數宣告完畢
 	
 	//宣告函式
-	this.CheckActorName = function(){
-		/*global  request 實作於ajax*/
-	    if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-			var data = request.responseText;//取得傳回的資料存在變數中
-			switch(data){
-			    case "error#1"://長度不符
-			        actorCheckMsgBox.removeChild(actorCheckMsg);
-    			    actorCheckMsg = document.createElement("div");
-    			    actorCheckMsg.style.textAlign = "center";
-    			    actorCheckMsg.style.color = "red";
-    	            actorCheckMsg.appendChild(document.createTextNode("角色名稱長度不符"));
-    	            actorCheckMsg.appendChild(document.createElement("br"));
-    	            actorCheckMsg.appendChild(document.createTextNode("要求:5~10字"));
-    	            actorCheckMsgBox.appendChild(actorCheckMsg);
-    	            break;
-    	        case "error#4"://可以創建
-			        actorCheckMsgBox.removeChild(actorCheckMsg);
-    	            actorCheckMsg = document.createTextNode("角色名稱可以使用");
-    	            actorCheckMsgBox.style.color = "green";
-    	            actorCheckMsgBox.appendChild(actorCheckMsg);
-    	            break;
-    	        default://角色名稱重複
-    	            actorCheckMsgBox.removeChild(actorCheckMsg);
-    	            actorCheckMsgBox.style.color = "red";
-    	            actorCheckMsg = document.createTextNode("角色名稱重複!");
-    	            actorCheckMsgBox.appendChild(actorCheckMsg);
-    	            break;
-			}
+	this.CheckActorName = function(data){
+		switch(data.status){
+		    case "typeerror"://長度不符
+		        actorCheckMsgBox.removeChild(actorCheckMsg);
+    		    actorCheckMsg = document.createElement("div");
+    		    actorCheckMsg.style.textAlign = "center";
+    		    actorCheckMsg.style.color = "red";
+    	        actorCheckMsg.appendChild(document.createTextNode("角色名稱長度不符"));
+    	        actorCheckMsg.appendChild(document.createElement("br"));
+    	        actorCheckMsg.appendChild(document.createTextNode("要求:5~10字"));
+    	        actorCheckMsgBox.appendChild(actorCheckMsg);
+    	        NameCanUse = false;
+    	        break;
+			case "canUse"://可以創建
+				actorCheckMsgBox.removeChild(actorCheckMsg);
+				actorCheckMsg = document.createTextNode("角色名稱可以使用");
+				actorCheckMsgBox.style.color = "green";
+				actorCheckMsgBox.appendChild(actorCheckMsg);
+				NameCanUse = true;
+			break;
+			case "Used"://角色名稱重複
+				actorCheckMsgBox.removeChild(actorCheckMsg);
+				actorCheckMsgBox.style.color = "red";
+				actorCheckMsg = document.createTextNode("角色名稱重複!");
+				actorCheckMsgBox.appendChild(actorCheckMsg);
+				NameCanUse = false;
+			break;
+			case "error":
+				console.log(data.log);
+				break
 		}
 	};
     //函式宣告完畢
