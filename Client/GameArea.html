@@ -269,11 +269,9 @@
             }
             var connetRange=me.RadioRange;//通訊測試範圍
             var friends=Radio();//可以另外取得物件視野
-            console.log(friends);
             for(var i=0;i!=ViewCube.length;i++){
                 friends.push(ViewCube[i]);//額外視野
             }
-             console.log(friends);
             for(var i=0;i!=friends.length;i++)
             {
                 CalHorizons(friends[i]);
@@ -303,6 +301,7 @@
                     var tmp=Horizons-Math.abs(x);
                     for(var y=-tmp;y<=tmp;y++)
                     {
+                        console.log(CenterX+x,CenterY+y);
                         if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定
                         {
                             console.log(MapCube[CenterX+x][CenterY+y]);
