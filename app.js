@@ -28,6 +28,7 @@ app.use('/lib', express.static(__dirname + '/lib'));
 //當新的使用者連接進來的時候
 io.on('connection', function(socket){
 	socket.local = null;
+	socket.User = new Object();
 	//init
 	socket.on('getMap', function(data){
 		var isEcho = false;
@@ -35,7 +36,7 @@ io.on('connection', function(socket){
 		if(data.UserID!=""){
 			connection.query('SELECT * FROM `actor_list` WHERE `userID` = ?',[data.UserID], function(error, rows){
 				if (error){
-					io.emit('getMap', {
+					socket.emit('getMap_res', {
 						status: 'error',
 						log: error
 					});
@@ -48,12 +49,12 @@ io.on('connection', function(socket){
 		if(!isEcho){
 			connection.query('SELECT * FROM `Map`', function(error,rows){
 			    if(error){
-			        io.emit('getMap', {
+			        socket.emit('getMap_res', {
 						status: 'error',
 						log: error
 					});
 			    }else{
-			    	io.emit('getMap', {
+			    	socket.emit('getMap_res', {
 						status: 'secss',
 						Map:rows,
 						ActorID:ActorID
@@ -65,47 +66,47 @@ io.on('connection', function(socket){
 	//register
 	socket.on('register', function(msg){
 		if(msg.Name==""){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Name cann`t be empty!'
 			});
 		}else if(msg.PW==""){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Password cann`t be empty!'
 			});
 		}else if(msg.PW2==""){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Password2 cann`t be empty!'
 			});
 		}else if(msg.Mail==""){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Email cann`t be empty!'
 			});
 		}else if(msg.Name.length>USER_NAME_MAX || msg.Name.length<USER_NAME_MIN){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Name length must between '+USER_NAME_MIN+' ~ '+USER_NAME_MAX
 			});
 		}else if(msg.PW.length>USER_PW_MAX || msg.PW.length<USER_PW_MIN){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Password length must between '+USER_PW_MIN+' ~ '+USER_PW_MAX
 			});
 		}else if(msg.PW2.length>USER_PW_MAX || msg.PW2.length<USER_PW_MIN){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Password2 length must between '+USER_PW_MIN+' ~ '+USER_PW_MAX
 			});
 		}else if(msg.PW!=msg.PW2){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Password != Password2'
 			});
 		}else if(!(/^.+@.+\..{2,3}$/.test(msg.Mail))){
-			io.emit('register', {
+			socket.emit('register_res', {
 				status: 'error',
 				log: 'Email type error'
 			});
@@ -118,12 +119,12 @@ io.on('connection', function(socket){
 			connection.query('INSERT INTO `member_list` SET ?', data, function(error){
 			    if(error){
 			        console.log('寫入資料失敗！');
-			        io.emit('register', {
+			        socket.emit('register_res', {
 						status: 'error',
 						log: error
 					});
 			    }else{
-			    	io.emit('register', {
+			    	socket.emit('register_res', {
 						status: 'secss'
 					});
 			    }
@@ -136,14 +137,15 @@ io.on('connection', function(socket){
 		connection.query('SELECT * FROM `member_list` WHERE username = ?',[msg.Name], function(error, rows, fields){
 		    if (error){
 		    	isEcho = true;
-		    	io.emit('login', {
+		    	socket.emit('login_res', {
 					status: 'error',
 					log: error
 				});
 		    }else{
 		    	for (var i in rows) {
 			    	if(rows[i].password == md5(msg.PW)){
-			    		io.emit('login', {
+			    		
+			    		socket.emit('login_res', {
 							status: 'secss',
 							UserID: rows[i].NO,
 							ActorID: rows[i].ActorID
@@ -154,7 +156,7 @@ io.on('connection', function(socket){
 	    		}
 		    }
 		    if(!isEcho){
-		    	io.emit('login', {
+		    	socket.emit('login_res', {
 					status: 'fail'
 				});
 		    }
@@ -165,7 +167,7 @@ io.on('connection', function(socket){
 		connection.query('INSERT INTO `actor_list` SET ?', msg, function(error,result){
 			if(error){
 				console.log('寫入資料失敗！');
-				io.emit('newActor', {
+				socket.emit('newActor_res', {
 					status: 'error',
 					log: error
 				});
@@ -173,12 +175,12 @@ io.on('connection', function(socket){
 		    	connection.query('UPDATE `member_list` SET `ActorID` =  ? WHERE `NO` = ?', [result.insertId,msg.userID], function(error){
 		    		if(error){
 						console.log('寫入資料失敗！');
-						io.emit('newActor', {
+						socket.emit('newActor_res', {
 							status: 'error',
 							log: error
 						});
 		    		}else{
-		    			io.emit('newActor', {
+		    			socket.emit('newActor_res', {
 							status: 'secss',
 							ActorID: result.insertId
 						});
@@ -189,80 +191,51 @@ io.on('connection', function(socket){
 	});
 	socket.on('newActorNameCheck', function(msg){
 		if(msg.length>ACTOR_NAME_MAX || msg.length<ACTOR_NAME_MIN){
-			io.emit('newActorNameCheck', {
+			socket.emit('newActorNameCheck_res', {
 				status: 'typeerror'
 			});
 		}else{
 			connection.query('SELECT * FROM `actor_list` WHERE actorName = ?',[msg], function(error, rows, fields){
 				if (error){
-					io.emit('newActorNameCheck', {
+					socket.emit('newActorNameCheck_res', {
 						status: 'error',
 						log: error
 					});
 				}else if(rows.length > 0){
-					io.emit('newActorNameCheck', {
+					socket.emit('newActorNameCheck_res', {
 						status: 'Used'
 					});
 				}else{
-					io.emit('newActorNameCheck', {
+					socket.emit('newActorNameCheck_res', {
 						status: 'canUse'
 					});
 				}
 			});
 		}
 	});
-	//Hallinit
-	socket.on('getActor', function(msg){
-		var isEcho = false;
-		if(!isEcho){
-			connection.query('SELECT * FROM `actor_list` WHERE `NO` = ?',[msg], function(error, rows){
-				if (error){
-					io.emit('getActor', {
-						status: 'error',
-						log: error
-					});
-					isEcho = true;
-				}else{
-					for (var i in rows) {
-						socket.local = "hall";
-						io.emit('getActor', {
-							status: 'secss',
-							LV: rows[i].LV,
-							actorName: rows[i].actorName,
-							RoomList: getRoomList()
-						});
-						isEcho = true;
-						break;
-				    }
-		    	}
-		    	if(!isEcho){
-			    	io.emit('getActor', {
-						status: 'fail'
-					});
-			    }
-			});
-		}
-		
+	//Hall
+	socket.on('hallinit', function(actorID){
+		hallinit(socket,actorID)
 	});
-	//CreateRoom
+	//Room
 	socket.on('checkRoomName', function(msg){
 		if(msg.length>ROOM_NAME_MAX || msg.length<ROOM_NAME_MIN){
-			io.emit('checkRoomName', {
+			socket.emit('checkRoomName_res', {
 				status: 'typeerror'
 			});
 		}else{
 			connection.query('SELECT * FROM `room_list` WHERE `Name` = ?',[msg], function(error, rows, fields){
 				if (error){
-					io.emit('checkRoomName', {
+					socket.emit('checkRoomName_res', {
 						status: 'error',
 						log: error
 					});
 				}else if(rows.length > 0){
-					io.emit('checkRoomName', {
+					socket.emit('checkRoomName_res', {
 						status: 'Used'
 					});
 				}else{
-					io.emit('checkRoomName', {
+					socket.emit('checkRoomName_res', {
 						status: 'canUse'
 					});
 				}
@@ -270,77 +243,204 @@ io.on('connection', function(socket){
 		}
 	});
 	socket.on('CreateRoom', function(msg){
-		console.log(msg);
-		/*connection.query('INSERT INTO `actor_list` SET ?', msg, function(error,result){
+		connection.query('INSERT INTO `room_list` SET ?', msg, function(error,result){
 			if(error){
 				console.log('寫入資料失敗！');
-				io.emit('newActor', {
+				socket.emit('addRoom_res', {
 					status: 'error',
 					log: error
 				});
-		    }else{
-		    	connection.query('UPDATE `member_list` SET `ActorID` =  ? WHERE `NO` = ?', [result.insertId,msg.userID], function(error){
-		    		if(error){
-						console.log('寫入資料失敗！');
-						io.emit('newActor', {
-							status: 'error',
-							log: error
-						});
-		    		}else{
-		    			io.emit('newActor', {
-							status: 'secss',
-							ActorID: result.insertId
-						});
-		    		}
-		    	});
+			}else{
+				var pos = addRoom(result.insertId,msg.RoomMaster);
+				if(pos!=-1){
+					socket.emit('addRoom_res', {
+						status: 'secss',
+						Postion: pos,
+						RoomID: result.insertId,
+						RoomMaster: true
+					});
+					setTimeout(function(){
+						updateRoomList();
+					},50);
+				}else{
+					socket.emit('addRoom_res', {
+						status: 'fail'
+					});
+				}
 		    }
-		});*/
+		});
 	});
-	
+	socket.on('addRoom', function(msg){
+		var pos = addRoom(msg.RoomID,msg.ActorID);
+		if(pos!=-1){
+			socket.local = "room";
+			socket.User.RoomID = msg.RoomID;
+			setTimeout(function(){
+				updateRoomList();
+			},50);
+			io.emit('addRoom_res', {
+				status: 'secss',
+				Postion: pos,
+				RoomID: msg.RoomID,
+				ActorID: msg.ActorID,
+				RoomMaster: false
+			});
+		}else{
+			socket.emit('addRoom_res', {
+				status: 'fail'
+			});
+		}
+	});//addRoom
+	socket.on('updateRoom', function(msg){
+		updateRoom(msg);
+	});//updateRoom
+	socket.on('SetRoomStatus', function(msg){
+		connection.query('UPDATE `room_actor_list` SET `state` = ? WHERE `actorID` = ?', [msg.Status,msg.ActorID], function(error){
+			if(error){
+				console.log(error);
+			}else{
+				setTimeout(function() {
+                    updateRoom(msg.RoomID);
+				}, 50);
+			}
+		});
+	});//SetRoomStatus
+	socket.on('SetRoomPostion', function(msg){//RoomPostion
+		connection.query('UPDATE `room_actor_list` SET `Postion` = ? WHERE `actorID` = ?', [msg.Postion,msg.ActorID], function(error){
+			if(error){
+				console.log(error);
+			}else{
+				console.log(msg);
+				setTimeout(function() {
+					updateRoom(msg.RoomID);
+				}, 50);
+			}
+		});
+	});//SetRoomPostion
+	socket.on('SetActorType', function(msg){//RoomPostion
+		connection.query('UPDATE `room_actor_list` SET `Type` = ? WHERE `actorID` = ?', [msg.Type,msg.ActorID], function(error){
+			if(error){
+				console.log(error);
+			}else{
+				setTimeout(function() {
+					updateRoom(msg.RoomID);
+				}, 50);
+			}
+		});
+	});//SetActorType
+	socket.on('quitRoom', function(msg){//RoomPostion
+		socket.roomID = 0;
+		quitRoom(socket,msg);
+	});//SetActorType
 	//週期任務1S一次
 	setInterval(function() {
-		if(roomlist_needupdate){
-			io.emit('RoomList_Update', {
-				data: getRoomList()
-			});	
-		} 
 	  }, 1000);
 	//left
 	socket.on('disconnect',function(){
-		console.log(socket.username+" left.");
-		io.emit('user left',{
-			username:socket.username
-		});
+		if(socket.local == "room"){
+			console.log(socket.User);
+			quitRoom(socket,socket.User);//玩家離房	
+		} 
 	});
 });
-function getRoomList(){
-	var RoomList = [];
-	connection.query('SELECT * FROM `room_list`', function(error, rows){
+function quitRoom(socket,msg){//msg =>{ActorID,RoomID,Echo("是否回傳")}
+	connection.query('DELETE FROM `room_actor_list` WHERE `actorID` = ?', [msg.ActorID], function(error,rows){
+		if(error)console.log(error);
+		else{
+			setTimeout(function(){
+				updateRoom(msg.RoomID);
+			},50);
+			setTimeout(function(){
+				updateRoomList();
+			},50);
+			if(msg.Echo){
+				hallinit(socket,msg.ActorID);
+			}
+		}
+	});
+}
+function hallinit(socket,actorID){
+	connection.query('SELECT * FROM `actor_list` WHERE `NO` = ?',[actorID], function(error, rows){
 		if (error){
-			console.log(error);
-			return false;	
+			socket.emit('hallinit', {
+				status: 'error',
+				log: error
+			});
 		}else{
-			for (var i in rows) {
-				var roomid = rows[i].NO;
-				connection.query('SELECT * FROM `room_actor_list` WHERE `roomID` = ?', [roomid], function(err, rws){
-					if(err){
-						console.log(err);
-						return false;	
-					}else{
-						var roomdata = new Object();
-						roomdata.RoomID = roomid;
-						roomdata.RoomName = rows[i].Name;
-						roomdata.Map = rows[i].Map;
-						roomdata.ActorNum = rws.length;
-						RoomList.push(roomdata);
-					}
+			if(rows.length>0){
+				updateRoomList();
+				socket.User.ActorID = actorID;
+				socket.local = "hall";
+				socket.emit('hallinit', {
+					status: 'secss',
+					LV: rows[0].LV,
+					actorName: rows[0].actorName
 				});
 			}
 		}
 	});
-	return RoomList;
 }
-var roomlist_needupdate = false;
+function updateRoom(msg){
+	connection.query('SELECT A.actorName,A.LV,B.actorID,B.Postion,B.Type,B.state FROM actor_list AS A RIGHT JOIN room_actor_list AS B ON A.NO = B.actorID WHERE B.roomID = ?', [msg], function(error,rows){
+		if(error)console.log(error);
+		else{
+			var PlayData = rows;
+			connection.query('SELECT `RoomMaster` FROM `room_list` WHERE `NO` = ?', [msg], function(err,rows){
+				if(err){
+					console.log(err);
+				}else{
+					if(rows.length>0){
+						io.emit('updateRoom_res', {
+							status: "secss",
+							PlayData: PlayData,
+							Master: rows[0].RoomMaster,
+							RoomID: msg
+						});
+					}
+				}
+			});
+		}
+	});
+}
+function updateRoomList(){
+	connection.query('SELECT A.NO,A.Name,A.Map,COUNT(actorID) FROM room_list AS A RIGHT JOIN room_actor_list AS B ON A.NO = B.roomID GROUP BY A.NO', function(error, rows){
+		if (error){
+			console.log(error);
+			return false;	
+		}else{
+			var finsh = false;
+			io.emit('RoomListUpdate',rows);
+		}
+	});
+}
+function addRoom(roomID,actorID){
+	var date = new Date();
+	var pos = 0;
+	connection.query('SELECT * FROM `room_actor_list` WHERE `roomID` = ?',[roomID], function(error, rows){
+		if (error){
+			console.log(error);
+			return -1;
+		}else{
+			for(var i in rows){
+				if(rows[i].Postion==pos) pos++;
+			}
+			var data = {
+				roomID: roomID,
+				actorID: actorID,
+				lasttime: date,
+				Postion: pos
+			}
+			connection.query('INSERT INTO `room_actor_list` SET ?', data, function(error){
+				if (error){
+					console.log(error);
+					return -1;
+				}else{
+					return pos;
+				}
+			});
+		}
+	});
+}
 //指定port
 http.listen(process.env.PORT || 3000, function(){
 	console.log('listening on *:3000');

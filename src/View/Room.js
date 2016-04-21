@@ -3,10 +3,9 @@ function RoomView(windowSize,Option){
     OriginView.call(this,windowSize,Option.getWindowSize());//繼承 
     
     //宣告變數
-    var canStart = false;
-    var statusID = 0;
-    var needsend = 0;
-    var RoomPosition = 0;
+    var RoomMaster;
+    var canStart = true;
+    var Ready = false;
     var ActorType = 0;
     var ActorTypeChoose = null;
     
@@ -18,7 +17,6 @@ function RoomView(windowSize,Option){
     command.style.left = "0px";
     command.style.top = "0px";
     
-    
     var command_Start = document.createElement("div");
     command_Start.style.width = "98%";
     command_Start.style.height = "18%";
@@ -29,26 +27,21 @@ function RoomView(windowSize,Option){
     command_Start.style.cursor = "pointer";
     command_Start.style.textAlign = "center";
     /*global VARIABLE 宣告於index*/
-    if(VARIABLE.USER.RoomMaster) {
-        command_Start.appendChild(document.createTextNode("開始遊戲"));
-        statusID = 1;
-    }else command_Start.appendChild(document.createTextNode("準備完成"));
+    command_Start.appendChild(document.createTextNode("準備完成"));
     command_Start.addEventListener("click",function() {
         if(!VARIABLE.USER.RoomMaster){
-            needsend = 1;
-           /*RoomStatus 實作於ajax*/
-           if(statusID == 1){
+           if(Ready){
                while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
                command_Start.appendChild(document.createTextNode("準備完成"));
-               statusID = 0;
+               Ready = false;
+               VARIABLE.Socket.emit("SetRoomStatus",{Status:0,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
            }else{
                while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
                command_Start.appendChild(document.createTextNode("取消準備"));
-               statusID = 1;
+               Ready = true;
+               VARIABLE.Socket.emit("SetRoomStatus",{Status:1,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
            }
-        }else{
-           needsend = 2;
-       }
+        }
     });
     
     var command_Quit = document.createElement("div");
@@ -62,14 +55,15 @@ function RoomView(windowSize,Option){
     command_Quit.style.textAlign = "center";
     command_Quit.appendChild(document.createTextNode("離開房間"));
     command_Quit.addEventListener("click",function(){
-        /*global quitRoom 實作於ajax*/
         /*global ViewInit,VARIABLE 宣告於index*/
         var data = new Object();
         data.ActorID = VARIABLE.USER.ActorID;
         data.Master = VARIABLE.USER.RoomMaster;
         data.RoomID = VARIABLE.USER.RoomID;
+        data.Echo = true;
         ViewInit(VARIABLE.View.Block.self);
-        quitRoom(JSON.stringify(data));
+        VARIABLE.SCENES = "hall";
+        VARIABLE.Socket.emit("quitRoom",data);
     });
     
     var status = document.createElement("div");
@@ -79,6 +73,10 @@ function RoomView(windowSize,Option){
     status.style.position = "absolute";
     status.style.left = "0px";
     status.style.top = "70%";
+    status.appendChild(document.createTextNode("角色名稱:"+VARIABLE.USER.ActorName));
+    status.appendChild(document.createElement("br"));
+    status.appendChild(document.createTextNode("角色等級:"+VARIABLE.USER.Level));
+    status.appendChild(document.createElement("br"));
     
     var actorList = document.createElement("div");
     actorList.style.width = "80%";
@@ -103,7 +101,6 @@ function RoomView(windowSize,Option){
     actorList_R.style.position = "absolute";
     actorList_R.style.left = "50%";
     actorList_R.style.top = "0%";
-    
     
     actorList.appendChild(actorList_L);
     actorList.appendChild(actorList_R);
@@ -240,7 +237,6 @@ function RoomView(windowSize,Option){
     
     var actorTypeNameArray = Option.getActorTypeArray();
     for(var i=0;i<actorTypeNameArray.length;i++){
-        
         var temp = document.createElement("div");
         temp.style.width = "13%";
         temp.style.height = "98%";
@@ -282,8 +278,8 @@ function RoomView(windowSize,Option){
 	//宣告函式
 	function addEvent_roomPos(Div,i){
 	    Div.addEventListener("click",function(){
-            needsend = 3;
-            RoomPosition = i;
+            VARIABLE.USER.RoomPosition = i;
+            VARIABLE.Socket.emit("SetRoomPostion",{Postion:VARIABLE.USER.RoomPosition,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
 	    });
 	}
 	function addEvent_actorType(Div,i){
@@ -292,87 +288,38 @@ function RoomView(windowSize,Option){
 	        Div.style.backgroundColor = "#AAFFAA";
 	        ActorTypeChoose = Div;
             ActorType = i;
-            needsend = 4;
+            VARIABLE.Socket.emit("SetActorType",{Type:ActorType,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
 	    });
 	}
 	this.update = function(data){
+	    console.log(data);
+        if(data.status!="secss" || data.RoomID!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="room") return;
+        var PlayData = data.PlayData;
+        var Master = data.Master;
 	    for(var i=0;i<10;i++){
-            if(actorDiv[i].firstChild) actorDiv[i].removeChild(actorDiv[i].firstChild);
-            if(LevelDiv[i].firstChild) LevelDiv[i].removeChild(LevelDiv[i].firstChild);
-            if(readyDiv[i].firstChild) readyDiv[i].removeChild(readyDiv[i].firstChild);
-            if(MasterDiv[i].firstChild) MasterDiv[i].removeChild(MasterDiv[i].firstChild);
+            while(actorDiv[i].firstChild) actorDiv[i].removeChild(actorDiv[i].firstChild);
+            while(LevelDiv[i].firstChild) LevelDiv[i].removeChild(LevelDiv[i].firstChild);
+            while(readyDiv[i].firstChild) readyDiv[i].removeChild(readyDiv[i].firstChild);
+            while(MasterDiv[i].firstChild) MasterDiv[i].removeChild(MasterDiv[i].firstChild);
         }
-        canStart = true;
-	    for(var i=0;i<data.length;i++){
-	        var pos = data[i].Position;
-	        if(data[i].Master=="true"){
-    	        if(data[i].ActorName==VARIABLE.USER.ActorName){      
-	                if(statusID == 0){
-	                    VARIABLE.USER.RoomMaster = true;
-	                    statusID = 1;
-	                    needsend = 1;
-	                    while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
-                        command_Start.appendChild(document.createTextNode("開始遊戲"));
-	                }
-	            }
-	        }
-	        actorDiv[pos].appendChild(document.createTextNode(data[i].ActorName));
-	        LevelDiv[pos].appendChild(document.createTextNode(data[i].Level));
-	        if(data[i].State == 0){
-	            canStart = false;
-	        }else{
-	            readyDiv[pos].appendChild(document.createTextNode("準備"));
-	        }
-	        if(data[i].Master=="true") MasterDiv[pos].appendChild(document.createTextNode("房長"));
-	    }
-	    switch (needsend) {
-	        /*global gameStart_command,RoomStatus,getRoomData,changePos_Room,changeType_Room　 實作於ajax */
-	        case 1://準備
-                needsend = 0;
-                RoomStatus(VARIABLE.USER.ActorID,statusID);
-                break;
-            case 2://開始
-                needsend = 0;
-                if(canStart) gameStart_command(VARIABLE.USER.RoomID);
-                else getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
-                break;
-            case 3://換位
-                needsend = 0;
-                var data = new Object();
-                data.ActorID = VARIABLE.USER.ActorID;
-                data.RoomID = VARIABLE.USER.RoomID;
-                data.Postion = RoomPosition;
-                changePos_Room(JSON.stringify(data));
-                break;
-            case 4://兵種轉換
-                needsend = 0;
-                var data = new Object();
-                data.ActorID = VARIABLE.USER.ActorID;
-                data.RoomID = VARIABLE.USER.RoomID;
-                data.Type = ActorType;
-                changeType_Room(JSON.stringify(data));
-                break;
-	        default://同步
-	            getRoomData(VARIABLE.USER.RoomID,VARIABLE.USER.ActorID);
-	    }
+        for(var i=0;i<PlayData.length;i++){
+            var pos = PlayData[i].Postion;
+            if(PlayData[i].actorID==Master){
+                MasterDiv[pos].appendChild(document.createTextNode("房長"));
+                if(PlayData[i].actorID==VARIABLE.USER.ActorID){
+                    while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
+                    command_Start.appendChild(document.createTextNode("開始遊戲"));
+                    if(!Ready){
+                        Ready = true;
+                        VARIABLE.Socket.emit("SetRoomStatus",{Status:1,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
+                    }
+                }
+            }
+            actorDiv[pos].appendChild(document.createTextNode(PlayData[i].actorName));
+            LevelDiv[pos].appendChild(document.createTextNode(PlayData[i].LV));
+            if(PlayData[i].state == 1)readyDiv[pos].appendChild(document.createTextNode("準備"));
+        }
 	};
-    this.StatusRender = function() {
-        this.self.removeChild(status);
-        status = document.createElement("div");
-        status.style.width = "20%";
-        status.style.height = "30%";
-        status.style.backgroundColor = "#FFFFFF";
-        status.style.position = "absolute";
-        status.style.left = "0px";
-        status.style.top = "70%";
-        
-        status.appendChild(document.createTextNode("角色名稱:"+VARIABLE.USER.ActorName));
-        status.appendChild(document.createElement("br"));
-        status.appendChild(document.createTextNode("角色等級:"+VARIABLE.USER.Level));
-        status.appendChild(document.createElement("br"));
-        this.self.appendChild(status);
-        RoomStatus(VARIABLE.USER.ActorID,statusID);/*global RoomStatus 實作於ajax */
-    };
     //函式宣告完畢
     
     //初始化函式執行

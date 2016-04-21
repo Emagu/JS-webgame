@@ -71,20 +71,20 @@ function HallView(windowSize,OptionSize){
     }
     this.update = function(data){
         console.log(data);
+        if(VARIABLE.SCENES != "hall") return;
+        if(roomList.parentElement==this.self) this.self.removeChild(roomList);
+        if(data.length <= 0) return;
 	    function insertRoom(Div,RoomID){
 	        Div.addEventListener("click",function(){
-	            /*global addRoom 實作於ajax*/
 	            /*global ViewInit,VARIABLE*/
 	            var data = new Object();
 	            data.RoomID = RoomID;
 	            data.ActorID = VARIABLE.USER.ActorID;
 	            ViewInit(VARIABLE.View.Block.self);
-	            addRoom(JSON.stringify(data));
+	            VARIABLE.Socket.emit("addRoom",data);
 	        });
 	    }
-	    this.self.removeChild(roomList);
 	    createRoomList()
-        
         for(var i=0;i<data.length;i++){
             var roomDiv = document.createElement("div");
             roomDiv.style.width = "98%";
@@ -110,7 +110,7 @@ function HallView(windowSize,OptionSize){
             roomNO.style.textAlign = "center";
             roomNO.style.fontSize = "xx-large";
             roomNO.style.color = "#ffffff";
-            roomNO.appendChild(document.createTextNode(data[i].RoomID));
+            roomNO.appendChild(document.createTextNode(data[i].NO));
             var roomName = document.createElement("div");
             roomName.style.width = "400px";
             roomName.style.height = "48px";
@@ -120,7 +120,7 @@ function HallView(windowSize,OptionSize){
             roomName.style.textAlign = "center";
             roomName.style.fontSize = "xx-large";
             roomName.style.color = "#ffffff";
-            roomName.appendChild(document.createTextNode(data[i].RoomName));
+            roomName.appendChild(document.createTextNode(data[i].Name));
             var roomCount = document.createElement("div");
             roomCount.style.width = "100px";
             roomCount.style.height = "48px";
@@ -130,17 +130,16 @@ function HallView(windowSize,OptionSize){
             roomCount.style.textAlign = "center";
             roomCount.style.fontSize = "xx-large";
             roomCount.style.color = "#ffffff";
-            roomCount.appendChild(document.createTextNode(data[i].ActorNum+" / 10"));
-            //document.createTextNode(data[i].RoomID + "    " + data[i].RoomName + "    " + data[i].Map + "    " + data[i].ActorNum)
+            roomCount.appendChild(document.createTextNode(data[i]["COUNT(actorID)"]+" / 10"));
             roomDiv.appendChild(roomIcon);
             roomDiv.appendChild(roomNO);
             roomDiv.appendChild(roomName);
             roomDiv.appendChild(roomCount);
-            insertRoom(roomDiv,data[i].RoomID);
+            insertRoom(roomDiv,data[i].NO);
             roomList.appendChild(roomDiv);
         }
         this.self.appendChild(roomList);
-	};//刷新
+	};//刷新*/
     this.StatusRender = function() {
         this.self.removeChild(status);
         createStatus();

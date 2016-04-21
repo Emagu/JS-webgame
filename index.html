@@ -108,7 +108,6 @@
                 if(data.status == "secss"){
                     VARIABLE.Map = data.Map
                 }
-                console.log(VARIABLE.USER.UserID);
         		if(VARIABLE.USER.UserID!=""){
         		    if(data.ActorID==0) NewActorViewInit();
         		    else{
@@ -132,7 +131,7 @@
                 if(data.status=='secss'){
                     VARIABLE.USER.UserID = data.UserID;
                     setCookie('UserID',data.UserID,7);
-                    if(!data.ActorID) NewActorViewInit();
+                    if(data.ActorID!=0) NewActorViewInit();
                     else {
                         VARIABLE.USER.ActorID = data.ActorID;
                         HallViewInit();
@@ -148,14 +147,28 @@
                     alert("建立失敗");
                 }
             }
-            function getActor_res(data){
+            function hallinit(data){
                 console.log(data);
                 if(data.status=='secss'){
                     VARIABLE.USER.ActorName = data.actorName;
                     VARIABLE.USER.Level = data.LV;
                     VARIABLE.View.Hall.StatusRender();
-                    if(data.RoomList) VARIABLE.View.Hall.update(data.RoomList);
-                    setTimeout(function(){ViewInit(VARIABLE.View.Hall.self)}, 3000);
+                    ViewInit(VARIABLE.View.Hall.self);
+                }
+            }
+            function addRoom_res(data){
+                if(data.status=="secss"){
+                    //原本在房間內的玩家
+                    if(data.RoomID == VARIABLE.USER.RoomID && data.ActorID!=VARIABLE.USER.ActorID && VARIABLE.SCENES=="room") {
+                        setTimeout(function() {
+                            VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
+                        }, 50);
+                    }else{
+                        VARIABLE.USER.RoomID = data.RoomID;
+                        VARIABLE.USER.RoomPostion = data.Postion;
+                        VARIABLE.USER.RoomMaster = data.RoomMaster;
+                        RoomViewInit();
+                    }
                 }
             }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
@@ -166,12 +179,13 @@
             ViewInit(VARIABLE.View.Block.self);
             VARIABLE.USER = new UserData();/*global UserData 實作於Data*///用戶資料
             VARIABLE.Socket = io();/*global io in socket.io*/
-            VARIABLE.Socket.on('register',register_res);
-            VARIABLE.Socket.on('login',login_res);
-            VARIABLE.Socket.on('newActor',newActor_res);
-            VARIABLE.Socket.on('getActor',getActor_res);
-            VARIABLE.Socket.on('getRoomList',getActor_res);
-            VARIABLE.Socket.on('getMap',getMap_res);
+            VARIABLE.Socket.on('getMap_res',getMap_res);
+            VARIABLE.Socket.on('register_res',register_res);
+            VARIABLE.Socket.on('login_res',login_res);
+            VARIABLE.Socket.on('newActor_res',newActor_res);
+            VARIABLE.Socket.on('hallinit',hallinit);
+            
+            VARIABLE.Socket.on('addRoom_res',addRoom_res);
             checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
@@ -196,22 +210,31 @@
             VARIABLE.SCENES = "newActor";
             /*global NewActorView 實作於src/View.* */
             VARIABLE.View.NewActor = new NewActorView(getWindowSize(),VARIABLE.Option.getWindowSize());
-            VARIABLE.Socket.on('newActorNameCheck',VARIABLE.View.NewActor.CheckActorName);
+            VARIABLE.Socket.on('newActorNameCheck_res',VARIABLE.View.NewActor.CheckActorName);
             ViewInit(VARIABLE.View.NewActor.self);
         }//創建角色
         function HallViewInit(){
             VARIABLE.SCENES = "hall";
             /*global HallView 實作於src/View.* */
             VARIABLE.View.Hall = new HallView(getWindowSize(),VARIABLE.Option.getWindowSize());
-            VARIABLE.Socket.emit("getActor",VARIABLE.USER.ActorID);
+            VARIABLE.Socket.on('RoomListUpdate',function(data){VARIABLE.View.Hall.update(data);});
+            VARIABLE.Socket.emit("hallinit",VARIABLE.USER.ActorID);
         }//大廳描繪
         function CreateRoomViewInit(){
             VARIABLE.SCENES = "createHall";
             /*global CreateRoomView 實作於src/View.* */
             VARIABLE.View.CreateRoom = new CreateRoomView(getWindowSize(),VARIABLE.Option);
-            VARIABLE.Socket.on('checkRoomName',VARIABLE.View.CreateRoom.checkRoomNameRes);
+            VARIABLE.Socket.on('checkRoomName_res',VARIABLE.View.CreateRoom.checkRoomNameRes);
             ViewInit(VARIABLE.View.CreateRoom.self);
         }//建立房間
+        function RoomViewInit(){
+            VARIABLE.SCENES = "room";
+            /*global RoomView 實作於View.* */
+            VARIABLE.View.Room = new RoomView(getWindowSize(),VARIABLE.Option);
+            VARIABLE.Socket.on('updateRoom_res',VARIABLE.View.Room.update);
+            VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
+            ViewInit(VARIABLE.View.Room.self);
+        }//房間內
         //以下為系統工具
         function getWindowSize(){
             var w = window,

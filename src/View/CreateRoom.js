@@ -48,14 +48,14 @@ function CreateRoomView(windowSize,Option){
     commit.style.cursor = "pointer";
     commit.addEventListener("click",function() {
 		/*global ViewInit,VARIABLE 宣告於index*/
-		if(VARIABLE.USER.ActorID){
+		if(VARIABLE.USER.ActorID && nameCanUse){
 			var data = new Object();
-			data.ActorID = VARIABLE.USER.ActorID;
+			data.RoomMaster = VARIABLE.USER.ActorID;
 			data.Mode = GameMode.value;
 			data.Map = MapSelect.value;//測試
-			data.RoomName = roomname.value;
+			data.Name = roomname.value;
 			ViewInit(VARIABLE.View.Block.self);
-			if(nameCanUse) VARIABLE.Socket.emit("CreateRoom",data);
+			VARIABLE.Socket.emit("CreateRoom",data);
 		}
 	});
     
