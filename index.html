@@ -84,8 +84,16 @@
             exdate.setDate(exdate.getDate()+expiredays);
         	document.cookie = c_name+ "=" +escape(value) + ((expiredays==null) ? "" : ";expires="+exdate.toGMTString());
         }
+        function deleteAllCookies() {
+            var cookies = document.cookie.split(";");
+            for (var i = 0; i < cookies.length; i++) {
+            	var cookie = cookies[i];
+            	var eqPos = cookie.indexOf("=");
+            	var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            	document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            }
+        }
         function getcookie(name){
-            console.log(document.cookie);
             if (document.cookie.length>0){
                 var c_start=document.cookie.indexOf(name + "=")
                 if (c_start!=-1){ 
@@ -101,41 +109,44 @@
             function checkSave(){
                 VARIABLE.USER.UserID = getcookie("UserID");
                 VARIABLE.USER.RoomID = getcookie("roomID");
-                VARIABLE.Socket.emit("getMap",VARIABLE.USER);
+                console.log(VARIABLE.USER.RoomID + "," + VARIABLE.USER.UserID);
+                if(VARIABLE.USER.UserID!="") VARIABLE.Socket.emit("getActor",VARIABLE.USER.UserID);
+                else loginViewiInit();
             }
-            function getMap_res(data){
+            function getActor(data){
+                console.log("getActor:");
                 console.log(data);
-                if(data.status == "secss"){
-                    VARIABLE.Map = data.Map
-                }
-        		if(VARIABLE.USER.UserID!=""){
-        		    if(data.ActorID==0) NewActorViewInit();
-        		    else{
-        		        VARIABLE.USER.ActorID = data.ActorID;
-        		        if(VARIABLE.USER.RoomID!=""){
+                if(data.ActorID==0) NewActorViewInit();
+        		else{
+                    VARIABLE.USER.ActorID = data.ActorID;
+                    if(VARIABLE.USER.RoomID!=""){
         		            
-        		        }else{
-        		            HallViewInit();
-        		        }
-        		    }
-        		}else{
-        		    loginViewiInit();
-        		}
+                    }else HallViewInit();
+                }
+            }
+            function getMap(data){
+                console.log("getMap:");
+                console.log(data);
+                if(data.status == "secss") VARIABLE.Map = data.Map
             }
             function register_res(data){
                 console.log(data);
                 if(data.status=='secss') alert('註冊成功!');
             }
-            function login_res(data){
+            function login(data){
+                console.log("login:");
                 console.log(data);
                 if(data.status=='secss'){
                     VARIABLE.USER.UserID = data.UserID;
                     setCookie('UserID',data.UserID,7);
-                    if(data.ActorID!=0) NewActorViewInit();
+                    if(data.ActorID==0) NewActorViewInit();
                     else {
                         VARIABLE.USER.ActorID = data.ActorID;
                         HallViewInit();
                     }
+                }else{
+                    alert("登入失敗");
+                    loginViewiInit();
                 }
             }
             function newActor_res(data){
@@ -148,6 +159,7 @@
                 }
             }
             function hallinit(data){
+                console.log("hallinit");
                 console.log(data);
                 if(data.status=='secss'){
                     VARIABLE.USER.ActorName = data.actorName;
@@ -165,7 +177,7 @@
                         }, 50);
                     }else{
                         VARIABLE.USER.RoomID = data.RoomID;
-                        VARIABLE.USER.RoomPostion = data.Postion;
+                        VARIABLE.USER.RoomSide = data.Side;
                         VARIABLE.USER.RoomMaster = data.RoomMaster;
                         RoomViewInit();
                     }
@@ -179,13 +191,14 @@
             ViewInit(VARIABLE.View.Block.self);
             VARIABLE.USER = new UserData();/*global UserData 實作於Data*///用戶資料
             VARIABLE.Socket = io();/*global io in socket.io*/
-            VARIABLE.Socket.on('getMap_res',getMap_res);
+            VARIABLE.Socket.on('getMap',getMap);
+            VARIABLE.Socket.on('getActor',getActor);
             VARIABLE.Socket.on('register_res',register_res);
-            VARIABLE.Socket.on('login_res',login_res);
+            VARIABLE.Socket.on('login',login);
             VARIABLE.Socket.on('newActor_res',newActor_res);
             VARIABLE.Socket.on('hallinit',hallinit);
-            
             VARIABLE.Socket.on('addRoom_res',addRoom_res);
+            VARIABLE.Socket.emit("getMap",VARIABLE.USER);
             checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
@@ -231,7 +244,11 @@
             VARIABLE.SCENES = "room";
             /*global RoomView 實作於View.* */
             VARIABLE.View.Room = new RoomView(getWindowSize(),VARIABLE.Option);
-            VARIABLE.Socket.on('updateRoom_res',VARIABLE.View.Room.update);
+            VARIABLE.Socket.on('updateRoom_res',function(data) {VARIABLE.View.Room.update(data)});
+            VARIABLE.Socket.on('RoomNewMsg',function(data) {
+                    if(data.RoomID==VARIABLE.USER.RoomID) VARIABLE.View.Room.getMessage(data.Message);
+                }
+            );
             VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
             ViewInit(VARIABLE.View.Room.self);
         }//房間內

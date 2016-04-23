@@ -32,11 +32,27 @@ function HallView(windowSize,OptionSize){
     command_Option.style.cursor = "pointer";
     command_Option.addEventListener("click",function(){
         /*global OptionEditViewInit 實作於index */
-        OptionEditViewInit();
+        //OptionEditViewInit();
+    });
+    var command_logout = document.createElement("div");
+    command_logout.style.width = "185px";
+    command_logout.style.height = "65px";
+    command_logout.style.left = "35px";
+    command_logout.style.top = "240px";
+    command_logout.style.position = "absolute";
+    command_logout.style.cursor = "pointer";
+    command_logout.addEventListener("click",function(){
+        VARIABLE.Socket.emit("logout",VARIABLE.USER.UserID);
+        ViewInit(VARIABLE.View.Block.self);
+        deleteAllCookies();/*global deleteAllCookies in index*/
+        setTimeout(function(){
+            loginViewiInit();/*global loginViewiInit in index*/
+        },2000);
     });
     
     command.appendChild(command_CreateRoom);
     command.appendChild(command_Option);
+    command.appendChild(command_logout);
     
     var status = null;
     createStatus();

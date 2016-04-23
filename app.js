@@ -30,38 +30,42 @@ io.on('connection', function(socket){
 	socket.local = null;
 	socket.User = new Object();
 	//init
-	socket.on('getMap', function(data){
-		var isEcho = false;
-		var ActorID=0;
-		if(data.UserID!=""){
-			connection.query('SELECT * FROM `actor_list` WHERE `userID` = ?',[data.UserID], function(error, rows){
-				if (error){
-					socket.emit('getMap_res', {
+	socket.on('getMap', function(){
+		connection.query('SELECT * FROM `Map`', function(error,rows){
+		    if(error){
+		        socket.emit('getMap', {
+					status: 'error',
+					log: error
+				});
+		    }else{
+		    	socket.emit('getMap', {
+					status: 'secss',
+					Map:rows
+				});
+			}
+		});
+	});
+	socket.on('getActor', function(userID){
+		connection.query('SELECT * FROM `actor_list` WHERE `userID` = ?',[userID], function(error, rows){
+			if (error){
+				socket.emit('getActor', {
+					status: 'error',
+					log: error
+				});
+			}else{
+				if(rows.length>0) {
+					socket.emit('getActor', {
 						status: 'error',
-						log: error
+						ActorID: rows[0].NO
 					});
-					isEcho = true;
 				}else{
-					if(rows.length>0) ActorID = rows[0].NO;
-		    	}
-			});
-		}
-		if(!isEcho){
-			connection.query('SELECT * FROM `Map`', function(error,rows){
-			    if(error){
-			        socket.emit('getMap_res', {
-						status: 'error',
-						log: error
+					socket.emit('getActor', {
+						status: 'fail',
+						ActorID: 0
 					});
-			    }else{
-			    	socket.emit('getMap_res', {
-						status: 'secss',
-						Map:rows,
-						ActorID:ActorID
-					});
-			    }
-			});
-		}
+				}
+		    }
+		});
 	});
 	//register
 	socket.on('register', function(msg){
@@ -137,29 +141,53 @@ io.on('connection', function(socket){
 		connection.query('SELECT * FROM `member_list` WHERE username = ?',[msg.Name], function(error, rows, fields){
 		    if (error){
 		    	isEcho = true;
-		    	socket.emit('login_res', {
+		    	socket.emit('login', {
 					status: 'error',
 					log: error
 				});
 		    }else{
+		    	var UserID,ActorID,Connect;
 		    	for (var i in rows) {
 			    	if(rows[i].password == md5(msg.PW)){
-			    		
-			    		socket.emit('login_res', {
-							status: 'secss',
-							UserID: rows[i].NO,
-							ActorID: rows[i].ActorID
-						});
-						isEcho = true;
+			    		UserID = rows[i].NO;
+			    		ActorID = rows[i].ActorID;
+			    		Connect = rows[i].Connect;
 						break;
 			    	}
 	    		}
+	    		if(Connect==0){
+	    			connection.query('UPDATE `member_list` SET `Connect` = 1 WHERE `username` = ?',[msg.Name], function(error){
+		    			if (error){
+		    				isEcho = true;
+					    	socket.emit('login', {
+								status: 'error',
+								log: error
+							});
+		    			}else{
+		    				isEcho = true;
+		    				socket.emit('login', {
+								status: 'secss',
+								UserID: UserID,
+								ActorID: ActorID
+							});
+		    			}
+		    			if(!isEcho){
+					    	socket.emit('login', {
+								status: 'fail'
+							});
+					    }
+		    		});	
+	    		}else{
+	    			socket.emit('login', {
+						status: 'Connected'
+					});
+	    		}
 		    }
-		    if(!isEcho){
-		    	socket.emit('login_res', {
-					status: 'fail'
-				});
-		    }
+		});
+	});
+	socket.on('logout', function(msg){
+	    connection.query('UPDATE `member_list` SET `Connect` = 0 WHERE `NO` = ?',[msg], function(error){
+			if (error) console.log(error);
 		});
 	});
 	//newActor
@@ -251,11 +279,11 @@ io.on('connection', function(socket){
 					log: error
 				});
 			}else{
-				var pos = addRoom(result.insertId,msg.RoomMaster);
-				if(pos!=-1){
+				var side = addRoom(result.insertId,msg.RoomMaster,socket);
+				if(side!=-1){
 					socket.emit('addRoom_res', {
 						status: 'secss',
-						Postion: pos,
+						Side: side,
 						RoomID: result.insertId,
 						RoomMaster: true
 					});
@@ -271,16 +299,15 @@ io.on('connection', function(socket){
 		});
 	});
 	socket.on('addRoom', function(msg){
-		var pos = addRoom(msg.RoomID,msg.ActorID);
-		if(pos!=-1){
-			socket.local = "room";
+		var side = addRoom(msg.RoomID,msg.ActorID,socket);
+		if(side!=-1){
 			socket.User.RoomID = msg.RoomID;
 			setTimeout(function(){
 				updateRoomList();
 			},50);
 			io.emit('addRoom_res', {
 				status: 'secss',
-				Postion: pos,
+				Side: side,
 				RoomID: msg.RoomID,
 				ActorID: msg.ActorID,
 				RoomMaster: false
@@ -294,7 +321,7 @@ io.on('connection', function(socket){
 	socket.on('updateRoom', function(msg){
 		updateRoom(msg);
 	});//updateRoom
-	socket.on('SetRoomStatus', function(msg){
+	/*socket.on('SetRoomStatus', function(msg){
 		connection.query('UPDATE `room_actor_list` SET `state` = ? WHERE `actorID` = ?', [msg.Status,msg.ActorID], function(error){
 			if(error){
 				console.log(error);
@@ -304,17 +331,33 @@ io.on('connection', function(socket){
 				}, 50);
 			}
 		});
-	});//SetRoomStatus
+	});*///SetRoomStatus
 	socket.on('SetRoomPostion', function(msg){//RoomPostion
 		connection.query('UPDATE `room_actor_list` SET `Postion` = ? WHERE `actorID` = ?', [msg.Postion,msg.ActorID], function(error){
 			if(error){
 				console.log(error);
 			}else{
-				console.log(msg);
 				setTimeout(function() {
 					updateRoom(msg.RoomID);
 				}, 50);
 			}
+		});
+	});//SetRoomPostion
+	socket.on('SetRoomSide', function(msg){//RoomPostion
+		connection.query('UPDATE `room_actor_list` SET `side` = ? WHERE `actorID` = ?', [msg.Side,msg.ActorID], function(error){
+			if(error){
+				console.log(error);
+			}else{
+				setTimeout(function() {
+					updateRoom(msg.RoomID);
+				}, 50);
+			}
+		});
+	});//SetRoomPostion
+	socket.on('RoomNewMsg', function(msg){//RoomPostion
+		io.emit('RoomNewMsg',{
+			RoomID:msg.RoomID,
+			Message:msg.ActorName + " : " + msg.Message
 		});
 	});//SetRoomPostion
 	socket.on('SetActorType', function(msg){//RoomPostion
@@ -337,16 +380,42 @@ io.on('connection', function(socket){
 	  }, 1000);
 	//left
 	socket.on('disconnect',function(){
+		console.log(socket.local);
 		if(socket.local == "room"){
 			console.log(socket.User);
 			quitRoom(socket,socket.User);//玩家離房	
 		} 
 	});
 });
-function quitRoom(socket,msg){//msg =>{ActorID,RoomID,Echo("是否回傳")}
-	connection.query('DELETE FROM `room_actor_list` WHERE `actorID` = ?', [msg.ActorID], function(error,rows){
+//msg =>{ActorID,RoomID,Echo("是否回傳")}
+function quitRoom(socket,msg){
+	connection.query('DELETE FROM `room_actor_list` WHERE `actorID` = ?', [msg.ActorID], function(error){
 		if(error)console.log(error);
 		else{
+			connection.query('SELECT `RoomMaster` FROM `room_list` WHERE `NO` = ?', [msg.RoomID], function(error,rows){
+				if(error)console.log(error);
+				else{
+					if(rows.length>0){
+						if(rows[0].RoomMaster==msg.ActorID){
+							connection.query('SELECT `actorID` FROM `room_actor_list` WHERE `roomID` = ?', [msg.RoomID], function(error,rows){
+								if(error)console.log(error);
+								else{
+									if(rows.length>0){
+										var newMaster = rows[0].actorID;
+										connection.query('UPDATE `room_list` SET `RoomMaster`= ? WHERE `NO` = ?', [newMaster,msg.RoomID], function(error){
+											if(error)console.log(error);
+										})
+									}else{
+										connection.query('DELETE FROM `room_list` WHERE `NO` = ?', [msg.RoomID], function(error){
+											if(error)console.log(error);
+										})
+									}
+								}
+							});
+						}
+					}
+				}
+			});
 			setTimeout(function(){
 				updateRoom(msg.RoomID);
 			},50);
@@ -381,11 +450,11 @@ function hallinit(socket,actorID){
 	});
 }
 function updateRoom(msg){
-	connection.query('SELECT A.actorName,A.LV,B.actorID,B.Postion,B.Type,B.state FROM actor_list AS A RIGHT JOIN room_actor_list AS B ON A.NO = B.actorID WHERE B.roomID = ?', [msg], function(error,rows){
+	connection.query('SELECT A.actorName,A.LV,B.actorID,B.side FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ?', [msg], function(error,rows){
 		if(error)console.log(error);
 		else{
 			var PlayData = rows;
-			connection.query('SELECT `RoomMaster` FROM `room_list` WHERE `NO` = ?', [msg], function(err,rows){
+			connection.query('SELECT A.Name,A.Map,A.Mode,A.RoomMaster,B.MapName FROM `room_list` AS A RIGHT JOIN `Map` AS B ON A.Map = B.NO WHERE A.NO = ?', [msg], function(err,rows){
 				if(err){
 					console.log(err);
 				}else{
@@ -394,6 +463,10 @@ function updateRoom(msg){
 							status: "secss",
 							PlayData: PlayData,
 							Master: rows[0].RoomMaster,
+							RoomName: rows[0].Name,
+							Map: rows[0].Map,
+							Mode: rows[0].Mode,
+							MapName: rows[0].MapName,
 							RoomID: msg
 						});
 					}
@@ -413,29 +486,33 @@ function updateRoomList(){
 		}
 	});
 }
-function addRoom(roomID,actorID){
+function addRoom(roomID,actorID,socket){
 	var date = new Date();
-	var pos = 0;
+	var sideA = 0;
 	connection.query('SELECT * FROM `room_actor_list` WHERE `roomID` = ?',[roomID], function(error, rows){
 		if (error){
 			console.log(error);
 			return -1;
 		}else{
 			for(var i in rows){
-				if(rows[i].Postion==pos) pos++;
+				if(rows[i].side == 0) sideA++;
 			}
+			var side = 0;
+			if(sideA>5) side = 1;
 			var data = {
 				roomID: roomID,
 				actorID: actorID,
 				lasttime: date,
-				Postion: pos
+				side: side
 			}
 			connection.query('INSERT INTO `room_actor_list` SET ?', data, function(error){
 				if (error){
 					console.log(error);
 					return -1;
 				}else{
-					return pos;
+					socket.local = "room";
+					socket.User.RoomID = roomID;
+					return side;
 				}
 			});
 		}

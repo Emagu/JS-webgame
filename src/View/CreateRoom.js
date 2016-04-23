@@ -99,7 +99,7 @@ function CreateRoomView(windowSize,Option){
     for(var i=0;i<MapArray.length;i++){
     	var temp = document.createElement("option");
     	temp.setAttribute("value",MapArray[i].NO);
-		temp.appendChild(document.createTextNode(MapArray[i].Name));
+		temp.appendChild(document.createTextNode(MapArray[i].MapName));
     	MapSelect.appendChild(temp);
     }
     
