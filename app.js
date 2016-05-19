@@ -355,7 +355,7 @@ io.on('connection', function(socket){
 	});//RoomNewMsg
 	socket.on('addAI', function(msg){
 		if(msg.Side == 0){
-			connection.query('UPDATE `room_list` SET `SideA_AI` += 1 WHERE `NO` = ?;', msg.RoomID, function(error){
+			connection.query('UPDATE `room_list` SET `SideA_AI` = `SideA_AI` + 1 WHERE `NO` = ?;', msg.RoomID, function(error){
 				if(error){
 					console.log(error);
 				}else{
@@ -365,7 +365,7 @@ io.on('connection', function(socket){
 				}
 			});
 		}else{
-			connection.query('UPDATE `room_list` SET `SideB_AI` += 1 WHERE `NO` = ?;', msg.RoomID, function(error){
+			connection.query('UPDATE `room_list` SET `SideB_AI` = `SideB_AI` + 1 WHERE `NO` = ?;', msg.RoomID, function(error){
 				if(error){
 					console.log(error);
 				}else{
@@ -500,14 +500,6 @@ function updatePreSelect(RoomID){
 		if(error)console.log(error);
 		else SideB = rows;
 	});
-	connection.query('SELECT * FROM `room_AI` WHERE `RoomID` = ? AND `Side` = 0', [RoomID], function(error,rows){
-		if(error)console.log(error);
-		else SideA_AI = rows;
-	});
-	connection.query('SELECT * FROM `room_AI` WHERE `RoomID` = ? AND `Side` = 1', [RoomID], function(error,rows){
-		if(error)console.log(error);
-		else SideB_AI= rows;
-	});
 	connection.query('SELECT * FROM `room_list` WHERE `NO` = ?', [RoomID], function(error,rows){
 		if(error)console.log(error);
 		else RoomData = rows[0];
@@ -587,31 +579,26 @@ function updateRoom(msg){
 		if(error)console.log(error);
 		else{
 			var PlayData = rows;
-			connection.query('SELECT * FROM `room_AI` WHERE RoomID = ?', [msg], function(error,rows){
-				if(error)console.log(error);
-				else{
-					var AIData = rows;
-					connection.query('SELECT A.Name,A.Map,A.Mode,A.RoomMaster,B.MapName FROM `room_list` AS A RIGHT JOIN `Map` AS B ON A.Map = B.NO WHERE A.NO = ?', [msg], function(error,rows){
-						if(error){
-							console.log(error);
-						}else{
-							if(rows.length>0){
-								io.emit('updateRoom_res', {
-									status: "secss",
-									PlayData: PlayData,
-									Master: rows[0].RoomMaster,
-									RoomName: rows[0].Name,
-									Map: rows[0].Map,
-									Mode: rows[0].Mode,
-									MapName: rows[0].MapName,
-									AIData: AIData,
-									RoomID: msg
-								});
-							}
-						}
-					});	
+			connection.query('SELECT A.Name,A.Map,A.Mode,A.RoomMaster,A.SideA_AI,A.SideB_AI,B.MapName FROM `room_list` AS A RIGHT JOIN `Map` AS B ON A.Map = B.NO WHERE A.NO = ?', [msg], function(error,rows){
+				if(error){
+					console.log(error);
+				}else{
+					if(rows.length>0){
+						io.emit('updateRoom_res', {
+							status: "secss",
+							PlayData: PlayData,
+							Master: rows[0].RoomMaster,
+							RoomName: rows[0].Name,
+							Map: rows[0].Map,
+							Mode: rows[0].Mode,
+							MapName: rows[0].MapName,
+							SideA_AI: rows[0].SideA_AI,
+							SideB_AI: rows[0].SideB_AI,
+							RoomID: msg
+						});
+					}
 				}
-			});
+			});	
 		}
 	});
 }

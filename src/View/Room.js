@@ -243,11 +243,11 @@ function RoomView(windowSize,Option){
     	    this.Div.appendChild(deletePlayer);
 	    }
 	}
-	function AIItem(i,Data,isMaster){
+	function AIItem(i,Side,isMaster){
 	    this.Div = document.createElement("div");
 	    this.Div.style.width = "430px";
 	    this.Div.style.height = "75px";
-	    if(Data.Side==1) this.Div.style.left = "491px";
+	    if(Side==1) this.Div.style.left = "491px";
 	    else this.Div.style.left = "49px";
 	    this.Div.style.top = (78 + 75*i) +"px";
 	    if(i<4) this.Div.style.backgroundImage = "url('./src/pic/Room/playerItem.png')";
@@ -264,7 +264,7 @@ function RoomView(windowSize,Option){
 	    PlayName.style.fontSize = "x-large";
 	    PlayName.style.color = "#FFFFFF";
 	    
-	    PlayName.appendChild(document.createTextNode("A  I"));
+	    PlayName.appendChild(document.createTextNode("AI NO."+(i+(Side*5))));
 	    this.Div.appendChild(PlayName);
 	    
 	    if(isMaster){
@@ -277,7 +277,7 @@ function RoomView(windowSize,Option){
     	    deletePlayer.style.backgroundImage = "url('./src/pic/Room/X_icon.png')"
     	    deletePlayer.style.cursor = "pointer";
     	    deletePlayer.addEventListener("click",function() {
-    	        VARIABLE.Socket.emit("deleteAI",{Side:Data.Side,RoomID:VARIABLE.USER.RoomID});
+    	        VARIABLE.Socket.emit("deleteAI",{Side:Side,RoomID:VARIABLE.USER.RoomID});
     	    });
     	    this.Div.appendChild(deletePlayer);
 	    }
@@ -291,7 +291,6 @@ function RoomView(windowSize,Option){
         playerArray = [];
         var PlayData = data.PlayData;
         var Master = data.Master;
-        var AIData = data.AIData;
         var MasterName;
         var isMaster = false;
         var sideA = 0;
@@ -318,18 +317,17 @@ function RoomView(windowSize,Option){
                 sideB++;
             }
         }
-        for(var i=0;i<AIData.length;i++){
-            if(AIData[i].Side==0){
-                var temp = new AIItem(sideA,AIData[i],isMaster);
-                playerArray.push(temp.Div);
-                this.self.appendChild(temp.Div);
-                sideA++;
-            }else{
-                var temp = new AIItem(sideB,AIData[i],isMaster);
-                playerArray.push(temp.Div);
-                this.self.appendChild(temp.Div);
-                sideB++;
-            }
+        for(var i=0;i<data.SideA_AI;i++){
+            var temp = new AIItem(sideA,0,isMaster);
+            playerArray.push(temp.Div);
+            this.self.appendChild(temp.Div);
+            sideA++;
+        }
+        for(var i=0;i<data.SideB_AI;i++){
+            var temp = new AIItem(sideB,1,isMaster);
+            playerArray.push(temp.Div);
+            this.self.appendChild(temp.Div);
+            sideB++;
         }
         
         Join_Aside.style.display = "";    

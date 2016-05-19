@@ -166,7 +166,8 @@ function PreSelectView(windowSize,Option){
     this.self.appendChild(SupportDiv);
     this.self.appendChild(StrategyDiv);
 	//變數宣告完畢
-	function ActorDiv(data,i){
+	function ActorDiv(data,i,PlaySide){
+		this.side = PlaySide;
 		var dark = document.createElement("div");
 		dark.style.width = "140px";
 	    dark.style.height = "110px";
@@ -232,10 +233,12 @@ function PreSelectView(windowSize,Option){
 	    Name.appendChild(document.createTextNode(data.actorName));
 	    
 	    this.Div.appendChild(Name);
-	    this.Div.appendChild(TypeDiv);
-	    this.Div.appendChild(ItemDiv_1);
-	    this.Div.appendChild(ItemDiv_2);
-	    this.Div.appendChild(ItemDiv_3);
+	    this.appendDetail = function(){
+	    	this.Div.appendChild(TypeDiv);
+		    this.Div.appendChild(ItemDiv_1);
+		    this.Div.appendChild(ItemDiv_2);
+		    this.Div.appendChild(ItemDiv_3);
+	    };
 	}
 	function AIDiv(side,i){
 	    this.Div = document.createElement("div");
@@ -248,42 +251,64 @@ function PreSelectView(windowSize,Option){
 	    this.Div.style.backgroundPosition = "center center";
 	    this.Div.style.position = "absolute";
 	    
-	    this.TypeDiv = document.createElement("div");
-	    this.TypeDiv.style.width = "75px";
-	    this.TypeDiv.style.height = "75px";
-	    this.TypeDiv.style.top = "5px";
-	    this.TypeDiv.style.left = "15px";
-	    this.TypeDiv.style.backgroundPosition = "center center";
-	    this.TypeDiv.style.position = "absolute";
+	    var TypeDiv = document.createElement("div");
+	    TypeDiv.style.width = "75px";
+	    TypeDiv.style.height = "75px";
+	    TypeDiv.style.top = "5px";
+	    TypeDiv.style.left = "15px";
+	    TypeDiv.style.backgroundPosition = "center center";
+	    TypeDiv.style.position = "absolute";
 	    
-	    this.ItemDiv_1 = document.createElement("div");
-	    this.ItemDiv_1.style.width = "32px";
-	    this.ItemDiv_1.style.height = "32px";
-	    this.ItemDiv_1.style.top = "5px";
-	    this.ItemDiv_1.style.left = "100px";
-	    this.ItemDiv_1.style.backgroundPosition = "center center";
-	    this.ItemDiv_1.style.position = "absolute";
+	    var ItemDiv_1 = document.createElement("div");
+	    ItemDiv_1.style.width = "32px";
+	    ItemDiv_1.style.height = "32px";
+	    ItemDiv_1.style.top = "5px";
+	    ItemDiv_1.style.left = "100px";
+	    ItemDiv_1.style.backgroundPosition = "center center";
+	    ItemDiv_1.style.position = "absolute";
 	    
-	    this.ItemDiv_2 = document.createElement("div");
-	    this.ItemDiv_2.style.width = "32px";
-	    this.ItemDiv_2.style.height = "32px";
-	    this.ItemDiv_2.style.top = "39px";
-	    this.ItemDiv_2.style.left = "100px";
-	    this.ItemDiv_2.style.backgroundPosition = "center center";
-	    this.ItemDiv_2.style.position = "absolute";
+	    var ItemDiv_2 = document.createElement("div");
+	    ItemDiv_2.style.width = "32px";
+	    ItemDiv_2.style.height = "32px";
+	    ItemDiv_2.style.top = "39px";
+	    ItemDiv_2.style.left = "100px";
+	    ItemDiv_2.style.backgroundPosition = "center center";
+	    ItemDiv_2.style.position = "absolute";
 	    
-	    this.ItemDiv_3 = document.createElement("div");
-	    this.ItemDiv_3.style.width = "32px";
-	    this.ItemDiv_3.style.height = "32px";
-	    this.ItemDiv_3.style.top = "73px";
-	    this.ItemDiv_3.style.left = "100px";
-	    this.ItemDiv_3.style.backgroundPosition = "center center";
-	    this.ItemDiv_3.style.position = "absolute";
+	    var ItemDiv_3 = document.createElement("div");
+	    ItemDiv_3.style.width = "32px";
+	    ItemDiv_3.style.height = "32px";
+	    ItemDiv_3.style.top = "73px";
+	    ItemDiv_3.style.left = "100px";
+	    ItemDiv_3.style.backgroundPosition = "center center";
+	    ItemDiv_3.style.position = "absolute";
 	    
-	    this.Div.appendChild(this.TypeDiv);
-	    this.Div.appendChild(this.ItemDiv_1);
-	    this.Div.appendChild(this.ItemDiv_2);
-	    this.Div.appendChild(this.ItemDiv_3);
+	    var dark = document.createElement("div");
+		dark.style.width = "140px";
+	    dark.style.height = "110px";
+	    dark.style.backgroundImage = "url('./src/pic/PreSelect/playbox_dark.png')";
+	    dark.style.backgroundPosition = "center center";
+	    dark.style.position = "absolute";
+	    dark.style.top = "0px";
+	    dark.style.left = "0px";
+	    
+	    var Name = document.createElement("div");
+	    Name.style.width = "100px";
+	    Name.style.height = "30px";
+	    Name.style.top = "82px";
+	    Name.style.left = "4px";
+	    Name.style.fontSize = "x-large";
+	    Name.style.color = "#FFFFFF";
+	    Name.style.position = "absolute";
+	    Name.style.textAlign = "center";
+	    Name.appendChild(document.createTextNode("AI NO."+i));
+	    
+	    this.Div.appendChild(dark);
+	    this.Div.appendChild(Name);
+	    this.Div.appendChild(TypeDiv);
+	    this.Div.appendChild(ItemDiv_1);
+	    this.Div.appendChild(ItemDiv_2);
+	    this.Div.appendChild(ItemDiv_3);
 	}
 	function PlayLocalInit(data,side,actorID){
 		PlayLocal = document.createElement("select");
@@ -336,8 +361,9 @@ function PreSelectView(windowSize,Option){
         if(PlayLocal!=null) this.self.removeChild(PlayLocal);
         for(var i=0;i<data.SideA.length;i++){
         	if(data.SideA[i].actorID==VARIABLE.USER.ActorID){
-        		PlayLocalInit(data.SideA,1,i);
+        		PlayLocalInit(data.SideA,0,i);
         		TypeSelect.style.backgroundImage = "url('./src/pic/Actor/blue/"+data.SideA[i].type+"/down.png')";
+        		VARIABLE.USER.Side = 0;
         	}
 	        var temp = new ActorDiv(data.SideA[i],i);
 	        itemArray.push(temp);
@@ -347,6 +373,7 @@ function PreSelectView(windowSize,Option){
 	    for(var i=0;i<data.SideB.length;i++){
 	    	if(data.SideB[i].actorID==VARIABLE.USER.ActorID){
         		PlayLocalInit(data.SideB,1,i);
+        		VARIABLE.USER.Side = 1;
         		TypeSelect.style.backgroundImage = "url('./src/pic/Actor/blue/"+data.SideA[i].type+"/down.png')";
         	}
 	        var temp = new ActorDiv(data.SideB[i],i);
@@ -359,12 +386,18 @@ function PreSelectView(windowSize,Option){
 	        itemArray.push(temp);
 	        this.self.appendChild(temp.Div);
 	    }
-	    for(var i=0;i<data.RoomData.Sideb_AI;i++){
+	    for(var i=0;i<data.RoomData.SideB_AI;i++){
 	        var temp = new AIDiv(1,i+SideB);
 	        itemArray.push(temp);
 	        this.self.appendChild(temp.Div);
 	    }
 	    this.self.appendChild(PlayLocal);
+	    for(var i=0;i<itemArray.length;i++){
+	    	if(VARIABLE.USER.Side == itemArray[i].side){
+	    		itemArray[i].appendDetail();
+	    	}
+	    }
+	    
 	};
 	this.getMessage = function(msg){
         var newMsg = document.createElement("li");

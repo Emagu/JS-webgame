@@ -3,6 +3,9 @@ function OptionSet(){//存放設定檔
     var windowSizeSet = 0;
     var windowSizeArray = [{W:1280, H:720},{W:1280, H:960},{W:1360, H:768},{W:1440, H:900}];
     var ActorTypeArray = ["通訊兵","工程師","狙擊手","醫護兵","野戰兵","水鬼","裝甲兵"];
+    var ItemArray = [["手榴彈","迫擊砲","定時炸彈","RPG"],
+                     ["拒馬","掩體","通訊點","監視點","補給包","地雷"]
+                    ];
     var GameTypeArray = ["爆破","護送","佔領"];
     this.getWindowSet = function(){
         return windowSizeSet;
