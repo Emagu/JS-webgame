@@ -18,6 +18,7 @@
         <script src="src/View/Room.js"></script>
         <script src="src/View/OptionEdit.js"></script>
         <script src="src/View/GameArea.js"></script>
+        <script src="src/View/PreSelect.js"></script>
         
         <script src="src/Data/User.js"></script>
         
@@ -107,10 +108,13 @@
         }
         function init(){
             function checkSave(){
+                var User = getcookie("User");
+                var PW = getcookie("PW");
                 VARIABLE.USER.UserID = getcookie("UserID");
                 VARIABLE.USER.RoomID = getcookie("roomID");
-                console.log(VARIABLE.USER.RoomID + "," + VARIABLE.USER.UserID);
-                if(VARIABLE.USER.UserID!="") VARIABLE.Socket.emit("getActor",VARIABLE.USER.UserID);
+                console.log("cookies");
+                console.log({User:User,PW:PW,UserID:VARIABLE.USER.UserID,RoomID:VARIABLE.USER.RoomID});
+                if(User!="") VARIABLE.Socket.emit("login",{Name:User,PW:PW});/*global VARIABLE in index*/
                 else loginViewiInit();
             }
             function getActor(data){
@@ -131,14 +135,18 @@
             }
             function register_res(data){
                 console.log(data);
-                if(data.status=='secss') alert('註冊成功!');
+                if(data.status=='secss') {
+                    alert('註冊成功!');
+                    loginViewiInit();
+                }
             }
             function login(data){
                 console.log("login:");
                 console.log(data);
                 if(data.status=='secss'){
                     VARIABLE.USER.UserID = data.UserID;
-                    setCookie('UserID',data.UserID,7);
+                    setCookie('User',data.User,7);
+                    setCookie('PW',data.PW,7);
                     if(data.ActorID==0) NewActorViewInit();
                     else {
                         VARIABLE.USER.ActorID = data.ActorID;
@@ -183,6 +191,32 @@
                     }
                 }
             }
+            function checkRoomName(data){
+                VARIABLE.View.CreateRoom.checkRoomNameRes(data);
+            }
+            function checkActorName(data){
+                VARIABLE.View.NewActor.CheckActorName(data);
+            }
+            function RoomListUpdate(data){
+                VARIABLE.View.Hall.update(data);
+            }
+            function updateRoom_res(data){
+                VARIABLE.View.Room.update(data);
+            }
+            function RoomNewMsg(data) {
+                if(data.RoomID==VARIABLE.USER.RoomID){
+                    if(VARIABLE.SCENES == "room") VARIABLE.View.Room.getMessage(data.Message);  
+                    if(VARIABLE.SCENES == "PreSelect") VARIABLE.View.PreSelect.getMessage(data.Message);  
+                } 
+            }
+            function preSelectInit(data){
+                if(data == VARIABLE.USER.RoomID){
+                    PreSelectViewInit();
+                }
+            }
+            function updatePreSelect(data){
+                VARIABLE.View.PreSelect.update(data);
+            }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
             VARIABLE.Game = new Object();
             VARIABLE.SCENES = "login";//場景
@@ -190,6 +224,7 @@
             VARIABLE.View.Block = new BlockView(getWindowSize(),VARIABLE.Option.getWindowSize()); /*global BlockView 實作於Block.js*/
             ViewInit(VARIABLE.View.Block.self);
             VARIABLE.USER = new UserData();/*global UserData 實作於Data*///用戶資料
+            
             VARIABLE.Socket = io();/*global io in socket.io*/
             VARIABLE.Socket.on('getMap',getMap);
             VARIABLE.Socket.on('getActor',getActor);
@@ -198,7 +233,14 @@
             VARIABLE.Socket.on('newActor_res',newActor_res);
             VARIABLE.Socket.on('hallinit',hallinit);
             VARIABLE.Socket.on('addRoom_res',addRoom_res);
-            VARIABLE.Socket.emit("getMap",VARIABLE.USER);
+            VARIABLE.Socket.on('checkRoomName_res',checkRoomName);
+            VARIABLE.Socket.on('newActorNameCheck_res',checkActorName);
+            VARIABLE.Socket.on('RoomListUpdate',RoomListUpdate);
+            VARIABLE.Socket.on('updateRoom_res',updateRoom_res);
+            VARIABLE.Socket.on('RoomNewMsg',RoomNewMsg);
+            VARIABLE.Socket.on("preSelect",preSelectInit);
+            VARIABLE.Socket.on("updatePreSelect",updatePreSelect);
+            VARIABLE.Socket.emit("getMap");
             checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
         }//初始化
@@ -223,35 +265,34 @@
             VARIABLE.SCENES = "newActor";
             /*global NewActorView 實作於src/View.* */
             VARIABLE.View.NewActor = new NewActorView(getWindowSize(),VARIABLE.Option.getWindowSize());
-            VARIABLE.Socket.on('newActorNameCheck_res',VARIABLE.View.NewActor.CheckActorName);
             ViewInit(VARIABLE.View.NewActor.self);
         }//創建角色
         function HallViewInit(){
             VARIABLE.SCENES = "hall";
             /*global HallView 實作於src/View.* */
             VARIABLE.View.Hall = new HallView(getWindowSize(),VARIABLE.Option.getWindowSize());
-            VARIABLE.Socket.on('RoomListUpdate',function(data){VARIABLE.View.Hall.update(data);});
             VARIABLE.Socket.emit("hallinit",VARIABLE.USER.ActorID);
         }//大廳描繪
         function CreateRoomViewInit(){
-            VARIABLE.SCENES = "createHall";
+            VARIABLE.SCENES = "createRoom";
             /*global CreateRoomView 實作於src/View.* */
             VARIABLE.View.CreateRoom = new CreateRoomView(getWindowSize(),VARIABLE.Option);
-            VARIABLE.Socket.on('checkRoomName_res',VARIABLE.View.CreateRoom.checkRoomNameRes);
             ViewInit(VARIABLE.View.CreateRoom.self);
         }//建立房間
         function RoomViewInit(){
             VARIABLE.SCENES = "room";
             /*global RoomView 實作於View.* */
             VARIABLE.View.Room = new RoomView(getWindowSize(),VARIABLE.Option);
-            VARIABLE.Socket.on('updateRoom_res',function(data) {VARIABLE.View.Room.update(data)});
-            VARIABLE.Socket.on('RoomNewMsg',function(data) {
-                    if(data.RoomID==VARIABLE.USER.RoomID) VARIABLE.View.Room.getMessage(data.Message);
-                }
-            );
             VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
             ViewInit(VARIABLE.View.Room.self);
         }//房間內
+        function PreSelectViewInit(){
+            VARIABLE.SCENES = "PreSelect";
+            /*global PreSelectView*/
+            VARIABLE.View.PreSelect = new PreSelectView(getWindowSize(),VARIABLE.Option);
+            //VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
+            ViewInit(VARIABLE.View.PreSelect.self);
+        }
         //以下為系統工具
         function getWindowSize(){
             var w = window,
@@ -278,7 +319,7 @@
                 case 'hall':
                     VARIABLE.View.Hall.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
                     break;
-                case 'createHall':
+                case 'createRoom':
                     VARIABLE.View.CreateRoom.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
                     break;
                 case 'room':
@@ -286,6 +327,9 @@
                     break;
                 case 'optionEdit':
                     VARIABLE.View.OptionEdit.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+                case 'PreSelect':
+                    VARIABLE.View.PreSelect.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
                     break;
             }
         }

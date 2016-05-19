@@ -60,13 +60,9 @@ function LoginView(windowSize){
 	commit.style.left = "140px";
 	commit.style.cursor = "pointer";
 	commit.addEventListener("click",function(){
-      	var data = new Object();
-    	data.Name = user.value;
-		data.PW = pw.value;
-		data.d = document;
 		/*global ViewInit,VARIABLE in index.html*/
 		ViewInit(VARIABLE.View.Block.self);
-		VARIABLE.Socket.emit("login",data);/*global VARIABLE in index*/
+		VARIABLE.Socket.emit("login",{Name:user.value,PW:pw.value});/*global VARIABLE in index*/
 	});
 	
 	this.self.appendChild(user);

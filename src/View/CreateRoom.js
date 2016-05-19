@@ -15,7 +15,7 @@ function CreateRoomView(windowSize,Option){
 	roomname.style.border = "0px";
 	roomname.style.fontSize = "x-large";
 	roomname.style.color = "#FFFFFF";
-	roomname.addEventListener("keydown",function(){//確認角色名稱可否使用
+	roomname.addEventListener("keyup",function(){//確認角色名稱可否使用
 		VARIABLE.Socket.emit("checkRoomName",roomname.value);
 	});
 	

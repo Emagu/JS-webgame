@@ -16,8 +16,10 @@ function RoomView(windowSize,Option){
     command_Start.style.cursor = "pointer";
     command_Start.style.backgroundImage = "url('./src/pic/Room/BTN_Start.png')";
     command_Start.style.backgroundPosition = "center center";
+    command_Start.style.display = "none";
     command_Start.addEventListener("click",function() {
         //開始選角
+        VARIABLE.Socket.emit("preSelect",VARIABLE.USER.RoomID);
     });
     
     var command_Quit = document.createElement("div");
@@ -62,6 +64,12 @@ function RoomView(windowSize,Option){
     BTN_AI_Aside.style.top = "23px";
     BTN_AI_Aside.style.position = "absolute";
     BTN_AI_Aside.style.cursor = "pointer";
+    BTN_AI_Aside.style.display = "none";
+    BTN_AI_Aside.style.backgroundImage = "url('./src/pic/Room/Join_AI.png')";
+    BTN_AI_Aside.addEventListener("click",function() {
+        VARIABLE.Socket.emit("addAI",{Side:0,RoomID:VARIABLE.USER.RoomID});
+    });
+    
     Join_Aside.appendChild(BTN_AI_Aside);
     Join_Aside.appendChild(BTN_Join_Aside);
     
@@ -89,6 +97,11 @@ function RoomView(windowSize,Option){
     BTN_AI_Bside.style.top = "23px";
     BTN_AI_Bside.style.position = "absolute";
     BTN_AI_Bside.style.cursor = "pointer";
+    BTN_AI_Bside.style.display = "none";
+    BTN_AI_Bside.style.backgroundImage = "url('./src/pic/Room/Join_AI.png')";
+    BTN_AI_Bside.addEventListener("click",function() {
+        VARIABLE.Socket.emit("addAI",{Side:1,RoomID:VARIABLE.USER.RoomID});
+    });
     
     Join_Bside.appendChild(BTN_AI_Bside);
     Join_Bside.appendChild(BTN_Join_Bside);
@@ -113,7 +126,10 @@ function RoomView(windowSize,Option){
 	messageInput.style.width = "800px";
 	messageInput.style.height="26px";
 	messageInput.addEventListener("keydown",function(e) {
-	    if(e.keyCode==13) VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	    if(e.keyCode==13) {
+	        VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	        messageInput.value = "";
+	    }
 	});
 	
 	var messageSend = document.createElement("div");
@@ -125,6 +141,7 @@ function RoomView(windowSize,Option){
 	messageSend.style.cursor="pointer";
 	messageSend.addEventListener("click",function(){
 	   VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	   messageInput.value = "";
 	});
     
     this.self.appendChild(messageField);
@@ -133,6 +150,7 @@ function RoomView(windowSize,Option){
     this.self.appendChild(Join_Aside);
     this.self.appendChild(Join_Bside);
 	this.self.appendChild(command_Quit);
+	this.self.appendChild(command_Start);
 	//變數宣告完畢
 	
 	//宣告函式
@@ -189,7 +207,7 @@ function RoomView(windowSize,Option){
 	    this.Div.appendChild(PlayNum);
 	    this.Div.appendChild(RoomName);
 	}
-	function playerItem(i,playerData){
+	function playerItem(i,playerData,isMaster){
 	    this.Div = document.createElement("div");
 	    this.Div.style.width = "430px";
 	    this.Div.style.height = "75px";
@@ -209,9 +227,60 @@ function RoomView(windowSize,Option){
 	    PlayName.style.position = "absolute";
 	    PlayName.style.fontSize = "x-large";
 	    PlayName.style.color = "#FFFFFF";
-	    
 	    PlayName.appendChild(document.createTextNode(playerData.actorName));
 	    this.Div.appendChild(PlayName);
+	    
+	    if(isMaster && VARIABLE.USER.ActorID != playerData.actorID){
+	        var deletePlayer = document.createElement("div");
+    	    deletePlayer.style.width = "32px";
+    	    deletePlayer.style.height = "32px";
+    	    deletePlayer.style.left = "370px";
+    	    deletePlayer.style.top = "10px";
+    	    deletePlayer.style.position = "absolute";
+    	    deletePlayer.style.cursor = "pointer";
+    	    deletePlayer.style.backgroundImage = "url('./src/pic/Room/X_icon.png')"
+    	    
+    	    this.Div.appendChild(deletePlayer);
+	    }
+	}
+	function AIItem(i,Data,isMaster){
+	    this.Div = document.createElement("div");
+	    this.Div.style.width = "430px";
+	    this.Div.style.height = "75px";
+	    if(Data.Side==1) this.Div.style.left = "491px";
+	    else this.Div.style.left = "49px";
+	    this.Div.style.top = (78 + 75*i) +"px";
+	    if(i<4) this.Div.style.backgroundImage = "url('./src/pic/Room/playerItem.png')";
+	    else this.Div.style.backgroundImage = "url('./src/pic/Room/playerItem_1.png')";
+	    this.Div.style.backgroundPosition = "center center";
+	    this.Div.style.position = "absolute";
+	    
+	    var PlayName = document.createElement("div");
+	    PlayName.style.width = "200px";
+	    PlayName.style.height = "30px";
+	    PlayName.style.left = "100px";
+	    PlayName.style.top = "5px";
+	    PlayName.style.position = "absolute";
+	    PlayName.style.fontSize = "x-large";
+	    PlayName.style.color = "#FFFFFF";
+	    
+	    PlayName.appendChild(document.createTextNode("A  I"));
+	    this.Div.appendChild(PlayName);
+	    
+	    if(isMaster){
+	        var deletePlayer = document.createElement("div");
+    	    deletePlayer.style.width = "32px";
+    	    deletePlayer.style.height = "32px";
+    	    deletePlayer.style.left = "370px";
+    	    deletePlayer.style.top = "10px";
+    	    deletePlayer.style.position = "absolute";
+    	    deletePlayer.style.backgroundImage = "url('./src/pic/Room/X_icon.png')"
+    	    deletePlayer.style.cursor = "pointer";
+    	    deletePlayer.addEventListener("click",function() {
+    	        VARIABLE.Socket.emit("deleteAI",{Side:Data.Side,RoomID:VARIABLE.USER.RoomID});
+    	    });
+    	    this.Div.appendChild(deletePlayer);
+	    }
 	}
 	this.update = function(data){
 	    console.log(data);
@@ -222,36 +291,66 @@ function RoomView(windowSize,Option){
         playerArray = [];
         var PlayData = data.PlayData;
         var Master = data.Master;
+        var AIData = data.AIData;
         var MasterName;
+        var isMaster = false;
         var sideA = 0;
         var sideB = 0;
         for(var i=0;i<PlayData.length;i++){
             if(PlayData[i].actorID==Master){
                 MasterName = PlayData[i].actorName;
                 if(PlayData[i].actorID==VARIABLE.USER.ActorID){
-                    while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
-                    this.self.appendChild(command_Start);
+                    command_Start.style.display = "";
+                    BTN_AI_Aside.style.display = "";
+                    BTN_AI_Bside.style.display = "";
+                    isMaster = true;
                 }
             }
             if(PlayData[i].side==0){
-                var temp = new playerItem(sideA,PlayData[i]);
+                var temp = new playerItem(sideA,PlayData[i],isMaster);
                 playerArray.push(temp.Div);
                 this.self.appendChild(temp.Div);
                 sideA++;
             }else{
-                var temp = new playerItem(sideB,PlayData[i]);
+                var temp = new playerItem(sideB,PlayData[i],isMaster);
                 playerArray.push(temp.Div);
                 this.self.appendChild(temp.Div);
                 sideB++;
             }
         }
-        Join_Aside.style.top = (78 + sideA * 75) + "px";
-        if(sideA==5) Join_Aside.style.backgroundImage = "url('./src/pic/Room/Join_1.png')";
-        else Join_Aside.style.backgroundImage = "url('./src/pic/Room/Join.png')";
+        for(var i=0;i<AIData.length;i++){
+            if(AIData[i].Side==0){
+                var temp = new AIItem(sideA,AIData[i],isMaster);
+                playerArray.push(temp.Div);
+                this.self.appendChild(temp.Div);
+                sideA++;
+            }else{
+                var temp = new AIItem(sideB,AIData[i],isMaster);
+                playerArray.push(temp.Div);
+                this.self.appendChild(temp.Div);
+                sideB++;
+            }
+        }
         
-        Join_Bside.style.top = (78 + sideB * 75) + "px";
-        if(sideB==5) Join_Bside.style.backgroundImage = "url('./src/pic/Room/Join_1.png')";
-        else Join_Bside.style.backgroundImage = "url('./src/pic/Room/Join.png')";
+        Join_Aside.style.display = "";    
+        if(sideA<5) {
+            Join_Aside.style.top = (78 + sideA * 75) + "px";
+            if(sideA==4) Join_Aside.style.backgroundImage = "url('./src/pic/Room/Join_1.png')";
+            else Join_Aside.style.backgroundImage = "url('./src/pic/Room/Join.png')";
+        }else{
+            Join_Aside.style.display = "none";  
+            BTN_AI_Aside.style.display = "none";
+        } 
+        Join_Bside.style.display = "";
+        if(sideB<5) {
+            Join_Bside.style.top = (78 + sideB * 75) + "px";
+            if(sideB==4) Join_Bside.style.backgroundImage = "url('./src/pic/Room/Join_1.png')";
+            else Join_Bside.style.backgroundImage = "url('./src/pic/Room/Join.png')";
+        }else{
+            Join_Bside.style.display = "none";
+            BTN_AI_Bside.style.display = "none";
+        } 
+        
         if(RoomStatusDiv!=null) this.self.removeChild(RoomStatusDiv);
         RoomStatusDiv = new RoomStatus({RoomName:data.RoomName,Mode:data.Mode,MapName:data.MapName}).Div;
         this.self.appendChild(RoomStatusDiv);
@@ -270,6 +369,7 @@ function RoomView(windowSize,Option){
     //初始化函式執行
     //執行初始化函式完畢
 }
+
 
 
 

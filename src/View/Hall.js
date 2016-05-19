@@ -160,8 +160,9 @@ function HallView(windowSize,OptionSize){
         this.self.removeChild(status);
         createStatus();
         /*global VARIABLE 宣告於index*/
-        status.appendChild(document.createTextNode("角色名稱:"+VARIABLE.USER.ActorName));
+        status.appendChild(document.createTextNode("角色名稱:"));
         status.appendChild(document.createElement("br"));
+        status.appendChild(document.createTextNode(VARIABLE.USER.ActorName));
         this.self.appendChild(status);
     };//狀態欄渲染
     //函式宣告完畢

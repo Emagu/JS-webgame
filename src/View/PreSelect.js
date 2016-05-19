@@ -1,323 +1,379 @@
-function PreSelect(windowSize,Option){
+function PreSelectView(windowSize,Option){
     /*global OriginView */
     OriginView.call(this,windowSize,Option.getWindowSize());//繼承 
-    
+    this.self.style.backgroundImage = "url('./src/pic/PreSelect/BackGround.png')";
     //宣告變數
-    var RoomMaster;
-    var ActorType = 0;
-    var ActorTypeChoose = null;
-    
-    var command = document.createElement("div");
-    command.style.width = "20%";
-    command.style.height = "70%";
-    command.style.backgroundColor = "#00AAAA";
-    command.style.position = "absolute";
-    command.style.left = "0px";
-    command.style.top = "0px";
-    
-    var command_Start = document.createElement("div");
-    command_Start.style.width = "98%";
-    command_Start.style.height = "18%";
-    command_Start.style.left = "1%";
-    command_Start.style.top = "1%";
-    command_Start.style.position = "absolute";
-    command_Start.style.backgroundColor = "#00AFAA";
-    command_Start.style.cursor = "pointer";
-    command_Start.style.textAlign = "center";
-    /*global VARIABLE 宣告於index*/
-    command_Start.appendChild(document.createTextNode("準備完成"));
-    command_Start.addEventListener("click",function() {
-        if(!VARIABLE.USER.RoomMaster){
-           if(Ready){
-               while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
-               command_Start.appendChild(document.createTextNode("準備完成"));
-               Ready = false;
-               VARIABLE.Socket.emit("SetRoomStatus",{Status:0,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
-           }else{
-               while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
-               command_Start.appendChild(document.createTextNode("取消準備"));
-               Ready = true;
-               VARIABLE.Socket.emit("SetRoomStatus",{Status:1,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
-           }
+    var itemArray = [];
+    var PlayLocal = null;
+    var Ready = false;
+    var command_Ready = document.createElement("div");
+    command_Ready.style.width = "720px";
+    command_Ready.style.height = "25px";
+    command_Ready.style.left = "280px";
+    command_Ready.style.top = "450px";
+    command_Ready.style.position = "absolute";
+    command_Ready.style.cursor = "pointer";
+    command_Ready.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Ready.png')"
+    command_Ready.addEventListener("click",function() {
+        if(Ready){
+        	Ready = false;
+        	command_Ready.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Ready.png')";
+        	VARIABLE.Socket.emit("SetReady",{Status:0,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
+        }else{
+        	Ready = true;
+        	command_Ready.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Canncel.png')";
+        	VARIABLE.Socket.emit("SetReady",{Status:1,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
         }
     });
     
-    var command_Quit = document.createElement("div");
-    command_Quit.style.width = "98%";
-    command_Quit.style.height = "18%";
-    command_Quit.style.left = "1%";
-    command_Quit.style.top = "20%";
-    command_Quit.style.position = "absolute";
-    command_Quit.style.backgroundColor = "#00AFAA";
-    command_Quit.style.cursor = "pointer";
-    command_Quit.style.textAlign = "center";
-    command_Quit.appendChild(document.createTextNode("離開房間"));
-    command_Quit.addEventListener("click",function(){
-        /*global ViewInit,VARIABLE 宣告於index*/
-        var data = new Object();
-        data.ActorID = VARIABLE.USER.ActorID;
-        data.Master = VARIABLE.USER.RoomMaster;
-        data.RoomID = VARIABLE.USER.RoomID;
-        data.Echo = true;
-        ViewInit(VARIABLE.View.Block.self);
-        VARIABLE.SCENES = "hall";
-        VARIABLE.Socket.emit("quitRoom",data);
+    var TypeSelect = document.createElement("div");
+    TypeSelect.style.width = "32px";
+    TypeSelect.style.height = "32px";
+    TypeSelect.style.left = "439px";
+    TypeSelect.style.top = "399px";
+    TypeSelect.style.position = "absolute";
+    TypeSelect.style.cursor = "pointer";
+    TypeSelect.addEventListener("click",function() {
+        TypeDiv.style.display = "";
+    });
+    var WeaponSelect = document.createElement("div");
+    WeaponSelect.style.width = "32px";
+    WeaponSelect.style.height = "32px";
+    WeaponSelect.style.left = "684px";
+    WeaponSelect.style.top = "399px";
+    WeaponSelect.style.position = "absolute";
+    WeaponSelect.style.cursor = "pointer";
+    WeaponSelect.addEventListener("click",function() {
+        WeaponDiv.style.display = "";
+    });
+    var SupportSelect = document.createElement("div");
+    SupportSelect.style.width = "32px";
+    SupportSelect.style.height = "32px";
+    SupportSelect.style.left = "719px";
+    SupportSelect.style.top = "399px";
+    SupportSelect.style.position = "absolute";
+    SupportSelect.style.cursor = "pointer";
+    SupportSelect.addEventListener("click",function() {
+        SupportDiv.style.display = "";
+    });
+    var StrategySelect = document.createElement("div");
+    StrategySelect.style.width = "32px";
+    StrategySelect.style.height = "32px";
+    StrategySelect.style.left = "754px";
+    StrategySelect.style.top = "399px";
+    StrategySelect.style.position = "absolute";
+    StrategySelect.style.cursor = "pointer";
+    StrategySelect.addEventListener("click",function() {
+        StrategyDiv.style.display = "";
     });
     
-    var status = document.createElement("div");
-    status.style.width = "20%";
-    status.style.height = "30%";
-    status.style.backgroundColor = "#0000AA";
-    status.style.position = "absolute";
-    status.style.left = "0px";
-    status.style.top = "70%";
-    status.appendChild(document.createTextNode("角色名稱:"+VARIABLE.USER.ActorName));
-    status.appendChild(document.createElement("br"));
-    status.appendChild(document.createTextNode("角色等級:"+VARIABLE.USER.Level));
-    status.appendChild(document.createElement("br"));
-    
-    var actorList = document.createElement("div");
-    actorList.style.width = "80%";
-    actorList.style.height = "40%";
-    actorList.style.backgroundColor = "#AAAAAA";
-    actorList.style.position = "absolute";
-    actorList.style.left = "20%";
-    actorList.style.top = "5%";
-    
-    var actorList_L = document.createElement("div");
-    actorList_L.style.width = "50%";
-    actorList_L.style.height = "100%";
-    actorList_L.style.backgroundColor = "#AAffAA";
-    actorList_L.style.position = "absolute";
-    actorList_L.style.left = "0%";
-    actorList_L.style.top = "0%";
-    
-    var actorList_R = document.createElement("div");
-    actorList_R.style.width = "50%";
-    actorList_R.style.height = "100%";
-    actorList_R.style.backgroundColor = "#AAffAA";
-    actorList_R.style.position = "absolute";
-    actorList_R.style.left = "50%";
-    actorList_R.style.top = "0%";
-    
-    actorList.appendChild(actorList_L);
-    actorList.appendChild(actorList_R);
-    
-    var actorDiv = [];
-    var readyDiv = [];
-    var LevelDiv = [];
-    var MasterDiv = [];
-    //左邊
-    for(var i=0;i<5;i++){
-        var positionLabel = document.createElement("div");
-        positionLabel.style.width = "10%";
-        positionLabel.style.height = "17%";
-        positionLabel.style.backgroundColor = "#FFAAAA";
-        positionLabel.style.position = "absolute";
-        positionLabel.style.left = "1%";
-        positionLabel.style.top = (i*18 + 10) + "%";
-        positionLabel.appendChild(document.createTextNode((i+1)+":"));
-        actorList_L.appendChild(positionLabel);
-        
-        var actorIDLabel = document.createElement("div");
-        actorIDLabel.style.width = "30%";
-        actorIDLabel.style.height = "17%";
-        actorIDLabel.style.backgroundColor = "#FFAAAA";
-        actorIDLabel.style.position = "absolute";
-        actorIDLabel.style.left = "12%";
-        actorIDLabel.style.top = (i*18 + 10) + "%";
-        addEvent_roomPos(actorIDLabel,i);
-        actorDiv.push(actorIDLabel);
-        actorList_L.appendChild(actorDiv[i]);
-        
-        var LevelLabel = document.createElement("div");
-        LevelLabel.style.width = "10%";
-        LevelLabel.style.height = "17%";
-        LevelLabel.style.backgroundColor = "#FFAAAA";
-        LevelLabel.style.position = "absolute";
-        LevelLabel.style.left = "43%";
-        LevelLabel.style.top = (i*18 + 10) + "%";
-        LevelDiv.push(LevelLabel);
-        actorList_L.appendChild(LevelDiv[i]);
-        
-        var MasterLabel = document.createElement("div");
-        MasterLabel.style.width = "10%";
-        MasterLabel.style.height = "17%";
-        MasterLabel.style.backgroundColor = "#FFAAAA";
-        MasterLabel.style.position = "absolute";
-        MasterLabel.style.left = "54%";
-        MasterLabel.style.top = (i*18 + 10) + "%";
-        MasterDiv.push(MasterLabel);
-        actorList_L.appendChild(MasterDiv[i]);
-        
-        var readyLabel = document.createElement("div");
-        readyLabel.style.width = "34%";
-        readyLabel.style.height = "17%";
-        readyLabel.style.backgroundColor = "#FFAAAA";
-        readyLabel.style.position = "absolute";
-        readyLabel.style.left = "65%";
-        readyLabel.style.top = (i*18 + 10) + "%";
-        readyDiv.push(readyLabel);
-        actorList_L.appendChild(readyDiv[i]);
-    }
-    //右邊
-    for(var i=0;i<5;i++){
-        var positionLabel = document.createElement("div");
-        positionLabel.style.width = "10%";
-        positionLabel.style.height = "17%";
-        positionLabel.style.backgroundColor = "#FFAAAA";
-        positionLabel.style.position = "absolute";
-        positionLabel.style.left = "1%";
-        positionLabel.style.top = (i*18 + 10) + "%";
-        positionLabel.appendChild(document.createTextNode((i+6)+":"));
-        actorList_R.appendChild(positionLabel);
-        
-        var actorIDLabel = document.createElement("div");
-        actorIDLabel.style.width = "30%";
-        actorIDLabel.style.height = "17%";
-        actorIDLabel.style.backgroundColor = "#FFAAAA";
-        actorIDLabel.style.position = "absolute";
-        actorIDLabel.style.left = "12%";
-        actorIDLabel.style.top = (i*18 + 10) + "%";
-        addEvent_roomPos(actorIDLabel,i+5);
-        actorDiv.push(actorIDLabel);
-        actorList_R.appendChild(actorDiv[i+5]);
-        
-        var LevelLabel = document.createElement("div");
-        LevelLabel.style.width = "10%";
-        LevelLabel.style.height = "17%";
-        LevelLabel.style.backgroundColor = "#FFAAAA";
-        LevelLabel.style.position = "absolute";
-        LevelLabel.style.left = "43%";
-        LevelLabel.style.top = (i*18 + 10) + "%";
-        LevelDiv.push(LevelLabel);
-        actorList_R.appendChild(LevelDiv[i+5]);
-        
-        var MasterLabel = document.createElement("div");
-        MasterLabel.style.width = "10%";
-        MasterLabel.style.height = "17%";
-        MasterLabel.style.backgroundColor = "#FFAAAA";
-        MasterLabel.style.position = "absolute";
-        MasterLabel.style.left = "54%";
-        MasterLabel.style.top = (i*18 + 10) + "%";
-        MasterDiv.push(MasterLabel);
-        actorList_R.appendChild(MasterDiv[i+5]);
-        
-        var readyLabel = document.createElement("div");
-        readyLabel.style.width = "34%";
-        readyLabel.style.height = "17%";
-        readyLabel.style.backgroundColor = "#FFAAAA";
-        readyLabel.style.position = "absolute";
-        readyLabel.style.left = "65%";
-        readyLabel.style.top = (i*18 + 10) + "%";
-        readyDiv.push(readyLabel);
-        actorList_R.appendChild(readyDiv[i+5]);
+    var TypeDiv = document.createElement("div");
+    TypeDiv.style.width = "300px";
+    TypeDiv.style.height = "100px";
+    TypeDiv.style.left = "490px";
+    TypeDiv.style.top = "310px";
+    TypeDiv.style.position = "absolute";
+    TypeDiv.style.backgroundImage = "url('./src/pic/PreSelect/type.png')";
+    TypeDiv.style.display = "none";
+    var TypeArray = Option.getActorTypeArray();
+    for(var i=0;i<TypeArray.length;i++){
+    	var temp = document.createElement("div");
+    	temp.style.width = "32px";
+	    temp.style.height = "32px";
+	    temp.style.left = (10+i*41) + "px";
+	    temp.style.top = "50px";
+	    temp.style.position = "absolute";
+	    temp.style.backgroundImage = "url('./src/pic/Actor/blue/"+i+"/down.png')";
+	    temp.style.cursor = "pointer";
+	    addTypeEvent(i,temp);
+	    TypeDiv.appendChild(temp);
     }
     
-    //玩家個人設定
-    var actorOption = document.createElement("div");
-    actorOption.style.width = "40%";
-    actorOption.style.height = "55%";
-    actorOption.style.backgroundColor = "#AAAAAA";
-    actorOption.style.position = "absolute";
-    actorOption.style.left = "20%";
-    actorOption.style.top = "45%";
+    var WeaponDiv = document.createElement("div");
+    WeaponDiv.style.width = "300px";
+    WeaponDiv.style.height = "160px";
+    WeaponDiv.style.left = "490px";
+    WeaponDiv.style.top = "280px";
+    WeaponDiv.style.position = "absolute";
+    WeaponDiv.style.backgroundImage = "url('./src/pic/PreSelect/weapon.png')";
+    WeaponDiv.style.display = "none";
     
-    //兵種設定
-    var actorType = document.createElement("div");
-    actorType.style.width = "100%";
-    actorType.style.height = "20%";
-    actorType.style.backgroundColor = "#AAAAFF";
-    actorType.style.position = "absolute";
-    actorType.style.left = "0%";
-    actorType.style.top = "10%";
-    actorOption.appendChild(actorType);
+    var SupportDiv = document.createElement("div");
+    SupportDiv.style.width = "300px";
+    SupportDiv.style.height = "160px";
+    SupportDiv.style.left = "490px";
+    SupportDiv.style.top = "280px";
+    SupportDiv.style.position = "absolute";
+    SupportDiv.style.backgroundImage = "url('./src/pic/PreSelect/support.png')";
+    SupportDiv.style.display = "none";
     
-    var actorTypeNameArray = Option.getActorTypeArray();
-    for(var i=0;i<actorTypeNameArray.length;i++){
-        var temp = document.createElement("div");
-        temp.style.width = "13%";
-        temp.style.height = "98%";
-        temp.style.backgroundColor = "#AAAAAA";
-        temp.style.left = (1+(i*14)) + "%";
-        temp.style.top = "1%";
-        temp.style.position = "absolute";
-        temp.appendChild(document.createTextNode(actorTypeNameArray[i]));
-        temp.style.cursor = "pointer";
-        addEvent_actorType(temp,i);
-        if(i==0) {
-            temp.style.backgroundColor = "#AAFFAA";
-            ActorTypeChoose = temp;
-        }
-            
-        actorType.appendChild(temp);
-    }
+    var StrategyDiv = document.createElement("div");
+    StrategyDiv.style.width = "300px";
+    StrategyDiv.style.height = "160px";
+    StrategyDiv.style.left = "490px";
+    StrategyDiv.style.top = "280px";
+    StrategyDiv.style.position = "absolute";
+    StrategyDiv.style.backgroundImage = "url('./src/pic/PreSelect/strategy.png')";
+    StrategyDiv.style.display = "none";
     
-    var title = document.createElement("div");
-    title.style.width = "80%";
-    title.style.height = "5%";
-    title.style.textAlign = "center";
-    title.style.position = "absolute";
-    title.style.backgroundColor = "#FFFFFF";
-    title.style.left = "20%";
-    title.style.top = "0px";
-	title.appendChild(document.createTextNode("房間編號:"+VARIABLE.USER.RoomID));
+    var messageField = document.createElement("div");
+    messageField.style.height = "180px";
+    messageField.style.width = "720px";
+    messageField.style.left = "280px";
+    messageField.style.top = "495px";
+    messageField.style.overflowY = "auto";
+    messageField.style.position = "absolute";
+    messageField.style.listStyleType = "none";
+    
+    var messageInput = document.createElement("input");
+    messageInput.style.backgroundColor = "transparent";
+	messageInput.style.fontSize = "x-large";
+	messageInput.style.color = "#000000";
+	messageInput.style.border = "0px";
+	messageInput.style.position = "absolute";
+	messageInput.style.top = "684px";
+	messageInput.style.left = "280px";
+	messageInput.style.width = "640px";
+	messageInput.style.height="26px";
+	messageInput.addEventListener("keydown",function(e) {
+	    if(e.keyCode==13) {
+	        VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	        messageInput.value = "";
+	    }
+	});
 	
-	command.appendChild(command_Start);
-	command.appendChild(command_Quit);
-	this.self.appendChild(command);
-	this.self.appendChild(status);
-	this.self.appendChild(actorList);
-	this.self.appendChild(actorOption);
-	
-	this.self.appendChild(title);
+	var messageSend = document.createElement("div");
+	messageSend.style.position = "absolute";
+	messageSend.style.top = "684px";
+	messageSend.style.left = "930px";
+	messageSend.style.width = "72px";
+	messageSend.style.height="26px";
+	messageSend.style.cursor="pointer";
+	messageSend.addEventListener("click",function(){
+	   VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	   messageInput.value = "";
+	});
+    this.self.appendChild(command_Ready);
+    this.self.appendChild(messageField);
+    this.self.appendChild(messageSend);
+    this.self.appendChild(messageInput);
+    this.self.appendChild(TypeSelect);
+    this.self.appendChild(WeaponSelect);
+    this.self.appendChild(SupportSelect);
+    this.self.appendChild(StrategySelect);
+    this.self.appendChild(TypeDiv);
+    this.self.appendChild(WeaponDiv);
+    this.self.appendChild(SupportDiv);
+    this.self.appendChild(StrategyDiv);
 	//變數宣告完畢
-	
+	function ActorDiv(data,i){
+		var dark = document.createElement("div");
+		dark.style.width = "140px";
+	    dark.style.height = "110px";
+	    dark.style.backgroundImage = "url('./src/pic/PreSelect/playbox_dark.png')";
+	    dark.style.backgroundPosition = "center center";
+	    dark.style.position = "absolute";
+	    dark.style.top = "0px";
+	    dark.style.left = "0px";
+	    
+	    this.Div = document.createElement("div");
+	    this.Div.style.width = "140px";
+	    this.Div.style.height = "110px";
+	    this.Div.style.top = ((i*120)+78)+"px";
+	    if(data.side==0)this.Div.style.left = "50px";
+	    else this.Div.style.left = "1080px";
+	    this.Div.style.backgroundImage = "url('./src/pic/PreSelect/playbox.png')";
+	    this.Div.style.backgroundPosition = "center center";
+	    this.Div.style.position = "absolute";
+	    if(data.Ready==1){
+	    	this.Div.appendChild(dark);
+	    }
+	    var TypeDiv = document.createElement("div");
+	    TypeDiv.style.width = "75px";
+	    TypeDiv.style.height = "75px";
+	    TypeDiv.style.top = "5px";
+	    TypeDiv.style.left = "15px";
+	    TypeDiv.style.backgroundPosition = "center center";
+	    TypeDiv.style.position = "absolute";
+	    
+	    var ItemDiv_1 = document.createElement("div");
+	    ItemDiv_1.style.width = "32px";
+	    ItemDiv_1.style.height = "32px";
+	    ItemDiv_1.style.top = "5px";
+	    ItemDiv_1.style.left = "100px";
+	    ItemDiv_1.style.backgroundPosition = "center center";
+	    ItemDiv_1.style.position = "absolute";
+	    
+	    var ItemDiv_2 = document.createElement("div");
+	    ItemDiv_2.style.width = "32px";
+	    ItemDiv_2.style.height = "32px";
+	    ItemDiv_2.style.top = "39px";
+	    ItemDiv_2.style.left = "100px";
+	    ItemDiv_2.style.backgroundPosition = "center center";
+	    ItemDiv_2.style.position = "absolute";
+	    
+	    var ItemDiv_3 = document.createElement("div");
+	    ItemDiv_3.style.width = "32px";
+	    ItemDiv_3.style.height = "32px";
+	    ItemDiv_3.style.top = "73px";
+	    ItemDiv_3.style.left = "100px";
+	    ItemDiv_3.style.backgroundPosition = "center center";
+	    ItemDiv_3.style.position = "absolute";
+	    
+	    var Name = document.createElement("div");
+	    Name.style.width = "100px";
+	    Name.style.height = "30px";
+	    Name.style.top = "82px";
+	    Name.style.left = "4px";
+	    Name.style.fontSize = "x-large";
+	    Name.style.color = "#FFFFFF";
+	    Name.style.position = "absolute";
+	    Name.style.textAlign = "center";
+	    Name.appendChild(document.createTextNode(data.actorName));
+	    
+	    this.Div.appendChild(Name);
+	    this.Div.appendChild(TypeDiv);
+	    this.Div.appendChild(ItemDiv_1);
+	    this.Div.appendChild(ItemDiv_2);
+	    this.Div.appendChild(ItemDiv_3);
+	}
+	function AIDiv(side,i){
+	    this.Div = document.createElement("div");
+	    this.Div.style.width = "140px";
+	    this.Div.style.height = "110px";
+	    this.Div.style.top = ((i*120)+78)+"px";
+	    if(side==0)this.Div.style.left = "50px";
+	    else this.Div.style.left = "1080px";
+	    this.Div.style.backgroundImage = "url('./src/pic/PreSelect/playbox.png')"
+	    this.Div.style.backgroundPosition = "center center";
+	    this.Div.style.position = "absolute";
+	    
+	    this.TypeDiv = document.createElement("div");
+	    this.TypeDiv.style.width = "75px";
+	    this.TypeDiv.style.height = "75px";
+	    this.TypeDiv.style.top = "5px";
+	    this.TypeDiv.style.left = "15px";
+	    this.TypeDiv.style.backgroundPosition = "center center";
+	    this.TypeDiv.style.position = "absolute";
+	    
+	    this.ItemDiv_1 = document.createElement("div");
+	    this.ItemDiv_1.style.width = "32px";
+	    this.ItemDiv_1.style.height = "32px";
+	    this.ItemDiv_1.style.top = "5px";
+	    this.ItemDiv_1.style.left = "100px";
+	    this.ItemDiv_1.style.backgroundPosition = "center center";
+	    this.ItemDiv_1.style.position = "absolute";
+	    
+	    this.ItemDiv_2 = document.createElement("div");
+	    this.ItemDiv_2.style.width = "32px";
+	    this.ItemDiv_2.style.height = "32px";
+	    this.ItemDiv_2.style.top = "39px";
+	    this.ItemDiv_2.style.left = "100px";
+	    this.ItemDiv_2.style.backgroundPosition = "center center";
+	    this.ItemDiv_2.style.position = "absolute";
+	    
+	    this.ItemDiv_3 = document.createElement("div");
+	    this.ItemDiv_3.style.width = "32px";
+	    this.ItemDiv_3.style.height = "32px";
+	    this.ItemDiv_3.style.top = "73px";
+	    this.ItemDiv_3.style.left = "100px";
+	    this.ItemDiv_3.style.backgroundPosition = "center center";
+	    this.ItemDiv_3.style.position = "absolute";
+	    
+	    this.Div.appendChild(this.TypeDiv);
+	    this.Div.appendChild(this.ItemDiv_1);
+	    this.Div.appendChild(this.ItemDiv_2);
+	    this.Div.appendChild(this.ItemDiv_3);
+	}
+	function PlayLocalInit(data,side,actorID){
+		PlayLocal = document.createElement("select");
+		PlayLocal.style.position = "absolute";
+		PlayLocal.style.top = "400px";
+	    PlayLocal.style.width = "75px";
+	    PlayLocal.style.height = "33px";
+	    PlayLocal.style.left = "920px";
+	    var temp = document.createElement("option");
+		temp.setAttribute("value",0);
+		temp.appendChild(document.createTextNode(""));
+		PlayLocal.appendChild(temp);
+	    for(var i=side;i<(5+side);i++){
+	    	var used = false;
+	    	for(var j=0;j<data.length;j++){
+	    		if(data[j].local==i) {
+	    			used = true;
+	    			break;
+	    		}
+	    	}
+	    	if(!used){
+	    		var temp = document.createElement("option");
+		    	temp.setAttribute("value",i);
+				temp.appendChild(document.createTextNode(i));
+		    	PlayLocal.appendChild(temp);
+	    	}
+	    }
+	    PlayLocal.selectedIndex = data[actorID].Postion;
+	    PlayLocal.addEventListener("change",function() {
+	    	VARIABLE.Socket.emit("SetPostion",{Postion:PlayLocal.value,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
+	    });
+	    
+	}
+	function addTypeEvent(i,Div){
+		Div.addEventListener("click",function() {
+	        TypeDiv.style.display = "none";
+	        VARIABLE.Socket.emit("SetActorType",{Type:i,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
+	    });
+	}
 	//宣告函式
-	function addEvent_roomPos(Div,i){
-	    Div.addEventListener("click",function(){
-            VARIABLE.USER.RoomPosition = i;
-            VARIABLE.Socket.emit("SetRoomPostion",{Postion:VARIABLE.USER.RoomPosition,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
-	    });
-	}
-	function addEvent_actorType(Div,i){
-	    Div.addEventListener("click",function(){
-	        ActorTypeChoose.style.backgroundColor = "#AAAAAA";
-	        Div.style.backgroundColor = "#AAFFAA";
-	        ActorTypeChoose = Div;
-            ActorType = i;
-            VARIABLE.Socket.emit("SetActorType",{Type:ActorType,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
-	    });
-	}
 	this.update = function(data){
 	    console.log(data);
-        if(data.status!="secss" || data.RoomID!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="room") return;
-        var PlayData = data.PlayData;
-        var Master = data.Master;
-	    for(var i=0;i<10;i++){
-            while(actorDiv[i].firstChild) actorDiv[i].removeChild(actorDiv[i].firstChild);
-            while(LevelDiv[i].firstChild) LevelDiv[i].removeChild(LevelDiv[i].firstChild);
-            while(readyDiv[i].firstChild) readyDiv[i].removeChild(readyDiv[i].firstChild);
-            while(MasterDiv[i].firstChild) MasterDiv[i].removeChild(MasterDiv[i].firstChild);
+	    /*global VARIABLE*/
+        if(data.RoomData.NO!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="PreSelect") return;
+        for(var i=0;i<itemArray.length;i++){
+        	this.self.removeChild(itemArray[i].Div);
         }
-        for(var i=0;i<PlayData.length;i++){
-            var pos = PlayData[i].Postion;
-            if(PlayData[i].actorID==Master){
-                MasterDiv[pos].appendChild(document.createTextNode("房長"));
-                if(PlayData[i].actorID==VARIABLE.USER.ActorID){
-                    while(command_Start.firstChild) command_Start.removeChild(command_Start.firstChild);
-                    command_Start.appendChild(document.createTextNode("開始遊戲"));
-                    if(!Ready){
-                        Ready = true;
-                        VARIABLE.Socket.emit("SetRoomStatus",{Status:1,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
-                    }
-                }
-            }
-            actorDiv[pos].appendChild(document.createTextNode(PlayData[i].actorName));
-            LevelDiv[pos].appendChild(document.createTextNode(PlayData[i].LV));
-            if(PlayData[i].state == 1)readyDiv[pos].appendChild(document.createTextNode("準備"));
-        }
+        itemArray = [];
+        var SideA = 0,SideB = 0;
+        if(PlayLocal!=null) this.self.removeChild(PlayLocal);
+        for(var i=0;i<data.SideA.length;i++){
+        	if(data.SideA[i].actorID==VARIABLE.USER.ActorID){
+        		PlayLocalInit(data.SideA,1,i);
+        		TypeSelect.style.backgroundImage = "url('./src/pic/Actor/blue/"+data.SideA[i].type+"/down.png')";
+        	}
+	        var temp = new ActorDiv(data.SideA[i],i);
+	        itemArray.push(temp);
+	        this.self.appendChild(temp.Div);
+	        SideA++;
+	    }
+	    for(var i=0;i<data.SideB.length;i++){
+	    	if(data.SideB[i].actorID==VARIABLE.USER.ActorID){
+        		PlayLocalInit(data.SideB,1,i);
+        		TypeSelect.style.backgroundImage = "url('./src/pic/Actor/blue/"+data.SideA[i].type+"/down.png')";
+        	}
+	        var temp = new ActorDiv(data.SideB[i],i);
+	        itemArray.push(temp);
+	        this.self.appendChild(temp.Div);
+	        SideB++;
+	    }
+	    for(var i=0;i<data.RoomData.SideA_AI;i++){
+	        var temp = new AIDiv(0,i+SideA);
+	        itemArray.push(temp);
+	        this.self.appendChild(temp.Div);
+	    }
+	    for(var i=0;i<data.RoomData.Sideb_AI;i++){
+	        var temp = new AIDiv(1,i+SideB);
+	        itemArray.push(temp);
+	        this.self.appendChild(temp.Div);
+	    }
+	    this.self.appendChild(PlayLocal);
 	};
+	this.getMessage = function(msg){
+        var newMsg = document.createElement("li");
+        newMsg.style.fontSize = "14pt";
+        newMsg.style.color = "#FFFF00";
+        newMsg.appendChild(document.createTextNode(msg));
+        messageField.appendChild(newMsg);
+        messageField.scrollTop = messageField.scrollHeight;
+    };
     //函式宣告完畢
     
     //初始化函式執行
