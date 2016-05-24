@@ -8,20 +8,8 @@
         <script src="src/Control/top.js"></script>
         <script src="src/Option.js"></script>
         
-        <script src="src/View/Origin.js"></script>
-        <script src="src/View/Block.js"></script>
-        <script src="src/View/Login.js"></script>
-        <script src="src/View/Register.js"></script>
-        <script src="src/View/NewActor.js"></script>
-        <script src="src/View/Hall.js"></script>
-        <script src="src/View/CreateRoom.js"></script>
-        <script src="src/View/Room.js"></script>
-        <script src="src/View/OptionEdit.js"></script>
-        <script src="src/View/GameArea.js"></script>
-        <script src="src/View/PreSelect.js"></script>
-        
+        <script src="src/View/View.js"></script>
         <script src="src/Data/User.js"></script>
-        
         <script src="lib/socket.io.js"></script>
         
         <style type="text/css">
@@ -192,6 +180,7 @@
                 }
             }
             function checkRoomName(data){
+                console.log(data);
                 VARIABLE.View.CreateRoom.checkRoomNameRes(data);
             }
             function checkActorName(data){

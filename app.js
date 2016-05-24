@@ -346,6 +346,29 @@ io.on('connection', function(socket){
 			}
 		});
 	});//SetRoomSide
+	socket.on('SetItem', function(msg){//RoomPostion
+		if(socket.User.UserID!=null) updateConnect(socket.User.UserID);
+		switch(msg.Type){
+			case 0:
+		    	connection.query('UPDATE `room_actor_list` SET `item1` = ? WHERE `actorID` = ?', [msg.ItemID,msg.ActorID], function(error){
+		    		if(error) console.log(error);	
+		    	});
+		    	break;
+		    case 1:
+		    	connection.query('UPDATE `room_actor_list` SET `item2` = ? WHERE `actorID` = ?', [msg.ItemID,msg.ActorID], function(error){
+		    		if(error) console.log(error);	
+		    	});
+		    	break;
+		    case 2:
+		    	connection.query('UPDATE `room_actor_list` SET `item3` = ? WHERE `actorID` = ?', [msg.ItemID,msg.ActorID], function(error){
+		    		if(error) console.log(error);	
+		    	});
+		    	break;
+		}
+		setTimeout(function() {
+			updatePreSelect(msg.RoomID);
+		}, 50);
+	});//SetType
 	socket.on('RoomNewMsg', function(msg){
 		if(socket.User.UserID!=null) updateConnect(socket.User.UserID);
 		io.emit('RoomNewMsg',{
@@ -407,6 +430,7 @@ io.on('connection', function(socket){
 	//PreSelect
 	socket.on('preSelect',function(roomID){
 	    io.emit('preSelect',roomID);
+	    socket.local = "game";
 	    connection.query("UPDATE `room_list` SET status = 1 WHERE `NO` = ?",[roomID],function(error) {
 	       if(error) console.log(error);
 	    });
@@ -468,13 +492,21 @@ io.on('connection', function(socket){
 		   	}
 		});
 	  }, 3000);
-	//left
+	setInterval(function() {
+		connection.query('UPDATE `room_list` SET `reciprocal` = `reciprocal` - 1 WHERE `status` = 1 AND `NO` = ?;',[socket.User.RoomID],function(error) {
+			if(socket.local == "game"){
+				updatePreSelect(socket.User.RoomID);
+			}
+			if(error) console.log(error);
+		});
+	}, 1000);
 	socket.on('disconnect',function(){
-		if(socket.local == "room"){
+		if(socket.local == "room" || socket.local == "game"){
 			quitRoom(socket,socket.User);//玩家離房	
 		} 
 		logout(socket.User.UserID);
-	});
+		socket.local = "null";
+	});//left
 });
 function updateConnect(userID){
 	var date = new Date();
@@ -502,11 +534,29 @@ function updatePreSelect(RoomID){
 	});
 	connection.query('SELECT * FROM `room_list` WHERE `NO` = ?', [RoomID], function(error,rows){
 		if(error)console.log(error);
-		else RoomData = rows[0];
+		else {
+			RoomData = rows[0];
+			if(RoomData.reciprocal == -1){
+				var sideAReady = true;
+				var sideBReady = true;
+				for(var i=0;i<SideA.length;i++){
+					if(SideA[i].Ready==0){
+						sideAReady = false;
+						break;
+					}
+				}
+				for(var i=0;i<SideB.length;i++){
+					if(SideB[i].Ready==0){
+						sideBReady = false;
+						break;
+					}
+				}
+				if(sideAReady&&sideBReady){
+					io.emit("gameStart",{RoomID:RoomData.NO});
+				}else io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
+			}else io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
+		}
 	});
-	setTimeout(function(){
-		io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
-	},100);
 }
 //msg =>{ActorID,RoomID,Echo("是否回傳")}
 function quitRoom(socket,msg){
