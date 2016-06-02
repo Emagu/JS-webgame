@@ -13,6 +13,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require("mysql");
 var md5 = require("blueimp-md5");
+var fs = require('fs'); //載入node.js的檔案系統模組
 //建立連線
 var connection = mysql.createConnection({
     host: '127.0.0.1',
@@ -495,7 +496,7 @@ io.on('connection', function(socket){
 	setInterval(function() {
 		connection.query('UPDATE `room_list` SET `reciprocal` = `reciprocal` - 1 WHERE `status` = 1 AND `NO` = ?;',[socket.User.RoomID],function(error) {
 			if(socket.local == "game"){
-				updatePreSelect(socket.User.RoomID);
+				updatePreSelect(socket.User);
 			}
 			if(error) console.log(error);
 		});
@@ -522,21 +523,24 @@ function logout(userID){
 		if (error) console.log(error);
 	});
 }
-function updatePreSelect(RoomID){
+function updatePreSelect(User){
 	var SideA=[],SideB=[],SideA_AI=[],SideB_AI=[],RoomData;
-	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 0', [RoomID], function(error,rows){
+	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 0', [User.RoomID], function(error,rows){
 		if(error)console.log(error);
 		else SideA = rows;
 	});
-	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 1', [RoomID], function(error,rows){
+	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 1', [User.RoomID], function(error,rows){
 		if(error)console.log(error);
 		else SideB = rows;
 	});
-	connection.query('SELECT * FROM `room_list` WHERE `NO` = ?', [RoomID], function(error,rows){
+	connection.query('SELECT * FROM `room_list` WHERE `NO` = ?', [User.RoomID], function(error,rows){
 		if(error)console.log(error);
 		else {
 			RoomData = rows[0];
+			
 			if(RoomData.reciprocal == -1){
+				gameStart(RoomData);
+			}else {
 				var sideAReady = true;
 				var sideBReady = true;
 				for(var i=0;i<SideA.length;i++){
@@ -551,12 +555,49 @@ function updatePreSelect(RoomID){
 						break;
 					}
 				}
-				if(sideAReady&&sideBReady){
-					io.emit("gameStart",{RoomID:RoomData.NO});
-				}else io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
-			}else io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
+				if((sideAReady&&sideBReady&&(RoomData.RoomMaster==User.ActorID))){
+					gameStart(RoomData);
+				}else{
+					io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
+				}
+			}
 		}
 	});
+}
+function gameStart(RoomData){
+	var MapData = null;
+	fs.readFile(__dirname+'/src/Data/Map/'+RoomData.Map+'.txt',function(error, content){ //讀取file.txt檔案的內容
+	    if(error){ //如果有錯誤就列印訊息並離開程式
+	        console.log('檔案讀取錯誤。');
+	    }else {
+	        MapData = JSON.parse(content.toString());
+	    }
+	});
+	connection.query("SELECT `actorID`,`position` FROM `room_actor_list` WHERE `roomID` = ?",[RoomData.NO],function(error,row) {
+		if(error) console.log(error);
+		else{
+			var Player = MapData.Player;
+			var Item = MapData.House;
+			for(var i = 0;i<row.length;i++){
+				var actorID = row[i].actorID;
+				var actorPos = Player[row[i].position];
+				connection.query("INSERT INTO `game_player_table` SET = ?;",{ActorID:actorID, HP:100, AP:100, command:""},function(error,result) {
+					if(error) console.log(error);
+					else{
+						connection.query("INSERT INTO `game_table` SET = ?;",{RoomID:RoomData.NO, ItemID:result.insertId, X:actorPos.X, Y:actorPos.Y, type:"player"},function(error) {
+							if(error) console.log(error);
+						});
+					}
+				});
+			}
+		}
+	});
+	connection.query("UPDATE `room_list` SET `status` = 2 WHERE `status` = 1 AND `NO` = ?",[RoomData.NO],function(error) {
+		if(error) console.log(error);
+	});
+	setTimeout(function(){
+		gameSynchronize(RoomData.NO);
+	},500);
 }
 //msg =>{ActorID,RoomID,Echo("是否回傳")}
 function quitRoom(socket,msg){
@@ -692,6 +733,33 @@ function addRoom(roomID,actorID,socket){
 			});
 		}
 	});
+}
+function gameSynchronize(roomID){
+	var Item=[],turn,recount;
+	connection.query("SELECT `ItemID`,`X`,`Y`,`type` FROM `game_table` WHERE `RoomID` = ?",[roomID],function(error,row) {
+		if(error) console.log(error);
+		else{
+			for(var i=0;i<row.length;i++){
+				if(row[i].type=='player'){
+					connection.query("SELECT `ActorID`,`HP`,`AP`,`command` FROM `game_player_table` WHERE `NO` = ?",[row[i].ItemID],function(error,rw) {
+						if(error) console.log(error);
+						else Item.push({ItemID:row[i].ItemID,type:"player",Postion:{X:row[i].X,Y:row[i].Y},ActorData:rw});
+					});
+				}else Item.push({ItemID:row[i].ItemID,type:"bulid",Postion:{X:row[i].X,Y:row[i].Y}});
+			}
+		}
+	});
+	connection.query("SELECT `turn` FROM `room_list` WHERE `NO` = ?",[roomID],function(error,row) {
+		if(error) console.log(error);
+		else turn = row[0];
+	});
+	connection.query("SELECT `reciprocal` FROM `room_list` WHERE `NO` = ?",[roomID],function(error,row) {
+		if(error) console.log(error);
+		else recount = row[0];
+	});
+	setTimeout(function(){
+		return {Item:Item,turn:turn,recount:recount};
+	},500);
 }
 //指定port
 http.listen(process.env.PORT || 3000, function(){
