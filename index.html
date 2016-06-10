@@ -206,6 +206,16 @@
             function updatePreSelect(data){
                 VARIABLE.View.PreSelect.update(data);
             }
+            function gameStart(data){
+                console.log("gameStart");
+                console.log(data);
+                GameAreaInit(data);
+            }
+            function gameSynchronize(data){
+                console.log("gameSynchronize");
+                console.log(data);
+                //VARIABLE.View.PreSelect.update(data);
+            }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
             VARIABLE.Game = new Object();
             VARIABLE.SCENES = "login";//場景
@@ -229,6 +239,8 @@
             VARIABLE.Socket.on('RoomNewMsg',RoomNewMsg);
             VARIABLE.Socket.on("preSelect",preSelectInit);
             VARIABLE.Socket.on("updatePreSelect",updatePreSelect);
+            VARIABLE.Socket.on("gameStart",gameStart);
+            VARIABLE.Socket.on("gameSynchronize",gameSynchronize);
             VARIABLE.Socket.emit("getMap");
             checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
@@ -282,6 +294,59 @@
             //VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
             ViewInit(VARIABLE.View.PreSelect.self);
         }
+        function GameAreaInit(initData){
+            //初始化資料
+            /*global GameAreaView 實作於View.* */
+            //VARIABLE.Game.Item=initData['Item'];
+            VARIABLE.Game.Map = initData['MapData'].Map;
+            VARIABLE.View.GameArea = new GameAreaView(initData['PlayData'],getWindowSize());
+            VARIABLE.SCENES = "game";
+            ViewInit(VARIABLE.View.GameArea.self);
+            //使用frame可以內嵌另外一頁，在研究
+            var html = '<body></body>';
+            VARIABLE.View.GameArea.iframe.contentWindow.document.open();
+            VARIABLE.View.GameArea.iframe.contentWindow.document.write(html);
+            VARIABLE.View.GameArea.iframe.src='src/GameArea.html';
+            
+            VARIABLE.View.GameArea.LeftControl.MoveButton.addEventListener("click",function(){
+                //取得物件下的node
+                if(VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue=="返回"){
+                   resetButton();
+                }else{
+                    resetButton();
+                    VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="返回";
+                    VARIABLE.View.GameArea.iframe.contentWindow.Skill("移動");
+                }        
+            });
+            VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
+                if(VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue=="返回"){
+                   resetButton();
+                }else{
+                    resetButton();
+                    VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="返回";
+                    VARIABLE.View.GameArea.iframe.contentWindow.Nuclear();
+                }
+            });
+            VARIABLE.View.GameArea.LeftControl.stay.addEventListener("click",function(){
+                resetButton();
+                VARIABLE.View.GameArea.iframe.contentWindow.Skill('選擇方向');
+            });
+            VARIABLE.View.GameArea.LeftControl.BulidButton.addEventListener("click",function(){
+                if(VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue=="返回"){
+                   resetButton();
+                }else{
+                    resetButton();
+                    VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="返回";
+                    
+                }
+            });
+        }//遊戲畫面初始化
+        function resetButton(){
+            VARIABLE.View.GameArea.iframe.contentWindow.ActionCancel();
+            VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
+            VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
+            VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
+        }
         //以下為系統工具
         function getWindowSize(){
             var w = window,
@@ -319,6 +384,9 @@
                     break;
                 case 'PreSelect':
                     VARIABLE.View.PreSelect.windowReSize(windowSize,VARIABLE.Option.getWindowSize());
+                    break;
+                case 'game':
+                    VARIABLE.View.GameArea.windowReSize(windowSize,{W:1280, H:960});
                     break;
             }
         }

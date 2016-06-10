@@ -1661,3 +1661,139 @@ function RegisterView(windowSize){
     this.windowReSize(windowSize);
     //執行初始化函式完畢
 }
+function GameAreaView(Itemlist,windowSize){
+    OriginView.call(this,windowSize,{W:1280, H:960});//繼承 
+    this.self.style.backgroundImage = "url('src/pic/GameArea/BackGround.png')";
+    
+    this.iframe = document.createElement('iframe');
+    this.iframe.style.width="960px";
+    this.iframe.style.height="720px";
+    this.iframe.style.left="160px";
+    this.iframe.style.top="40px";
+    this.iframe.style.position='absolute';
+    this.self.appendChild(this.iframe);
+    
+    /*global TopControlView 實作於Control*/
+    /*var TopControl = new TopControlView();
+    this.self.appendChild(TopControl.self);
+    
+    /*global LeftControlView 實作於Control*/
+    /*this.LeftControl = new LeftControl();
+    this.self.appendChild(this.LeftControl.self);
+    
+    /*global RightControlView 實作於Control*/
+    /*this.RightControl = new RightControlView();
+    this.self.appendChild(this.RightControl.self);
+    
+    function LeftControl(){
+        this.self = document.createElement("div");
+        this.self.style.width = "15%";
+        this.self.style.height = "100%";
+        this.self.style.position = "absolute";
+        this.self.style.left = "0px";
+        this.self.style.top = "0px";
+        this.self.style.textAlig='center';
+        //移動按鈕
+        this.MoveButton = document.createElement("div");
+        this.MoveButton.style.textAlig='center';
+    	var moveimg = document.createElement("img");
+    	moveimg.setAttribute("src","/src/pic/GameArea/BTN_Move.png");
+        moveimg.setAttribute("width", "100%");
+        moveimg.setAttribute("height", "100%");
+    	this.MoveButton.appendChild(moveimg);
+    	this.MoveButton.style.position = "absolute";
+    	this.MoveButton.style.width = "90%";
+    	this.MoveButton.style.height = "9%";
+    	this.MoveButton.style.left = "5%";
+        this.MoveButton.style.top = "1%";
+        this.MoveButton.style.cursor = "pointer";
+       
+        this.self.appendChild(this.MoveButton);
+        
+      	//攻擊按鈕
+        this.AttackButton = document.createElement("div");
+    	this.AttackButton.style.position = "absolute";
+    	this.AttackButton.style.width = "90%";
+    	this.AttackButton.style.height = "9%";
+    	this.AttackButton.style.left = "5%";
+        this.AttackButton.style.top = "15%";
+        this.AttackButton.style.cursor = "pointer";
+        this.self.appendChild(this.AttackButton);
+        
+        //建築按鈕(?) 應該不會用到
+        this.BulidButton = document.createElement("div");
+    	this.BulidButton.style.position = "absolute";
+    	this.BulidButton.style.width = "90%";
+    	this.BulidButton.style.height = "9%";
+    	this.BulidButton.style.left = "5%";
+        this.BulidButton.style.top = "29%";
+        this.BulidButton.style.cursor = "pointer";
+        this.self.appendChild(this.BulidButton);
+        
+        //道具按鈕    
+        var ItemButton = document.createElement("div");
+    	ItemButton.style.position = "absolute";
+    	ItemButton.style.width = "90%";
+    	ItemButton.style.height = "9%";
+    	ItemButton.style.left = "5%";
+        ItemButton.style.top = "43%";
+        ItemButton.style.cursor = "pointer";
+     
+        ItemButton.addEventListener("click",function(){
+    		//判斷是否展開
+    		if(ItemBoard.style.height=="0%") OpenList();//未展開時 展開
+    		else if(ItemBoard.style.height=="20%") CloseList();//展開時 隱藏
+    	});
+    	//道具展開版面
+    	var ItemBoard = document.createElement("div")
+        ItemBoard.style.left = "5%";
+    	ItemBoard.style.top = "52%";
+    	ItemBoard.style.height = "0%";
+    	ItemBoard.style.width = "90%";
+    	ItemBoard.style.position = 'absolute';
+    	ItemBoard.style.overflow = 'auto';
+    	ItemBoard.style.zIndex=99;//版面至頂，使之顯示在最上層
+    	
+    	var Itemtable =document.createElement("ul");//removeChild()只能刪掉<il> 所以只好幫他做TABLE
+    	ItemBoard.appendChild(Itemtable);
+    	this.self.appendChild(ItemBoard);
+    	this.self.appendChild(ItemButton);
+        
+        function OpenList(){//作業區
+    		ItemButton.innerHTML = "隱藏道具選單";
+    		ItemBoard.style.height = "20%";
+    		//新增node到List
+    			function addEvent(node,i){
+    				node.addEventListener("click",function(){
+    					resetButton();
+    					VARIABLE.View.GameArea.iframe.contentWindow.Skill(ItemList[i]);
+    				});
+    			}
+    			for(var i = 0; i <ItemList.length;i++){
+    				var node=document.createElement("il");
+    				node.innerHTML=ItemList[i]+"<br>";
+    				addEvent(node,i);
+    				node.style.cursor = "pointer";
+    				Itemtable.appendChild(node);
+    			}
+    	}
+    	function CloseList(){
+    		ItemButton.innerHTML = "使用道具";
+    		while (Itemtable.firstChild) {
+    			Itemtable.removeChild(Itemtable.firstChild);
+    		}
+    		ItemBoard.style.height = "0%";
+    	}
+        //結束回合按鈕
+        this.stay = document.createElement("div");
+    	this.stay.appendChild(document.createTextNode("結束回合"));
+    	this.stay.style.position = "absolute";
+    	this.stay.style.width = "90%";
+    	this.stay.style.height = "9%";
+    	this.stay.style.left = "5%";
+        this.stay.style.top = "57%";
+        this.stay.style.cursor = "pointer";
+        this.self.appendChild(this.stay);
+    }*/
+    
+}
