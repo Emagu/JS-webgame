@@ -9,7 +9,7 @@
 <script>
         //提醒:動畫基本上都沒做、
         var GameArea,LeftControl,RightControl,TopControl;
-        var Option,Turn=0,Turn1=0;
+        var Option,Turn=-1;
         var player=[],me;//放所有玩家和自己
         var AI=[];
         var FocalVar=1;//焦距 最低1
@@ -36,6 +36,7 @@
             GameArea.style.top = "0%";
             GameArea.style.left = "0%";
             document.body.appendChild(GameArea);
+            console.log(parent.VARIABLE.Game.Map);
            //document.body.style.overflow = 'hidden';
             /*global Item 實作於Item.js*/
             for(var i=0;i<Option.CubeX;i++){
@@ -43,139 +44,34 @@
                 for(var j=0;j<Option.CubeY;j++){
                     /*global MapItem 實作於Item.js*/
                     var item = new MapItem(i,j,parent.VARIABLE.Game.Map[i*Option.CubeY+j].Type);
-                    
                     MapCube[i].push(item);
                 }
             }
-            var tmp;
-            for(var i=0;i!=parent.VARIABLE.Game.Item.length;i++)
-            {
-                var x=parseInt(parent.VARIABLE.Game.Item[i].Postion.X, 10);
-                var y=parseInt(parent.VARIABLE.Game.Item[i].Postion.Y,10);
-                //console.log(parent.VARIABLE.Game.Item[i].ActorData.ActorID);
-                if(i<parent.VARIABLE.Game.Item.length/2)
-                    tmp=new PlayerItem(x,y,parent.VARIABLE.Game.Item[i].ActorData.ActorID,"通訊兵","C");
-                else
-                    tmp=new PlayerItem(x,y,parent.VARIABLE.Game.Item[i].ActorData.ActorID,"通訊兵","A");
+            /*
+            for(var i=0;i!=parent.VARIABLE.Game.Item.length;i++){
+                var x = parseInt(parent.VARIABLE.Game.Item[i].Postion.X,10);
+                var y = parseInt(parent.VARIABLE.Game.Item[i].Postion.Y,10);
+                if(i<parent.VARIABLE.Game.Item.length/2) tmp=new PlayerItem(x,y,parent.VARIABLE.Game.Item[i].ActorData.ActorID,"通訊兵","C");
+                else tmp=new PlayerItem(x,y,parent.VARIABLE.Game.Item[i].ActorData.ActorID,"通訊兵","A");
                 player.push(tmp);
                 MapCube[tmp.X][tmp.Y].insert(tmp);
             }
-            tmp=new PlayerItem(51,10,0,"通訊兵","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,10,0,"通訊兵","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,10,0,"通訊兵","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(54,10,0,"通訊兵","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(51,11,0,"工程師","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,11,0,"工程師","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,11,0,"工程師","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(54,11,0,"工程師","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(51,12,0,"狙擊手","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,12,0,"狙擊手","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,12,0,"狙擊手","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(54,12,0,"狙擊手","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(51,13,0,"醫護兵","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,13,0,"醫護兵","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,13,0,"醫護兵","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(54,13,0,"醫護兵","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(51,14,0,"野戰兵","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,14,0,"野戰兵","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,14,0,"野戰兵","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(54,14,0,"野戰兵","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(51,15,0,"水鬼","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,15,0,"水鬼","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,15,0,"水鬼","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(54,15,0,"水鬼","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-                        tmp=new PlayerItem(51,16,0,"裝甲兵","A");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(52,16,0,"裝甲兵","B");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(53,16,0,"裝甲兵","C");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
-            tmp=new PlayerItem(54,16,0,"裝甲兵","D");
-            player.push(tmp);
-            MapCube[tmp.X][tmp.Y].insert(tmp);
+            
             for(var i=0;i!=player.length;i++){
-            player[i].Dir=i%4+1;
-            if(parent.VARIABLE.USER.ActorID==player[i].No)
-            {    
-                me=player[i];
+                player[i].Dir=1;
+                if(parent.VARIABLE.USER.ActorID==player[i].No){    
+                    me=player[i];
+                }
             }
-            }
-            tmp=new PlayerItem(42,13,0,"AI","D");//我是ai，我不會動
-            MapCube[42][13].insert(tmp);
-            player.push(tmp);
+            */
+            /*
             View();
             rendCube();
             window.scrollTo((me.X-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (me.Y-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
-            getSynchronize();/*global getSynchronize in ajax*/
+            */
+          
         }//遊戲畫面初始化
         
-        function getSynchronize_res(){
-            /*global request in ajax*/
-            if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-                var data = request.responseText;//取得傳回的資料存在變數中
-                //console.log(data);
-                if(data.match("error")==null) update(data);
-                else console.log("error");
-            }
-        }//資料同步結果
-        function sendGameCommand_res(){
-            /*global request in ajax*/
-            if (request.readyState == 4) {//完成狀態有好幾種，4代表資料傳回完成
-                var data = request.responseText;//取得傳回的資料存在變數中
-                //console.log(data);
-            }
-        }//資料同步結果
         function update(data){
             /*
                         同步處理
@@ -184,32 +80,46 @@
                             .
             */
             /*繼續同步*/
-            console.log(data.turn);//還沒解json
+            console.log(data);//還沒解json
             //如果data回合和本地回合再從新進行
-            if(Turn1!=Turn)
+            if(data.turn==0 && player.length==0){
+                
+                for(var i=0;i!=data.Item.length;i++){
+                    var x = parseInt(data.Item[i].Postion.X,10);
+                    var y = parseInt(data.Item[i].Postion.Y,10);
+                    tmp=new PlayerItem(x,y,data.Item[i].ActorData.ActorID,"通訊兵","A");//side,type 為0先不用
+                    console.log(tmp);
+                    tmp.setType();
+                    player.push(tmp);
+                    MapCube[tmp.X][tmp.Y].insert(tmp);
+                 }
+                for(var i=0;i!=player.length;i++){
+                    player[i].Dir=1;
+               
+                    if(parent.VARIABLE.USER.ActorID==player[i].No){    
+                        me=player[i];
+                        console.log(player[i]);
+                    }
+             }
+            View();
+            rendCube();
+            window.scrollTo((me.X-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (me.Y-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
+            }
+            if(data.turn!=Turn)
             {
-            Turn1=Turn;
-            Start();
+            Turn=data.turn;
+                Start(data);
             }
-            switch(needSend){
             
-                case 1:
-                    needSend = 0;
-                    break;
-                default:
-                    getSynchronize();/*global getSynchronize in ajax*/
-                    break;
-            }
         }
-        function Start(){
-            console.log(2);
+        function Start(data){
             //先處理玩家狀態
             for(var i=0;i!=player.length;i++)
             {
+                player[i].setData(data.Item[i].ActorData,data.Item[i].Postion);
                 if(parent.VARIABLE.USER.ActorID==player[i].No)//確認身分
                 {
-                //if(Turn%(player.length)==i)//回合到自己的時候才算視野?
-                if(1)
+                if(Turn%(player.length)==i)//回合到自己的時候才算視野?
                 {    
                     //也要重插一次
                     console.log(Turn%(player.length));
@@ -230,7 +140,6 @@
                 }
                 else
                 {
-                    //player[i].setData(Data);
                     if(player[i].Top!=null && player[i].Under!=null)//東西被清掉不放
                     {
                         
@@ -239,8 +148,7 @@
                     }
                 }
             }
-            if(player[player.length-1].HP!=0)//AI行動放這裡
-                    AI_Action(player[player.length-1]);
+         
             //處理建築物
             
             for(var i=0;i!=Buliding.length;i++)
@@ -410,15 +318,11 @@
             parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createElement("br"));
             parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createTextNode("剩餘AP:"+me.AP));
             parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createElement("br"));
-            */
-            parent.VARIABLE.View.GameArea.RightControl.Status.childNodes[1].childNodes[0].nodeValue=me.HP+"/100";
-            parent.VARIABLE.View.GameArea.RightControl.Status.childNodes[1].style.width=me.HP+"%";
-            parent.VARIABLE.View.GameArea.RightControl.Status.childNodes[2].childNodes[0].nodeValue=me.AP+"/100";
-            parent.VARIABLE.View.GameArea.RightControl.Status.childNodes[2].style.width=me.AP+"%";
-            
+          */
             while (GameArea.firstChild) {
                 GameArea.removeChild(GameArea.firstChild);
             }
+              
             console.log(1);
             for(var i=0;i<Option.CubeX;i++){
                 for(var j=0;j<Option.CubeY;j++){
@@ -509,6 +413,8 @@
                     MapCube[i][j].findTop().VisiAble=false;
                 }
             }
+            if(me==null)
+                return 0;
             var connetRange=me.RadioRange;//通訊測試範圍
             var friends=Radio();//可以另外取得物件視野
             for(var i=0;i!=ViewCube.length;i++){
@@ -1347,8 +1253,7 @@
                                         
                     for(var j=0;j!=ActionCube.length;j++)
                         ActionCube[j].earse();
-                   
-               
+
                     ActionCube.length=0;
                     rendCube();
                     },false);
@@ -1520,9 +1425,27 @@
             }
             MapCube[input.X][input.Y].earse(input);
             input.AP=bestcost;
-            input.AP+=input.APRecover;
+            
             input.Move(bestpath[bestpath.length-1].x,bestpath[bestpath.length-1].y);
             MapCube[bestpath[bestpath.length-1].x][bestpath[bestpath.length-1].y].insert(input);
+            if(input.AP>=5){
+                for(var x=-1;x<=1;x++)
+                {
+                    for(var y=-1;y<=1;y++)
+                    {
+                    if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
+                    if(MapCube[CenterX+x][CenterY+y].findTop().VisiAble)//超出視野
+                    {
+                        var Attack=new ActionItem(CenterX+x,CenterY+y);
+                        ActionCube.push(Attack);
+                        MapCube[CenterX+x][CenterY+y].insert(Attack);
+                        Attack.Div.style.cursor='pointer';
+                        
+                    }
+                 }
+                }
+            }
+            input.AP+=input.APRecover;
             View();
         }
         function Paint(input){

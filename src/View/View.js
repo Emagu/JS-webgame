@@ -1661,139 +1661,186 @@ function RegisterView(windowSize){
     this.windowReSize(windowSize);
     //執行初始化函式完畢
 }
-function GameAreaView(Itemlist,windowSize){
+function GameAreaView(windowSize,itemlist){
     OriginView.call(this,windowSize,{W:1280, H:960});//繼承 
     this.self.style.backgroundImage = "url('src/pic/GameArea/BackGround.png')";
     
-    this.iframe = document.createElement('iframe');
-    this.iframe.style.width="960px";
-    this.iframe.style.height="720px";
-    this.iframe.style.left="160px";
-    this.iframe.style.top="40px";
-    this.iframe.style.position='absolute';
-    this.self.appendChild(this.iframe);
+    var ItemList = itemlist;
     
-    /*global TopControlView 實作於Control*/
-    /*var TopControl = new TopControlView();
-    this.self.appendChild(TopControl.self);
+    var iframe = document.createElement('iframe');
+    iframe.style.width="960px";
+    iframe.style.height="720px";
+    iframe.style.left="160px";
+    iframe.style.top="40px";
+    iframe.style.position='absolute';
+    this.self.appendChild(iframe);
     
-    /*global LeftControlView 實作於Control*/
-    /*this.LeftControl = new LeftControl();
-    this.self.appendChild(this.LeftControl.self);
+    var MoveButton = document.createElement("div");
+    MoveButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Move.png')";
+    MoveButton.style.position = "absolute";
+    MoveButton.style.width = "125px";
+    MoveButton.style.height = "55px";
+    MoveButton.style.left = "15px";
+    MoveButton.style.top = "20px";
+    MoveButton.style.cursor = "pointer";
+    this.self.appendChild(MoveButton);
     
-    /*global RightControlView 實作於Control*/
-    /*this.RightControl = new RightControlView();
-    this.self.appendChild(this.RightControl.self);
+    var AttackButton = document.createElement("div");
+    AttackButton.style.position = "absolute";
+    AttackButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Attack.png')";
+    AttackButton.style.width = "125px";
+    AttackButton.style.height = "55px";
+    AttackButton.style.left = "15px";
+    AttackButton.style.top = "90px";
+    AttackButton.style.cursor = "pointer";
+    this.self.appendChild(AttackButton);
     
-    function LeftControl(){
-        this.self = document.createElement("div");
-        this.self.style.width = "15%";
-        this.self.style.height = "100%";
-        this.self.style.position = "absolute";
-        this.self.style.left = "0px";
-        this.self.style.top = "0px";
-        this.self.style.textAlig='center';
-        //移動按鈕
-        this.MoveButton = document.createElement("div");
-        this.MoveButton.style.textAlig='center';
-    	var moveimg = document.createElement("img");
-    	moveimg.setAttribute("src","/src/pic/GameArea/BTN_Move.png");
-        moveimg.setAttribute("width", "100%");
-        moveimg.setAttribute("height", "100%");
-    	this.MoveButton.appendChild(moveimg);
-    	this.MoveButton.style.position = "absolute";
-    	this.MoveButton.style.width = "90%";
-    	this.MoveButton.style.height = "9%";
-    	this.MoveButton.style.left = "5%";
-        this.MoveButton.style.top = "1%";
-        this.MoveButton.style.cursor = "pointer";
-       
-        this.self.appendChild(this.MoveButton);
-        
-      	//攻擊按鈕
-        this.AttackButton = document.createElement("div");
-    	this.AttackButton.style.position = "absolute";
-    	this.AttackButton.style.width = "90%";
-    	this.AttackButton.style.height = "9%";
-    	this.AttackButton.style.left = "5%";
-        this.AttackButton.style.top = "15%";
-        this.AttackButton.style.cursor = "pointer";
-        this.self.appendChild(this.AttackButton);
-        
-        //建築按鈕(?) 應該不會用到
-        this.BulidButton = document.createElement("div");
-    	this.BulidButton.style.position = "absolute";
-    	this.BulidButton.style.width = "90%";
-    	this.BulidButton.style.height = "9%";
-    	this.BulidButton.style.left = "5%";
-        this.BulidButton.style.top = "29%";
-        this.BulidButton.style.cursor = "pointer";
-        this.self.appendChild(this.BulidButton);
-        
-        //道具按鈕    
-        var ItemButton = document.createElement("div");
-    	ItemButton.style.position = "absolute";
-    	ItemButton.style.width = "90%";
-    	ItemButton.style.height = "9%";
-    	ItemButton.style.left = "5%";
-        ItemButton.style.top = "43%";
-        ItemButton.style.cursor = "pointer";
-     
-        ItemButton.addEventListener("click",function(){
-    		//判斷是否展開
-    		if(ItemBoard.style.height=="0%") OpenList();//未展開時 展開
-    		else if(ItemBoard.style.height=="20%") CloseList();//展開時 隱藏
-    	});
-    	//道具展開版面
-    	var ItemBoard = document.createElement("div")
-        ItemBoard.style.left = "5%";
-    	ItemBoard.style.top = "52%";
-    	ItemBoard.style.height = "0%";
-    	ItemBoard.style.width = "90%";
-    	ItemBoard.style.position = 'absolute';
-    	ItemBoard.style.overflow = 'auto';
-    	ItemBoard.style.zIndex=99;//版面至頂，使之顯示在最上層
+    var ItemButton = document.createElement("div");
+    ItemButton.style.position = "absolute";
+    ItemButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Item.png')";
+    ItemButton.style.width = "125px";
+    ItemButton.style.height = "55px";
+    ItemButton.style.left = "15px";
+    ItemButton.style.top = "160px";
+    ItemButton.style.cursor = "pointer";
+    ItemButton.addEventListener("click",function(){
+       if(ItemBoard.style.display=="none"){
+           ItemBoard.style.display = "";
+           SkillBoard.style.display = "none";
+           SkillButton.style.top = "280px";
+           SkillBoard.style.top = "350px";
+           stay.style.top = "350px";
+       }else{
+           ItemBoard.style.display = "none";
+           SkillButton.style.top = "230px";
+           SkillBoard.style.top = "300px";
+           stay.style.top = "300px";
+       }
+    });
+    
+    //道具展開版面
+    var ItemBoard = document.createElement("div")
+    ItemBoard.style.left = "15px";
+    ItemBoard.style.top = "230px";
+    ItemBoard.style.height = "32px";
+    ItemBoard.style.width = "125px";
+    ItemBoard.style.position = 'absolute';
+    ItemBoard.style.overflow = 'auto';
+    ItemBoard.style.display = "none";
+    
+    var Item_1 = document.createElement("div");
+    Item_1.style.height = "32px";
+    Item_1.style.width = "32px";
+    Item_1.style.left = "7px";
+    Item_1.style.backgroundImage = "url('/src/pic/Item/0/"+ItemList.item1+".png')";
+    Item_1.style.position = "absolute";
+    ItemBoard.appendChild(Item_1);
+    var Item_2 = document.createElement("div");
+    Item_2.style.height = "32px";
+    Item_2.style.width = "32px";
+    Item_2.style.left = "47px";
+    Item_2.style.backgroundImage = "url('/src/pic/Item/1/"+ItemList.item2+".png')";
+    Item_2.style.position = "absolute";
+    ItemBoard.appendChild(Item_2);
+    var Item_3 = document.createElement("div");
+    Item_3.style.height = "32px";
+    Item_3.style.width = "32px";
+    Item_3.style.left = "87px";
+    Item_3.style.backgroundImage = "url('/src/pic/Item/2/"+ItemList.item3+".png')";
+    Item_3.style.position = "absolute";
+    ItemBoard.appendChild(Item_3);
+    
+    this.self.appendChild(ItemBoard);
+    this.self.appendChild(ItemButton);
+    
+    var SkillButton = document.createElement("div");
+    SkillButton.style.position = "absolute";
+    SkillButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Skill.png')";
+    SkillButton.style.width = "125px";
+    SkillButton.style.height = "55px";
+    SkillButton.style.left = "15px";
+    SkillButton.style.top = "230px";
+    SkillButton.style.cursor = "pointer";
+    
+    //道具展開版面
+    var SkillBoard = document.createElement("div")
+    SkillBoard.style.left = "15px";
+    SkillBoard.style.top = "300px";
+    SkillBoard.style.height = "400px";
+    SkillBoard.style.width = "125px";
+    SkillBoard.style.position = 'absolute';
+    SkillBoard.style.overflow = 'auto';
+    SkillBoard.style.display = "none";
     	
-    	var Itemtable =document.createElement("ul");//removeChild()只能刪掉<il> 所以只好幫他做TABLE
-    	ItemBoard.appendChild(Itemtable);
-    	this.self.appendChild(ItemBoard);
-    	this.self.appendChild(ItemButton);
-        
-        function OpenList(){//作業區
-    		ItemButton.innerHTML = "隱藏道具選單";
-    		ItemBoard.style.height = "20%";
-    		//新增node到List
-    			function addEvent(node,i){
-    				node.addEventListener("click",function(){
-    					resetButton();
-    					VARIABLE.View.GameArea.iframe.contentWindow.Skill(ItemList[i]);
-    				});
-    			}
-    			for(var i = 0; i <ItemList.length;i++){
-    				var node=document.createElement("il");
-    				node.innerHTML=ItemList[i]+"<br>";
-    				addEvent(node,i);
-    				node.style.cursor = "pointer";
-    				Itemtable.appendChild(node);
-    			}
-    	}
-    	function CloseList(){
-    		ItemButton.innerHTML = "使用道具";
-    		while (Itemtable.firstChild) {
-    			Itemtable.removeChild(Itemtable.firstChild);
-    		}
-    		ItemBoard.style.height = "0%";
-    	}
-        //結束回合按鈕
-        this.stay = document.createElement("div");
-    	this.stay.appendChild(document.createTextNode("結束回合"));
-    	this.stay.style.position = "absolute";
-    	this.stay.style.width = "90%";
-    	this.stay.style.height = "9%";
-    	this.stay.style.left = "5%";
-        this.stay.style.top = "57%";
-        this.stay.style.cursor = "pointer";
-        this.self.appendChild(this.stay);
-    }*/
+    this.self.appendChild(SkillButton);
+    this.self.appendChild(SkillBoard);
     
+    //結束回合按鈕
+    var stay = document.createElement("div");
+    stay.style.backgroundImage = "url('/src/pic/GameArea/BTN_End.png')";
+    stay.style.position = "absolute";
+    stay.style.width = "150px";
+    stay.style.height = "55px";
+    stay.style.left = "10px";
+    stay.style.top = "300px";
+    stay.style.cursor = "pointer";
+    this.self.appendChild(stay);
+    
+    var messageField = document.createElement("div");
+    messageField.style.height = "150px";
+    messageField.style.width = "900px";
+    messageField.style.left = "195px";
+    messageField.style.top = "770px";
+    messageField.style.overflowY = "auto";
+    messageField.style.position = "absolute";
+    messageField.style.listStyleType = "none";
+    
+    var messageInput = document.createElement("input");
+    messageInput.style.backgroundColor = "transparent";
+	messageInput.style.fontSize = "x-large";
+	messageInput.style.color = "#000000";
+	messageInput.style.border = "0px";
+	messageInput.style.position = "absolute";
+	messageInput.style.top = "925px";
+	messageInput.style.left = "190px";
+	messageInput.style.width = "825px";
+	messageInput.style.height="27px";
+	messageInput.addEventListener("keydown",function(e) {
+	    if(e.keyCode==13) {
+	        VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	        messageInput.value = "";
+	    }
+	});
+	
+	var messageSend = document.createElement("div");
+	messageSend.style.position = "absolute";
+	messageSend.style.top = "925px";
+	messageSend.style.left = "1020px";
+	messageSend.style.width = "75px";
+	messageSend.style.height = "30px";
+	messageSend.style.cursor = "pointer";
+	messageSend.addEventListener("click",function(){
+	   VARIABLE.Socket.emit("RoomNewMsg",{Message:messageInput.value,ActorName:VARIABLE.USER.ActorName,RoomID:VARIABLE.USER.RoomID});
+	   messageInput.value = "";
+	});
+    this.self.appendChild(messageField);
+    this.self.appendChild(messageInput);
+    this.self.appendChild(messageSend);
+    
+    function addItemEvent(node,i){
+    	node.addEventListener("click",function(){
+    		iframe.contentWindow.Skill(ItemList[i]);
+    	});
+    }
+    this.getIframe = function(){
+        return iframe;
+    }
+    this.getMessage = function(msg){
+        var newMsg = document.createElement("li");
+        newMsg.style.fontSize = "14pt";
+        newMsg.style.color = "#FFFF00";
+        newMsg.appendChild(document.createTextNode(msg));
+        messageField.appendChild(newMsg);
+        messageField.scrollTop = messageField.scrollHeight;
+    };
 }

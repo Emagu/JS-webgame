@@ -135,7 +135,7 @@
                     VARIABLE.USER.UserID = data.UserID;
                     setCookie('User',data.User,7);
                     setCookie('PW',data.PW,7);
-                    if(data.ActorID==0) NewActorViewInit();
+                    if(data.ActorID==null) NewActorViewInit();
                     else {
                         VARIABLE.USER.ActorID = data.ActorID;
                         HallViewInit();
@@ -196,6 +196,7 @@
                 if(data.RoomID==VARIABLE.USER.RoomID){
                     if(VARIABLE.SCENES == "room") VARIABLE.View.Room.getMessage(data.Message);  
                     if(VARIABLE.SCENES == "PreSelect") VARIABLE.View.PreSelect.getMessage(data.Message);  
+                    if(VARIABLE.SCENES == "game") VARIABLE.View.GameArea.getMessage(data.Message);  
                 } 
             }
             function preSelectInit(data){
@@ -209,12 +210,12 @@
             function gameStart(data){
                 console.log("gameStart");
                 console.log(data);
-                GameAreaInit(data);
+                if(data.RoomData.NO == VARIABLE.USER.RoomID) GameAreaInit(data);
             }
             function gameSynchronize(data){
                 console.log("gameSynchronize");
                 console.log(data);
-                //VARIABLE.View.PreSelect.update(data);
+                if(VARIABLE.SCENES=="game") VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
             }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
             VARIABLE.Game = new Object();
@@ -297,56 +298,17 @@
         function GameAreaInit(initData){
             //初始化資料
             /*global GameAreaView 實作於View.* */
-            //VARIABLE.Game.Item=initData['Item'];
             VARIABLE.Game.Map = initData['MapData'].Map;
-            VARIABLE.View.GameArea = new GameAreaView(initData['PlayData'],getWindowSize());
+            VARIABLE.View.GameArea = new GameAreaView(getWindowSize(),initData['PlayData']);
             VARIABLE.SCENES = "game";
             ViewInit(VARIABLE.View.GameArea.self);
             //使用frame可以內嵌另外一頁，在研究
             var html = '<body></body>';
-            VARIABLE.View.GameArea.iframe.contentWindow.document.open();
-            VARIABLE.View.GameArea.iframe.contentWindow.document.write(html);
-            VARIABLE.View.GameArea.iframe.src='src/GameArea.html';
+            VARIABLE.View.GameArea.getIframe().contentWindow.document.open();
+            VARIABLE.View.GameArea.getIframe().contentWindow.document.write(html);
+            VARIABLE.View.GameArea.getIframe().src='src/GameArea.html';
             
-            VARIABLE.View.GameArea.LeftControl.MoveButton.addEventListener("click",function(){
-                //取得物件下的node
-                if(VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue=="返回"){
-                   resetButton();
-                }else{
-                    resetButton();
-                    VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="返回";
-                    VARIABLE.View.GameArea.iframe.contentWindow.Skill("移動");
-                }        
-            });
-            VARIABLE.View.GameArea.LeftControl.AttackButton.addEventListener("click",function(){
-                if(VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue=="返回"){
-                   resetButton();
-                }else{
-                    resetButton();
-                    VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="返回";
-                    VARIABLE.View.GameArea.iframe.contentWindow.Nuclear();
-                }
-            });
-            VARIABLE.View.GameArea.LeftControl.stay.addEventListener("click",function(){
-                resetButton();
-                VARIABLE.View.GameArea.iframe.contentWindow.Skill('選擇方向');
-            });
-            VARIABLE.View.GameArea.LeftControl.BulidButton.addEventListener("click",function(){
-                if(VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue=="返回"){
-                   resetButton();
-                }else{
-                    resetButton();
-                    VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="返回";
-                    
-                }
-            });
         }//遊戲畫面初始化
-        function resetButton(){
-            VARIABLE.View.GameArea.iframe.contentWindow.ActionCancel();
-            VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
-            VARIABLE.View.GameArea.LeftControl.BulidButton.childNodes[0].nodeValue="蓋房子!!";
-            VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊";
-        }
         //以下為系統工具
         function getWindowSize(){
             var w = window,

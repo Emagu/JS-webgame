@@ -34,6 +34,12 @@ connection.query("DELETE FROM `room_actor_list`;",[],function(error) {
 connection.query("DELETE FROM `room_AI`;",[],function(error) {
     if(error) console.log(error);
 });
+connection.query("DELETE FROM `game_table`;",[],function(error) {
+    if(error) console.log(error);
+});
+connection.query("DELETE FROM `game_player_table`;",[],function(error) {
+    if(error) console.log(error);
+});
 app.use('/src', express.static(__dirname + '/src'));
 app.use('/lib', express.static(__dirname + '/lib'));
 
@@ -403,7 +409,7 @@ io.on('connection', function(socket){
 	});//addAI
 	socket.on('deleteAI', function(msg){
 		if(msg.Side == 0){
-			connection.query('UPDATE `room_list` SET `SideA_AI` -= 1 WHERE `NO` = ?;', msg.RoomID, function(error){
+			connection.query('UPDATE `room_list` SET `SideA_AI` = `SideA_AI` - 1 WHERE `NO` = ?;', msg.RoomID, function(error){
 				if(error){
 					console.log(error);
 				}else{
@@ -413,7 +419,7 @@ io.on('connection', function(socket){
 				}
 			});
 		}else{
-			connection.query('UPDATE `room_list` SET `SideB_AI` -= 1 WHERE `NO` = ?;', msg.RoomID, function(error){
+			connection.query('UPDATE `room_list` SET `SideB_AI` = `SideB_AI` - 1 WHERE `NO` = ?;', msg.RoomID, function(error){
 				if(error){
 					console.log(error);
 				}else{
@@ -580,7 +586,7 @@ function gameStart(RoomData,ActorID){
 	        console.log('檔案讀取錯誤。');
 	    }else {
 	        MapData = JSON.parse(content.toString());
-	        connection.query("SELECT `actorID`,`Postion` FROM `room_actor_list` WHERE `roomID` = ?",[RoomData.NO],function(error,row) {
+	        connection.query("SELECT `actorID`,`Postion`,`side`,`Type` FROM `room_actor_list` WHERE `roomID` = ?",[RoomData.NO],function(error,row) {
 				if(error) console.log(error);
 				else{
 					var Player = MapData.Player;
@@ -588,7 +594,9 @@ function gameStart(RoomData,ActorID){
 					for(var i = 0;i<row.length;i++){
 						var actorID = row[i].actorID;
 						var actorPos = Player[row[i].Postion];
-						connection.query("INSERT INTO `game_player_table` SET ?;",{ActorID:actorID, HP:100, AP:100, command:""},function(error,result) {
+						var actorSide = row[i].side;
+						var actorType = row[i].Type;
+						connection.query("INSERT INTO `game_player_table` SET ?;",{ActorID:actorID, HP:100, AP:100, command:"",side:actorSide,type:actorType},function(error,result) {
 							if(error) console.log(error);
 							else{
 								connection.query("INSERT INTO `game_table` SET ?;",{RoomID:RoomData.NO, ItemID:result.insertId, X:actorPos.X, Y:actorPos.Y, type:"player"},function(error) {
@@ -637,6 +645,9 @@ function quitRoom(socket,msg){
 											if(error)console.log(error);
 										});
 										connection.query('DELETE FROM `room_AI` WHERE `RoomID` = ?', [msg.RoomID], function(error){
+											if(error)console.log(error);
+										});
+										connection.query('DELETE FROM `game_table` WHERE `RoomID` = ?', [msg.RoomID], function(error){
 											if(error)console.log(error);
 										});
 									}
@@ -757,9 +768,9 @@ function gameSynchronize(roomID){
 				var temp = row[i];
 				if(temp.type=='player'){
 					console.log(temp);
-					connection.query("SELECT `ActorID`,`HP`,`AP`,`command` FROM `game_player_table` WHERE `NO` = ?",[temp.ItemID],function(error,rw) {
+					connection.query("SELECT * FROM `game_player_table` WHERE `NO` = ?",[temp.ItemID],function(error,rw) {
 						if(error) console.log(error);
-						else Item.push({ItemID:temp.ItemID,type:"player",Postion:{X:temp.X,Y:temp.Y},ActorData:rw});
+						else Item.push({ItemID:temp.ItemID,type:"player",Postion:{X:temp.X,Y:temp.Y},ActorData:rw[0]});
 					});
 				}else Item.push({ItemID:temp.ItemID,type:"bulid",Postion:{X:temp.X,Y:temp.Y}});
 			}
