@@ -186,36 +186,6 @@ function CreateRoomView(windowSize,Option){
 	//初始化函式執行
 	//執行初始化函式完畢
 }
-function GameAreaView(){
-    this.self = document.createElement("div");
-    /*global Option 宣告於index*/
-    //this.self.style.width = Option.windowSize.W+"px";
-    //this.self.style.height = Option.windowSize.H+"px";
-    this.self.style.width = 1280+"px";
-    this.self.style.height = 720+"px";
-    
-    this.iframe = document.createElement('iframe');
-    this.iframe.style.width=1280/2;
-    this.iframe.style.height=72*7;
-    this.iframe.style.left=1280/4;
-    this.iframe.style.top=72*1.5;
-    this.iframe.style.position='absolute';
-    
-    this.self.appendChild(this.iframe);
-    
-    /*global TopControlView 實作於Control*/
-    var TopControl = new TopControlView();
-    this.self.appendChild(TopControl.self);
-    
-    /*global LeftControlView 實作於Control*/
-    this.LeftControl = new LeftControlView();
-    this.self.appendChild(this.LeftControl.self);
-    
-    /*global RightControlView 實作於Control*/
-    this.RightControl = new RightControlView();
-    this.self.appendChild(this.RightControl.self);
-    
-}
 function HallView(windowSize,OptionSize){
     /*global OriginView */
     OriginView.call(this,windowSize,OptionSize);//繼承 
@@ -689,8 +659,7 @@ function OptionEditView(windowSize,Option){
     //初始化函式執行
     //執行初始化函式完畢
 }
-function RoomView(windowSize,Option){
-    /*global OriginView */
+function RoomView(windowSize,Option){    /*global OriginView */
     OriginView.call(this,windowSize,Option.getWindowSize());//繼承 
     this.self.style.backgroundImage = "url('./src/pic/Room/BackGround.png')";
     
@@ -1430,7 +1399,7 @@ function PreSelectView(windowSize,Option){
 		    	PlayLocal.appendChild(temp);
 	    	}
 	    }
-	    PlayLocal.selectedIndex = data[actorID].Postion;
+	    PlayLocal.selectedIndex = data[actorID].Postion + 1;
 	    PlayLocal.addEventListener("change",function() {
 	    	VARIABLE.Socket.emit("SetPostion",{Postion:PlayLocal.selectedIndex,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
 	    });
@@ -1661,11 +1630,14 @@ function RegisterView(windowSize){
     this.windowReSize(windowSize);
     //執行初始化函式完畢
 }
-function GameAreaView(windowSize,itemlist){
+function GameAreaView(windowSize,itemlist,Option){
     OriginView.call(this,windowSize,{W:1280, H:960});//繼承 
     this.self.style.backgroundImage = "url('src/pic/GameArea/BackGround.png')";
     
     var ItemList = itemlist;
+    var isMove = false;
+    var isAttack = false;
+    var isItemSelect = false;
     
     var iframe = document.createElement('iframe');
     iframe.style.width="960px";
@@ -1683,6 +1655,15 @@ function GameAreaView(windowSize,itemlist){
     MoveButton.style.left = "15px";
     MoveButton.style.top = "20px";
     MoveButton.style.cursor = "pointer";
+    MoveButton.addEventListener("click",function(){
+        if(isMove) ButtonReset();
+        else{
+            ButtonReset();
+            isMove = true;
+            MoveButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Return.png')";
+            iframe.contentWindow.Skill("移動");
+        }
+    });
     this.self.appendChild(MoveButton);
     
     var AttackButton = document.createElement("div");
@@ -1693,6 +1674,15 @@ function GameAreaView(windowSize,itemlist){
     AttackButton.style.left = "15px";
     AttackButton.style.top = "90px";
     AttackButton.style.cursor = "pointer";
+    AttackButton.addEventListener("click",function(){
+        if(isAttack) ButtonReset();   
+        else{
+            ButtonReset();
+            isAttack = true;
+            AttackButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Return.png')";
+            iframe.contentWindow.Nuclear();
+        }
+    });
     this.self.appendChild(AttackButton);
     
     var ItemButton = document.createElement("div");
@@ -1734,6 +1724,14 @@ function GameAreaView(windowSize,itemlist){
     Item_1.style.left = "7px";
     Item_1.style.backgroundImage = "url('/src/pic/Item/0/"+ItemList.item1+".png')";
     Item_1.style.position = "absolute";
+    Item_1.addEventListener("click",function() {
+        if(isItemSelect){
+            ButtonReset();
+        }else{
+            isItemSelect = true;
+            iframe.contentWindow.Skill(Option.getItemArray()[0][ItemList.item1]);
+        }
+    });
     ItemBoard.appendChild(Item_1);
     var Item_2 = document.createElement("div");
     Item_2.style.height = "32px";
@@ -1741,6 +1739,14 @@ function GameAreaView(windowSize,itemlist){
     Item_2.style.left = "47px";
     Item_2.style.backgroundImage = "url('/src/pic/Item/1/"+ItemList.item2+".png')";
     Item_2.style.position = "absolute";
+    Item_2.addEventListener("click",function() {
+        if(isItemSelect){
+            ButtonReset();
+        }else{
+            isItemSelect = true;
+            iframe.contentWindow.Skill(Option.getItemArray()[1][ItemList.item2]);
+        }
+    });
     ItemBoard.appendChild(Item_2);
     var Item_3 = document.createElement("div");
     Item_3.style.height = "32px";
@@ -1748,8 +1754,15 @@ function GameAreaView(windowSize,itemlist){
     Item_3.style.left = "87px";
     Item_3.style.backgroundImage = "url('/src/pic/Item/2/"+ItemList.item3+".png')";
     Item_3.style.position = "absolute";
+    Item_3.addEventListener("click",function() {
+        if(isItemSelect){
+            ButtonReset();
+        }else{
+            isItemSelect = true;
+            iframe.contentWindow.Skill(Option.getItemArray()[2][ItemList.item3]);
+        }
+    });
     ItemBoard.appendChild(Item_3);
-    
     this.self.appendChild(ItemBoard);
     this.self.appendChild(ItemButton);
     
@@ -1771,7 +1784,6 @@ function GameAreaView(windowSize,itemlist){
     SkillBoard.style.position = 'absolute';
     SkillBoard.style.overflow = 'auto';
     SkillBoard.style.display = "none";
-    	
     this.self.appendChild(SkillButton);
     this.self.appendChild(SkillBoard);
     
@@ -1784,6 +1796,10 @@ function GameAreaView(windowSize,itemlist){
     stay.style.left = "10px";
     stay.style.top = "300px";
     stay.style.cursor = "pointer";
+    stay.addEventListener("click",function() {
+        iframe.contentWindow.ActionCancel();
+        iframe.contentWindow.Stay();
+    });
     this.self.appendChild(stay);
     
     var messageField = document.createElement("div");
@@ -1827,11 +1843,126 @@ function GameAreaView(windowSize,itemlist){
     this.self.appendChild(messageInput);
     this.self.appendChild(messageSend);
     
+    var GameTimeTag = document.createElement("div");
+    GameTimeTag.style.position = "absolute";
+	GameTimeTag.style.top = "30px";
+	GameTimeTag.style.left = "1120px";
+	GameTimeTag.style.width = "150px";
+	GameTimeTag.style.height = "40px";
+	GameTimeTag.style.backgroundImage = "url('/src/pic/GameArea/GameTime.png')";
+	this.self.appendChild(GameTimeTag);
+	
+    var GameTime = document.createElement("div");
+    GameTime.style.position = "absolute";
+	GameTime.style.top = "80px";
+	GameTime.style.left = "1120px";
+	GameTime.style.width = "150px";
+	GameTime.style.height = "40px";
+	GameTime.style.color = "#FFFFFF";
+	GameTime.style.fontSize = "30pt";
+    GameTime.style.textAlign = "center";
+	GameTime.appendChild(document.createTextNode("00:00"));
+    this.self.appendChild(GameTime);
+    
+    var TurnTimeTag = document.createElement("div");
+    TurnTimeTag.style.position = "absolute";
+	TurnTimeTag.style.top = "130px";
+	TurnTimeTag.style.left = "1130px";
+	TurnTimeTag.style.width = "150px";
+	TurnTimeTag.style.height = "40px";
+	TurnTimeTag.style.backgroundImage = "url('/src/pic/GameArea/TurnTime.png')";
+	this.self.appendChild(TurnTimeTag);
+	
+	var TurnTime = document.createElement("div");
+    TurnTime.style.position = "absolute";
+	TurnTime.style.top = "180px";
+	TurnTime.style.left = "1130px";
+	TurnTime.style.width = "150px";
+	TurnTime.style.height = "40px";
+	TurnTime.style.color = "#FFFFFF";
+	TurnTime.style.fontSize = "30pt";
+	TurnTime.style.textAlign = "center";
+	TurnTime.appendChild(document.createTextNode("00"));
+    this.self.appendChild(TurnTime);
+	
+    var HpTag = document.createElement("div");
+    HpTag.style.position = "absolute";
+	HpTag.style.top = "230px";
+	HpTag.style.left = "1120px";
+	HpTag.style.width = "160px";
+	HpTag.style.height = "40px";
+	HpTag.style.backgroundImage = "url('/src/pic/GameArea/HP.png')";
+	this.self.appendChild(HpTag);
+    
+    var HP = document.createElement("div");
+    HP.style.position = "absolute";
+    HP.style.top = "7px";
+    HP.style.left = "63px";
+    HP.style.width = "90px";
+	HP.style.height = "26px";
+	HP.style.backgroundColor = "#A50A0A";
+	HpTag.appendChild(HP);
+    
+    var HPNum = document.createElement("div");
+    HPNum.style.position = "absolute";
+    HPNum.style.top = "7px";
+    HPNum.style.left = "63px";
+    HPNum.style.width = "90px";
+	HPNum.style.height = "26px";
+	HPNum.style.textAlign = "center";
+	HPNum.style.color = "#FFFFFF";
+	HPNum.appendChild(document.createTextNode("100 / 100"));
+	HpTag.appendChild(HPNum);
+	
+	var ApTag = document.createElement("div");
+    ApTag.style.position = "absolute";
+	ApTag.style.top = "280px";
+	ApTag.style.left = "1120px";
+	ApTag.style.width = "160px";
+	ApTag.style.height = "40px";
+	ApTag.style.backgroundImage = "url('/src/pic/GameArea/AP.png')";
+	this.self.appendChild(ApTag);
+	
+	var AP = document.createElement("div");
+    AP.style.position = "absolute";
+    AP.style.top = "7px";
+    AP.style.left = "63px";
+    AP.style.width = "90px";
+	AP.style.height = "26px";
+	AP.style.backgroundColor = "#27468D";
+	ApTag.appendChild(AP);
+    
+    var APNum = document.createElement("div");
+    APNum.style.position = "absolute";
+    APNum.style.top = "7px";
+    APNum.style.left = "63px";
+    APNum.style.width = "90px";
+	APNum.style.height = "26px";
+	APNum.style.textAlign = "center";
+	APNum.style.color = "#FFFFFF";
+	APNum.appendChild(document.createTextNode("15 / 15"));
+	ApTag.appendChild(APNum);
+    
     function addItemEvent(node,i){
     	node.addEventListener("click",function(){
     		iframe.contentWindow.Skill(ItemList[i]);
     	});
     }
+    function MoveButtonReset(){
+        MoveButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Move.png')";
+        isMove = false;
+    }
+    function AttackButtonReset(){
+        isAttack = false;
+        AttackButton.style.backgroundImage = "url('/src/pic/GameArea/BTN_Attack.png')";
+    }
+    function ButtonReset(){
+        MoveButtonReset();
+        AttackButtonReset();
+        isItemSelect = false;
+        iframe.contentWindow.ActionCancel();
+    }
+    
     this.getIframe = function(){
         return iframe;
     }
@@ -1843,4 +1974,31 @@ function GameAreaView(windowSize,itemlist){
         messageField.appendChild(newMsg);
         messageField.scrollTop = messageField.scrollHeight;
     };
+    this.ResetMove = MoveButtonReset;
+    this.ResetButton = ButtonReset;
+    this.setHP = function(NewHP){
+        var HPrate = NewHP / 100;
+        HP.style.width = (90*HPrate) + "px";
+        HPNum.childNodes[0].nodeValue = NewHP + " / 100";
+    }
+    this.setAP = function(NewAP){
+        var APrate = NewAP / 15;
+        AP.style.width = (90*APrate) + "px";
+        APNum.childNodes[0].nodeValue = NewAP + " / 15";
+    }
+    this.setTime = function(Time){
+        var d = new Date();
+		// 取得 UTC time
+    	var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    	// 新增不同時區的日期資料
+    	var NowTime = new Date(utc + (3600000*8));
+        var StartTime = Time.StartTime.split(":");
+        var NowTimeAllSecs = NowTime.getHours() * 3600 + NowTime.getMinutes() * 60 + NowTime.getSeconds();
+        var StartTimeAllSecs = parseInt(StartTime[0]) * 3600 + parseInt(StartTime[1]) * 60 + parseInt(StartTime[2]);
+        var lefttime = NowTimeAllSecs - StartTimeAllSecs;
+        var leftMins = parseInt(lefttime / 60);
+        var leftSecs = lefttime - leftMins*60;
+        GameTime.childNodes[0].nodeValue = leftMins + " : " + leftSecs;
+        TurnTime.childNodes[0].nodeValue = Time.Turn;
+    }
 }

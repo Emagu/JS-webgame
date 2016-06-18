@@ -240,13 +240,16 @@ function PlayerItem(x,y,no,T,S) {
   this.Snipe_dir=0;//1左2上3右4下
   var Data=new Object();
   this.getData=function() {
-     var tmp=this;
-      Data.X=tmp.X;
-      Data.Y=tmp.Y;
-      Data.Type=tmp.Type;
-      Data.No=tmp.No;
-      Data.Side=tmp.Side;
-      return Data;
+        var tmp=this;
+        Data.X=tmp.X;
+        Data.Y=tmp.Y;
+        Data.Type=tmp.Type;
+        Data.No=tmp.No;
+        Data.Side=tmp.Side;
+        Data.HP=tmp.HP;
+        Data.AP=tmp.AP;
+      
+        return Data;
   };
   this.setData=function(Data,position) {
       this.X=position.X;
@@ -957,32 +960,32 @@ function BulidingItem(x,y,T,S,Turn) {
       switch(this.Type){
         case '房子' :
                 this.Div.style.backgroundColor = "transparent"; 
-                this.Div.style.backgroundImage = "url(./pic/Item/房子.png)";
+                this.Div.style.backgroundImage = "url(./pic/Item/1/1.png)";
                 break;
         case '拒馬' :
                 this.Div.style.backgroundColor = "transparent"; 
-                this.Div.style.backgroundImage = "url(./pic/Item/拒馬.png)";
+                this.Div.style.backgroundImage = "url(./pic/Item/1/0.png)";
                 break;
         case '通訊點':
                 this.Div.style.backgroundColor = "transparent"; 
-                this.Div.style.backgroundImage = "url(./pic/Item/WiFi.png)";
+                this.Div.style.backgroundImage = "url(./pic/Item/1/2.png)";
                 break;
         case '監視點':
                 this.Div.style.backgroundColor = "transparent"; 
-                this.Div.style.backgroundImage = "url(./pic/房子.png)";
+                this.Div.style.backgroundImage = "url(./pic/Item/1/3.png)";
                 break;
         case '資源點':
                 this.Div.style.backgroundColor = "transparent"; 
-                this.Div.style.backgroundImage = "url(./pic/房子.png)";
+                this.Div.style.backgroundImage = "url(./pic/Item/1/4.png)";
                 break;
-        case'補包':
+        case '補包':
                 this.Div.style.backgroundColor = "transparent"; 
-                this.Div.style.backgroundImage = "url(./pic/Item/補包2.png)";
+                this.Div.style.backgroundImage = "url(./pic/Item/1/5.png)";
             break;
-        case'地雷':
+        case '地雷':
                 this.Div.style.backgroundColor = "transparent"; 
                break;
-        case'定時炸彈':
+        case '定時炸彈':
                 this.Div.style.backgroundColor="#000000";
             break;      
           

@@ -205,7 +205,11 @@
                 }
             }
             function updatePreSelect(data){
-                VARIABLE.View.PreSelect.update(data);
+                console.log(data);
+                if(data.GameStart) {
+                    ViewInit(VARIABLE.View.Block.self);
+                    if(data.RoomData.RoomMaster == VARIABLE.USER.ActorID) VARIABLE.Socket.emit("GameStart",data.RoomData);
+                }else VARIABLE.View.PreSelect.update(data);
             }
             function gameStart(data){
                 console.log("gameStart");
@@ -215,7 +219,16 @@
             function gameSynchronize(data){
                 console.log("gameSynchronize");
                 console.log(data);
+                for(var i=0;i<data.Item.length;i++){
+                    if(data.Item[i].ActorData.ActorID==VARIABLE.USER.ActorID){
+                        VARIABLE.View.GameArea.setHP(data.Item[i].ActorData.HP);
+                        VARIABLE.View.GameArea.setAP(data.Item[i].ActorData.AP);
+                    }
+                }
                 if(VARIABLE.SCENES=="game") VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
+            }
+            function updateGameTime(time){
+                VARIABLE.View.GameArea.setTime(time);
             }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
             VARIABLE.Game = new Object();
@@ -224,7 +237,6 @@
             VARIABLE.View.Block = new BlockView(getWindowSize(),VARIABLE.Option.getWindowSize()); /*global BlockView 實作於Block.js*/
             ViewInit(VARIABLE.View.Block.self);
             VARIABLE.USER = new UserData();/*global UserData 實作於Data*///用戶資料
-            
             VARIABLE.Socket = io();/*global io in socket.io*/
             VARIABLE.Socket.on('getMap',getMap);
             VARIABLE.Socket.on('getActor',getActor);
@@ -242,6 +254,7 @@
             VARIABLE.Socket.on("updatePreSelect",updatePreSelect);
             VARIABLE.Socket.on("gameStart",gameStart);
             VARIABLE.Socket.on("gameSynchronize",gameSynchronize);
+            VARIABLE.Socket.on("updateGameTime",updateGameTime);
             VARIABLE.Socket.emit("getMap");
             checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
@@ -299,7 +312,7 @@
             //初始化資料
             /*global GameAreaView 實作於View.* */
             VARIABLE.Game.Map = initData['MapData'].Map;
-            VARIABLE.View.GameArea = new GameAreaView(getWindowSize(),initData['PlayData']);
+            VARIABLE.View.GameArea = new GameAreaView(getWindowSize(),initData['PlayData'],VARIABLE.Option);
             VARIABLE.SCENES = "game";
             ViewInit(VARIABLE.View.GameArea.self);
             //使用frame可以內嵌另外一頁，在研究

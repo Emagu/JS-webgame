@@ -245,29 +245,29 @@
                 case '移動':
                     Move();
                     break;
-                case '房子':
-                        Bulid('房子');
+                case '掩體':
+                    Bulid('房子');
                     break;
                 case '通訊點':
-                        Bulid('通訊點');
+                    Bulid('通訊點');
                     break;
                 case '監視點':
-                        Bulid('監視點');
+                    Bulid('監視點');
                     break;
                 case '資源點':
-                        Bulid('資源點');
+                    Bulid('資源點');
                     break;
                 case '拒馬':
                     Bulid('拒馬');
                     break;
-                case '補包':
-                        Bulid('補包');
+                case '補給包':
+                    Bulid('補包');
                     break;
                 case '地雷':
-                        Bulid('地雷');
+                    Bulid('地雷');
                     break;
                 case '近戰':
-                        Melee('近戰');
+                    Melee('近戰');
                     break;
                 case '射丁':
                     Shoot();
@@ -276,13 +276,13 @@
                     RPG('架槍');
                     break;
                 case '手榴彈':
-                        Pelt();
+                    Pelt();
                     break;
                 case '迫擊砲':
-                        Mortar();
+                    Mortar();
                     break;
                 case 'Nuclear':
-                        Nuclear(name,100);
+                    Nuclear(name,100);
                     break;
                 case 'RPG':
                     RPG('RPG');
@@ -297,15 +297,14 @@
                     Bulid('定時炸彈');
                     break;
                 case '空中偵察':
-                        Nuclear(name,5);
+                    Nuclear(name,5);
                     break;
                 case '躲藏':
-                        me.Hide();
+                    me.Hide();
                     break;
                 case '現身':
-                        me.Hide();
+                    me.Hide();
                     break;
-                
             }
             rendCube();
         }
@@ -322,8 +321,6 @@
             while (GameArea.firstChild) {
                 GameArea.removeChild(GameArea.firstChild);
             }
-              
-            console.log(1);
             for(var i=0;i<Option.CubeX;i++){
                 for(var j=0;j<Option.CubeY;j++){
                     if(MapCube[i][j].findTop().VisiAble)
@@ -515,15 +512,11 @@
             var CenterY = me.Y;
             var Horizons=me.MoveRange;
     
-            for(var x=-Horizons;x<=Horizons;x++)
-            {
+            for(var x=-Horizons;x<=Horizons;x++){
                 var tmp=Horizons-Math.abs(x);
-               
-                for(var y=-tmp;y<=tmp;y++)
-                {
-                    if(Arms_Ability(CenterX+x,CenterY+y))
-                    {
-                        var move=new ActionItem(CenterX+x,CenterY+y);         
+                for(var y=-tmp;y<=tmp;y++){
+                    if(Arms_Ability(CenterX+x,CenterY+y)){
+                        var move=new ActionItem(CenterX+x,CenterY+y);    /*global ActionItem*/     
                         ActionCube.push(move);
                         MapCube[CenterX+x][CenterY+y].insert(move);
                         move.Div.style.cursor='pointer';
@@ -532,142 +525,131 @@
             }
             addEvent();
             function addEvent(){
-                for(var i=0;i!=ActionCube.length;i++){(function(){
-                    var bestcost=-1;
-                    var path=[],bestpath=[];
-                    var tmp=ActionCube[i];
-                function short_path(x,y,x1,y1,Ap){//找最短路徑
-                    if(path.length<10){//收歛條件 很重要
-                    var position=new Object();
-                    position.x=x;
-                    position.y=y;
-                    if(x==x1&&y==y1)
-                    {
-                    if(bestcost<Ap)
-                    {
-                        bestpath.length=0;
-                        bestcost=Ap;
-                        for(var i=0;i!=path.length;i++)
-                        {
-                            bestpath.push(path[i]);
-                        }
-                        bestpath.push(position);
-                    }
-                }
-                for(var i=0;i!=4;i++)//方向←↑→↓
-                {
-                    switch(i)
-                    {
-                    case 0:
-                        if(x-1>=0 && x-1<Option.CubeX && y>=0 && y<Option.CubeY)//邊界判定 
-                        if(MapCube[x-1][y].findTop().VisiAble && MapCube[x-1][y].findTop().MoveAble)
-                        if(MapCube[x-1][y].findTop().Class=="ActionItem")
-                        if(Ap-MapCube[x-1][y].findTop().Under.Move_AP>=0)
-                        if(path_check(path,position))
-                        {
-                            path.push(position);
-                            short_path(x-1,y,x1,y1,Ap-MapCube[x-1][y].findTop().Under.Move_AP);
-                            path.pop();
-                        }
-                        break;
-                    case 1:
-                        if(x>=0 && x<Option.CubeX && y-1>=0 && y-1<Option.CubeY)//邊界判定 
-                        if(MapCube[x][y-1].findTop().VisiAble && MapCube[x][y-1].findTop().MoveAble)
-                        if(MapCube[x][y-1].findTop().Class=="ActionItem")
-                        if(Ap-MapCube[x][y-1].findTop().Under.Move_AP>=0 )
-                        if(path_check(path,position))
-                        {
-                            path.push(position);
-                            short_path(x,y-1,x1,y1,Ap-MapCube[x][y-1].findTop().Under.Move_AP);
-                            path.pop();
-                        }
-                        break;
-                    case 2:
-                        if(x+1>=0 && x+1<Option.CubeX && y>=0 && y<Option.CubeY)//邊界判定 
-                        if(MapCube[x+1][y].findTop().VisiAble && MapCube[x+1][y].findTop().MoveAble)
-                        if(MapCube[x+1][y].findTop().Class=="ActionItem")
-                        if(Ap-MapCube[x+1][y].findTop().Under.Move_AP>=0 )
-                        if(path_check(path,position))
-                        {
-                            path.push(position);
-                            short_path(x+1,y,x1,y1,Ap-MapCube[x+1][y].findTop().Under.Move_AP);
-                            path.pop();
-                        }
-                        break;
-                    case 3:
-                        if(x>=0 && x<Option.CubeX && y+1>=0 && y+1<Option.CubeY)//邊界判定 
-                        if(MapCube[x][y+1].findTop().VisiAble && MapCube[x][y+1].findTop().MoveAble)
-                        if(MapCube[x][y+1].findTop().Class=="ActionItem")
-                        if(Ap-MapCube[x][y+1].findTop().Under.Move_AP>=0 )
-                        if(path_check(path,position))
-                        {
-                            path.push(position);
-                            short_path(x,y+1,x1,y1,Ap-MapCube[x][y+1].findTop().Under.Move_AP);
-                            path.pop();
-                        }
-                        break;
-                    }
-                }
-                    }
-            }
-                    //滑鼠進入、離開顯示
-                    tmp.Div.addEventListener('mouseover',function() {
-                         for(var j=0;j!=ActionCube.length;j++){
-                           ActionCube[j].show();
-                        }
-                        //路徑顯示
-                        short_path(me.X,me.Y,tmp.X,tmp.Y,me.AP);
-                        if(bestcost>=0)
-                        for(var j=0;j!=bestpath.length;j++)
-                        {
-                            if(MapCube[bestpath[j].x][bestpath[j].y].findTop().Class=='ActionItem'){
-                                if(MapCube[bestpath[j].x][bestpath[j].y].findTop().Under.Class!='MapItem')
-                                    MapCube[bestpath[j].x][bestpath[j].y].findTop().Under.Div.style.backgroundColor='#FF0000';
-                                else
-                                    MapCube[bestpath[j].x][bestpath[j].y].findTop().Div.style.backgroundColor='#FF0000';
+                for(var i=0;i!=ActionCube.length;i++){
+                    (function(){
+                        var bestcost=-1;
+                        var path=[],bestpath=[];
+                        var tmp=ActionCube[i];
+                        function short_path(x,y,x1,y1,Ap){//找最短路徑
+                            if(path.length<10){//收歛條件 很重要
+                                var position=new Object();
+                                position.x=x;
+                                position.y=y;
+                                if(x==x1&&y==y1){
+                                    if(bestcost<Ap){
+                                        bestpath.length=0;
+                                        bestcost=Ap;
+                                        for(var i=0;i!=path.length;i++){
+                                            bestpath.push(path[i]);
+                                        }
+                                        bestpath.push(position);
+                                    }
+                                }
+                                //方向←↑→↓
+                                for(var i=0;i!=4;i++){
+                                    switch(i){
+                                        case 0:
+                                            if(x-1>=0 && x-1<Option.CubeX && y>=0 && y<Option.CubeY)//邊界判定 
+                                            if(MapCube[x-1][y].findTop().VisiAble && MapCube[x-1][y].findTop().MoveAble)
+                                            if(MapCube[x-1][y].findTop().Class=="ActionItem")
+                                            if(Ap-MapCube[x-1][y].findTop().Under.Move_AP>=0)
+                                            if(path_check(path,position)){
+                                                path.push(position);
+                                                short_path(x-1,y,x1,y1,Ap-MapCube[x-1][y].findTop().Under.Move_AP);
+                                                path.pop();
+                                            }
+                                            break;
+                                        case 1:
+                                            if(x>=0 && x<Option.CubeX && y-1>=0 && y-1<Option.CubeY)//邊界判定 
+                                            if(MapCube[x][y-1].findTop().VisiAble && MapCube[x][y-1].findTop().MoveAble)
+                                            if(MapCube[x][y-1].findTop().Class=="ActionItem")
+                                            if(Ap-MapCube[x][y-1].findTop().Under.Move_AP>=0 )
+                                            if(path_check(path,position)){
+                                                path.push(position);
+                                                short_path(x,y-1,x1,y1,Ap-MapCube[x][y-1].findTop().Under.Move_AP);
+                                                path.pop();
+                                            }
+                                            break;
+                                        case 2:
+                                            if(x+1>=0 && x+1<Option.CubeX && y>=0 && y<Option.CubeY)//邊界判定 
+                                            if(MapCube[x+1][y].findTop().VisiAble && MapCube[x+1][y].findTop().MoveAble)
+                                            if(MapCube[x+1][y].findTop().Class=="ActionItem")
+                                            if(Ap-MapCube[x+1][y].findTop().Under.Move_AP>=0 )
+                                            if(path_check(path,position)){
+                                                path.push(position);
+                                                short_path(x+1,y,x1,y1,Ap-MapCube[x+1][y].findTop().Under.Move_AP);
+                                                path.pop();
+                                            }
+                                            break;
+                                        case 3:
+                                            if(x>=0 && x<Option.CubeX && y+1>=0 && y+1<Option.CubeY)//邊界判定 
+                                            if(MapCube[x][y+1].findTop().VisiAble && MapCube[x][y+1].findTop().MoveAble)
+                                            if(MapCube[x][y+1].findTop().Class=="ActionItem")
+                                            if(Ap-MapCube[x][y+1].findTop().Under.Move_AP>=0 )
+                                            if(path_check(path,position)){
+                                                path.push(position);
+                                                short_path(x,y+1,x1,y1,Ap-MapCube[x][y+1].findTop().Under.Move_AP);
+                                                path.pop();
+                                            }
+                                            break;
+                                    }
+                                }
                             }
-                        
                         }
-                        while(parent.VARIABLE.View.GameArea.RightControl.button.firstChild) parent.VARIABLE.View.GameArea.RightControl.button.removeChild(parent.VARIABLE.View.GameArea.RightControl.button.firstChild);
-                        if(bestcost>=0){
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("從座標:"+me.X+","+me.Y));
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("移動到座標:"+tmp.X+","+tmp.Y));
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("所需AP:"+(me.AP-bestcost)+"點"));
-                        }
-                        else
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("AP點不足"));
-                        parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
-                        
-                    });
-                    
-                    tmp.Div.addEventListener('click',function(){
-                    if(bestcost>=0){
-                    for(var j=0;j!=ActionCube.length;j++){
-                        ActionCube[j].earse();
-                    }
-                    
-                    //要新增可以躲藏、穿越建築物
-                    MapCube[me.X][me.Y].earse(me);
-                    me.Move(bestpath[bestpath.length-1].x,bestpath[bestpath.length-1].y);
-                    if(MapCube[tmp.X][tmp.Y].findTop().Type=="房子"){
-                         MapCube[tmp.X][tmp.Y].insert(me,MapCube[tmp.X][tmp.Y].findTop());
-                    }
-                    else
-                        MapCube[tmp.X][tmp.Y].insert(me);
-                    me.AP=bestcost;
-                    ActionCube.length=0;
-                    rendCube();
-                    parent.VARIABLE.View.GameArea.LeftControl.MoveButton.childNodes[0].nodeValue="開始移動";
-                    }
-                    });
-                    
-            }());}}
+                        //滑鼠進入、離開顯示
+                        tmp.Div.addEventListener('mouseover',function() {
+                            for(var j=0;j!=ActionCube.length;j++){
+                                ActionCube[j].show();
+                            }
+                            //路徑顯示
+                            short_path(me.X,me.Y,tmp.X,tmp.Y,me.AP);
+                            if(bestcost>=0)
+                                for(var j=0;j!=bestpath.length;j++){
+                                    if(MapCube[bestpath[j].x][bestpath[j].y].findTop().Class=='ActionItem'){
+                                        if(MapCube[bestpath[j].x][bestpath[j].y].findTop().Under.Class!='MapItem')
+                                            MapCube[bestpath[j].x][bestpath[j].y].findTop().Under.Div.style.backgroundColor='#FF0000';
+                                        else
+                                            MapCube[bestpath[j].x][bestpath[j].y].findTop().Div.style.backgroundColor='#FF0000';
+                                    }
+                                }/*
+                                while(parent.VARIABLE.View.GameArea.RightControl.button.firstChild) parent.VARIABLE.View.GameArea.RightControl.button.removeChild(parent.VARIABLE.View.GameArea.RightControl.button.firstChild);
+                                if(bestcost>=0){
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("從座標:"+me.X+","+me.Y));
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("移動到座標:"+tmp.X+","+tmp.Y));
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("所需AP:"+(me.AP-bestcost)+"點"));
+                                }
+                                else
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createTextNode("AP點不足"));
+                                parent.VARIABLE.View.GameArea.RightControl.button.appendChild(document.createElement("br"));
+                                */
+                        });
+                        tmp.Div.addEventListener('click',function(){
+                            if(bestcost>=0){
+                                for(var j=0;j!=ActionCube.length;j++){
+                                    ActionCube[j].earse();
+                                }                        
+                                //要新增可以躲藏、穿越建築物
+                                MapCube[me.X][me.Y].earse(me);
+                                me.Move(bestpath[bestpath.length-1].x,bestpath[bestpath.length-1].y);
+                                if(MapCube[tmp.X][tmp.Y].findTop().Type=="房子"){
+                                     MapCube[tmp.X][tmp.Y].insert(me,MapCube[tmp.X][tmp.Y].findTop());
+                                }
+                                else
+                                    MapCube[tmp.X][tmp.Y].insert(me);
+                                me.AP=bestcost;
+                                ActionCube.length=0;
+                                rendCube();
+                                parent.VARIABLE.View.GameArea.ResetMove();
+                            }
+                        });
+                    }());  
+                }
+            }
             function path_check(path,position){
                 var check=true;
-                for(var i=0;i!=path.length;i++)
-                {
+                for(var i=0;i!=path.length;i++){
                     if(path[i].x==position.x && path[i].y==position.y)
                     {
                         check=false;
@@ -685,22 +667,19 @@
         }
         function Area_Attack(Horizons,CenterX,CenterY,ATK){
             //爆炸放這裡!!
-            for(var x=-Horizons;x<=Horizons;x++)
-                {
-                    var _tmp=Horizons-Math.abs(x);
-                    for(var y=-_tmp;y<=_tmp;y++)
-                    {
-                        if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
-                        if(MapCube[CenterX+x][CenterY+y].findTop().Invincible==false)
-                        {
-                            Attack_Check(MapCube[CenterX+x][CenterY+y].findTop(),ATK);
-                        }
+            for(var x=-Horizons;x<=Horizons;x++){
+                var _tmp=Horizons-Math.abs(x);
+                for(var y=-_tmp;y<=_tmp;y++){
+                    if(CenterX+x>=0 && CenterX+x<Option.CubeX && CenterY+y>=0 && CenterY+y<Option.CubeY)//邊界判定 
+                    if(MapCube[CenterX+x][CenterY+y].findTop().Invincible==false){
+                        Attack_Check(MapCube[CenterX+x][CenterY+y].findTop(),ATK);
                     }
                 }
-                var audio = new Audio('src/Sound/burn-2.ogg');
-                audio.volume=0.5;
-                audio.play();
             }
+            var audio = new Audio('./Sound/burn-2.ogg');
+            audio.volume=0.5;
+            audio.play();
+        }
         //我不知道要怎麼取,雖然名字都是武器,但其實是顯示範圍的差異
         function Bulid(input){
              var buliding=new BulidingItem('','',input,'','');
@@ -756,10 +735,10 @@
                         ActionCube[j].earse();
                     }
                     
-                   var buliding=new BulidingItem(tmp.X,tmp.Y,input,me.Side,Turn);
-                        Buliding.push(buliding);
-                        MapCube[tmp.X][tmp.Y].insert(buliding);
-                        me.AP-=buliding.AP;
+                    var buliding=new BulidingItem(tmp.X,tmp.Y,input,me.Side,Turn);
+                    Buliding.push(buliding);
+                    MapCube[tmp.X][tmp.Y].insert(buliding);
+                    me.AP-=buliding.AP;
                     console.log(Buliding);
                     ActionCube.length=0;
                     rendCube();
@@ -815,7 +794,7 @@
                                 if(Dir_check(MapCube[tmp.X][tmp.Y].findTop()))
                                     Crits=3;
                                 Attack_Check(MapCube[tmp.X][tmp.Y].findTop(),50*Crits);
-                                var audio = new Audio('src/Sound/dkhj.ogg');
+                                var audio = new Audio('./Sound/dkhj.ogg');
                                 audio.volume=0.5;
                                 audio.play();
                             }
@@ -891,8 +870,7 @@
                     Area_Attack(1,tmp.X,tmp.Y,100);
                     ActionCube.length=0;
                     //View();
-                    rendCube();
-                    parent.VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊"; },false);
+                    rendCube();},false);
                 }());
                 
             }
@@ -1231,7 +1209,7 @@
                         MapCube[tmp.X][tmp.Y].findTop().earse();
                         if(MapCube[tmp.X][tmp.Y].findTop().Invincible==false){
                             Attack_Check(MapCube[tmp.X][tmp.Y].findTop(),100);
-                            var audio = new Audio('src/Sound/dkhj.ogg');
+                            var audio = new Audio('./Sound/dkhj.ogg');
                             audio.volume=0.5;
                             audio.play();
                             var Attack=new ActionItem(tmp.X,tmp.Y);
@@ -1326,8 +1304,7 @@
                     }
                     ActionCube.length=0;
                     //View();
-                    rendCube();
-                    parent.VARIABLE.View.GameArea.LeftControl.AttackButton.childNodes[0].nodeValue="開始攻擊"; },false);
+                    rendCube(); },false);
                 }());
                 
             }
@@ -1541,8 +1518,7 @@
             return false;
         }
         function Stay() {
-            parent.resetButton();
-            
+            parent.VARIABLE.View.GameArea.ResetButton();
             //踩到甚麼放這裡
             var tmp=MapCube[me.X][me.Y];
             while(tmp!=null){
@@ -1560,7 +1536,7 @@
                 }
                 tmp=tmp.Top;
             }
-            //UpLoad();
+            UpLoad();
             
             Turn++;
         }
@@ -1568,21 +1544,22 @@
             var updata = new Object();
             updata.Buliding = [];
             updata.Player = [];
-            for(var i=0;i!=Buliding.length;i++)
-            {
+            for(var i=0;i!=Buliding.length;i++){
                 updata.Buliding.push(Buliding[i].getData());
             }
-            for(var i=0;i!=player.length;i++)
-            {
+            for(var i=0;i!=player.length;i++){
                 updata.Player.push(player[i].getData());
             }
-            
-            var data=JSON.stringify(updata);
+            updata.Turn = Turn;
+            updata.RoomID = parent.VARIABLE.USER.RoomID;
+            //var data=JSON.stringify(updata);
             //saveTextAsFile('Map',data);//下載Map
-           //最後在json
-            /*global sendGameCommand 實作於ajax*/
-            sendGameCommand(JSON.stringify(updata));
+            //最後在json
+            sendGameCommand(updata);
         }//上傳資料
+        function sendGameCommand(data){
+            parent.VARIABLE.Socket.emit("SetGameSynchronize",data);
+        }
         function saveTextAsFile( _fileName, _text ) {
             var textFileAsBlob = new Blob([_text], {type:'text/plain'});
  

@@ -481,6 +481,30 @@ io.on('connection', function(socket){
 			}
 		});
 	});//SetActorType
+	socket.on("GameStart",function(RoomData) {
+		gameStart(RoomData,socket.User.ActorID);
+	});
+	socket.on("SetGameSynchronize",function(data) {//遊戲同步
+	    for(var i=0;i<data.Buliding.length;i++){
+	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `NO` = ?;",[data.Buliding[i].X,data.Buliding[i].Y, data.RoomID],function(error) {
+	    	    if(error) console.log(error);
+	    	});
+	    }
+	    for(var i=0;i<data.Player.length;i++){
+	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `NO` = ?;",[data.Player[i].X,data.Player[i].Y, data.RoomID],function(error) {
+	    	    if(error) console.log(error);
+	    	});
+	    	connection.query("UPDATE `game_player_table` SET `HP` = ?, `AP` = ? WHERE `ActorID` = ?;",[data.Player[i].HP,data.Player[i].AP, data.Player[i].NO],function(error) {
+	    	    if(error) console.log(error);
+	    	});
+	    }
+	    connection.query("UPDATE `room_list` SET `turn` = ? WHERE `NO` = ?;",[data.Turn,data.RoomID],function(error) {
+	       if(error) console.log(error);
+	    });
+	    setTimeout(function(){
+	    	gameSynchronize(data.RoomID);
+	    },500);
+	});
 	//週期任務1S一次
 	setInterval(function() {
 		connection.query('SELECT * FROM `member_list`;',function(error, rows) {
@@ -501,7 +525,7 @@ io.on('connection', function(socket){
 	  }, 3000);
 	setInterval(function() {
 		if(socket.User.RoomID!=null){
-			connection.query('UPDATE `room_list` SET `reciprocal` = `reciprocal` - 1 WHERE `status` = 1 AND `NO` = ? AND `RoomMaster` = ?;',[socket.User.RoomID,socket.User.ActorID],function(error) {
+			connection.query('UPDATE `room_list` SET `reciprocal` = `reciprocal` - 1 WHERE `NO` = ? AND `RoomMaster` = ?;',[socket.User.RoomID,socket.User.ActorID],function(error) {
 				if(error) console.log(error);
 				else{
 					connection.query('SELECT `status` FROM `room_list` WHERE `status` = 1 AND `NO` = ?;',[socket.User.RoomID],function(error,rw) {		
@@ -509,6 +533,14 @@ io.on('connection', function(socket){
 						else{
 							if(rw.length>0){
 								updatePreSelect(socket.User.RoomID,socket.User.ActorID);
+							}
+						}
+					});
+					connection.query('SELECT `reciprocal`,`StartTime` FROM `room_list` WHERE `status` = 2 AND `NO` = ?;',[socket.User.RoomID],function(error,rw) {		
+						if(error) console.log(error);
+						else{
+							if(rw.length>0){
+								updateGameTime(socket.User.RoomID,rw[0]);
 							}
 						}
 					});
@@ -539,8 +571,15 @@ function logout(userID){
 		if (error) console.log(error);
 	});
 }
+function updateGameTime(RoomID,RoomData){
+	var Time = {
+		Turn:RoomData.reciprocal,
+		StartTime:RoomData.StartTime
+	};
+	io.emit("updateGameTime",Time);
+}
 function updatePreSelect(RoomID,ActorID){
-	var SideA=[],SideB=[],SideA_AI=[],SideB_AI=[],RoomData,status;
+	var SideA=[],SideB=[],SideA_AI=[],SideB_AI=[],RoomData;
 	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 0', [RoomID], function(error,rows){
 		if(error)console.log(error);
 		else SideA = rows;
@@ -571,9 +610,10 @@ function updatePreSelect(RoomID,ActorID){
 					}
 				}
 				if((sideAReady&&sideBReady&&(RoomData.RoomMaster==ActorID))){
-					gameStart(RoomData,ActorID);
+					io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData,GameStart:true});
+					//gameStart(RoomData,ActorID);
 				}else{
-					io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData});
+					io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData,GameStart:false});
 				}
 			}
 		}
@@ -596,7 +636,7 @@ function gameStart(RoomData,ActorID){
 						var actorPos = Player[row[i].Postion];
 						var actorSide = row[i].side;
 						var actorType = row[i].Type;
-						connection.query("INSERT INTO `game_player_table` SET ?;",{ActorID:actorID, HP:100, AP:100, command:"",side:actorSide,type:actorType},function(error,result) {
+						connection.query("INSERT INTO `game_player_table` SET ?;",{ActorID:actorID, HP:100, AP:15, command:"",side:actorSide,type:actorType},function(error,result) {
 							if(error) console.log(error);
 							else{
 								connection.query("INSERT INTO `game_table` SET ?;",{RoomID:RoomData.NO, ItemID:result.insertId, X:actorPos.X, Y:actorPos.Y, type:"player"},function(error) {
@@ -611,7 +651,16 @@ function gameStart(RoomData,ActorID){
 				if(error) console.log(error);
 				else PlayData = row[0];
 			});
-			connection.query("UPDATE `room_list` SET `status` = 2 WHERE `status` = 1 AND `NO` = ?",[RoomData.NO],function(error) {
+			connection.query("UPDATE `room_list` SET `status` = 2 WHERE `NO` = ?",[RoomData.NO],function(error) {
+				if(error) console.log(error);
+			});
+			
+			var d = new Date();
+			// 取得 UTC time
+    		var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    		// 新增不同時區的日期資料
+    		var date = new Date(utc + (3600000*8));
+			connection.query("UPDATE `room_list` SET `StartTime` = ? WHERE `NO` = ?",[date,RoomData.NO],function(error) {
 				if(error) console.log(error);
 			});
 	    }
@@ -623,7 +672,6 @@ function gameStart(RoomData,ActorID){
 }
 //msg =>{ActorID,RoomID,Echo("是否回傳")}
 function quitRoom(socket,msg){
-	console.log(msg);
 	connection.query('DELETE FROM `room_actor_list` WHERE `actorID` = ?', [msg.ActorID], function(error){
 		if(error)console.log(error);
 		else{
@@ -647,9 +695,20 @@ function quitRoom(socket,msg){
 										connection.query('DELETE FROM `room_AI` WHERE `RoomID` = ?', [msg.RoomID], function(error){
 											if(error)console.log(error);
 										});
+										connection.query('SELECT `ItemID` From `game_table` WHERE `RoomID` = ?', [msg.RoomID], function(error,rows){
+											if(error)console.log(error);
+											else{
+												for(var i=0;i<rows.length;i++){
+													connection.query('DELETE FROM `game_player_table` WHERE `NO` = ?', [rows[i].ItemID], function(error){
+														if(error)console.log(error);
+													});
+												}
+											}
+										});
 										connection.query('DELETE FROM `game_table` WHERE `RoomID` = ?', [msg.RoomID], function(error){
 											if(error)console.log(error);
 										});
+										
 									}
 								}
 							});
@@ -767,7 +826,6 @@ function gameSynchronize(roomID){
 			for(var i=0;i<row.length;i++){
 				var temp = row[i];
 				if(temp.type=='player'){
-					console.log(temp);
 					connection.query("SELECT * FROM `game_player_table` WHERE `NO` = ?",[temp.ItemID],function(error,rw) {
 						if(error) console.log(error);
 						else Item.push({ItemID:temp.ItemID,type:"player",Postion:{X:temp.X,Y:temp.Y},ActorData:rw[0]});
