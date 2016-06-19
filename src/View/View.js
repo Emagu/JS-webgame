@@ -1035,6 +1035,8 @@ function PreSelectView(windowSize,Option){
     var itemArray = [];
     var PlayLocal = null;
     var Ready = false;
+    var TargetActor;
+    
     var command_Ready = document.createElement("div");
     command_Ready.style.width = "720px";
     command_Ready.style.height = "25px";
@@ -1058,7 +1060,7 @@ function PreSelectView(windowSize,Option){
     var TypeSelect = document.createElement("div");
     TypeSelect.style.width = "32px";
     TypeSelect.style.height = "32px";
-    TypeSelect.style.left = "439px";
+    TypeSelect.style.left = "545px";
     TypeSelect.style.top = "399px";
     TypeSelect.style.position = "absolute";
     TypeSelect.style.cursor = "pointer";
@@ -1068,7 +1070,7 @@ function PreSelectView(windowSize,Option){
     var WeaponSelect = document.createElement("div");
     WeaponSelect.style.width = "32px";
     WeaponSelect.style.height = "32px";
-    WeaponSelect.style.left = "684px";
+    WeaponSelect.style.left = "790px";
     WeaponSelect.style.top = "399px";
     WeaponSelect.style.position = "absolute";
     WeaponSelect.style.cursor = "pointer";
@@ -1078,7 +1080,7 @@ function PreSelectView(windowSize,Option){
     var SupportSelect = document.createElement("div");
     SupportSelect.style.width = "32px";
     SupportSelect.style.height = "32px";
-    SupportSelect.style.left = "719px";
+    SupportSelect.style.left = "826px";
     SupportSelect.style.top = "399px";
     SupportSelect.style.position = "absolute";
     SupportSelect.style.cursor = "pointer";
@@ -1088,7 +1090,7 @@ function PreSelectView(windowSize,Option){
     var StrategySelect = document.createElement("div");
     StrategySelect.style.width = "32px";
     StrategySelect.style.height = "32px";
-    StrategySelect.style.left = "754px";
+    StrategySelect.style.left = "861px";
     StrategySelect.style.top = "399px";
     StrategySelect.style.position = "absolute";
     StrategySelect.style.cursor = "pointer";
@@ -1211,7 +1213,115 @@ function PreSelectView(windowSize,Option){
 	   messageInput.value = "";
 	});
 	
-	var timer = null;
+	var timer = document.createElement("div");
+	timer.style.position = "absolute";
+	timer.style.top = "19px";
+	timer.style.left = "315px";
+	timer.style.width = "50px";
+	timer.style.height = "30px";
+	timer.style.color = "#FFFFFF";
+	timer.style.fontSize = "30pt";
+	timer.appendChild(document.createTextNode("100"));
+	this.self.appendChild(timer);
+	
+	var ChangePostionDiv = document.createElement("div");
+    ChangePostionDiv.style.width = "300px";
+    ChangePostionDiv.style.height = "160px";
+    ChangePostionDiv.style.left = "490px";
+    ChangePostionDiv.style.top = "200px";
+    ChangePostionDiv.style.position = "absolute";
+    ChangePostionDiv.style.display = "none";
+    ChangePostionDiv.style.backgroundImage = "url('./src/pic/PreSelect/messageBox.png')";
+    
+    var ChangePostionMessage = document.createElement("div");
+    ChangePostionMessage.style.width = "250px";
+    ChangePostionMessage.style.height = "40px";
+    ChangePostionMessage.style.left = "25px";
+    ChangePostionMessage.style.top = "60px";
+    ChangePostionMessage.style.position = "absolute";
+    ChangePostionMessage.style.color = "#FFFFFF";
+    ChangePostionMessage.style.fontSize = "15pt";
+    ChangePostionMessage.style.textAlign = "center";
+    ChangePostionMessage.appendChild(document.createTextNode(""));
+    ChangePostionDiv.appendChild(ChangePostionMessage);
+    
+    var ChangePostionAgree = document.createElement("div");
+    ChangePostionAgree.style.width = "115px";
+    ChangePostionAgree.style.height = "40px";
+    ChangePostionAgree.style.left = "20px";
+    ChangePostionAgree.style.top = "110px";
+    ChangePostionAgree.style.position = "absolute";
+    ChangePostionAgree.style.display = "none";
+    ChangePostionAgree.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Agree.png')";
+    ChangePostionAgree.style.cursor = "pointer";
+    ChangePostionAgree.addEventListener("click",function() {
+        ChangePostionDiv.style.display = "none";
+        ChangePostionCancel.style.display = "none";
+        ChangePostionAgree.style.display = "none";
+        ChangePostionRefuse.style.display = "none";
+        ChangePostionConfirm.style.display = "none";
+        VARIABLE.Socket.emit("changeRequestResult",{actorID:TargetActor,targetActorID:VARIABLE.USER.ActorID,Result:true});
+    });
+    
+    var ChangePostionRefuse = document.createElement("div");
+    ChangePostionRefuse.style.width = "115px";
+    ChangePostionRefuse.style.height = "40px";
+    ChangePostionRefuse.style.left = "165px";
+    ChangePostionRefuse.style.top = "110px";
+    ChangePostionRefuse.style.position = "absolute";
+    ChangePostionRefuse.style.display = "none";
+    ChangePostionRefuse.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Refuse.png')";
+    ChangePostionRefuse.style.cursor = "pointer";
+    ChangePostionRefuse.addEventListener("click",function() {
+        ChangePostionDiv.style.display = "none";
+        ChangePostionCancel.style.display = "none";
+        ChangePostionAgree.style.display = "none";
+        ChangePostionRefuse.style.display = "none";
+        ChangePostionConfirm.style.display = "none";
+        VARIABLE.Socket.emit("changeRequestResult",{actorID:TargetActor,targetActorID:VARIABLE.USER.ActorID,Result:false});
+    });
+    
+    var ChangePostionCancel = document.createElement("div");
+    ChangePostionCancel.style.width = "115px";
+    ChangePostionCancel.style.height = "40px";
+    ChangePostionCancel.style.left = "92.5px";
+    ChangePostionCancel.style.top = "110px";
+    ChangePostionCancel.style.position = "absolute";
+    ChangePostionCancel.style.display = "none";
+    ChangePostionCancel.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Cancel.png')";
+    ChangePostionCancel.style.cursor = "pointer";
+    ChangePostionCancel.addEventListener("click",function() {
+        ChangePostionDiv.style.display = "none";
+        ChangePostionCancel.style.display = "none";
+        ChangePostionAgree.style.display = "none";
+        ChangePostionRefuse.style.display = "none";
+        ChangePostionConfirm.style.display = "none";
+        VARIABLE.Socket.emit("changePostionCancel",{actorID:VARIABLE.USER.ActorID,targetActorID:TargetActor});
+    });
+    
+    var ChangePostionConfirm = document.createElement("div");
+    ChangePostionConfirm.style.width = "115px";
+    ChangePostionConfirm.style.height = "40px";
+    ChangePostionConfirm.style.left = "92.5px";
+    ChangePostionConfirm.style.top = "110px";
+    ChangePostionConfirm.style.position = "absolute";
+    ChangePostionConfirm.style.display = "none";
+    ChangePostionConfirm.style.backgroundImage = "url('./src/pic/PreSelect/BTN_Confirm.png')";
+    ChangePostionConfirm.style.cursor = "pointer";
+    ChangePostionConfirm.addEventListener("click",function() {
+        ChangePostionDiv.style.display = "none";
+        ChangePostionCancel.style.display = "none";
+        ChangePostionAgree.style.display = "none";
+        ChangePostionRefuse.style.display = "none";
+        ChangePostionConfirm.style.display = "none";
+    });
+    
+    ChangePostionDiv.appendChild(ChangePostionAgree);
+    ChangePostionDiv.appendChild(ChangePostionRefuse);
+    ChangePostionDiv.appendChild(ChangePostionCancel);
+    ChangePostionDiv.appendChild(ChangePostionConfirm);
+    
+    this.self.appendChild(ChangePostionDiv);
     this.self.appendChild(command_Ready);
     this.self.appendChild(messageField);
     this.self.appendChild(messageSend);
@@ -1373,38 +1483,6 @@ function PreSelectView(windowSize,Option){
 	    this.Div.appendChild(ItemDiv_2);
 	    this.Div.appendChild(ItemDiv_3);
 	}
-	function PlayLocalInit(data,side,actorID){
-		PlayLocal = document.createElement("select");
-		PlayLocal.style.position = "absolute";
-		PlayLocal.style.top = "400px";
-	    PlayLocal.style.width = "75px";
-	    PlayLocal.style.height = "33px";
-	    PlayLocal.style.left = "920px";
-	    var temp = document.createElement("option");
-		temp.setAttribute("value",0);
-		temp.appendChild(document.createTextNode(""));
-		PlayLocal.appendChild(temp);
-	    for(var i=side;i<(5+side);i++){
-	    	var used = false;
-	    	for(var j=0;j<data.length;j++){
-	    		if(data[j].local==i) {
-	    			used = true;
-	    			break;
-	    		}
-	    	}
-	    	if(!used){
-	    		var temp = document.createElement("option");
-		    	temp.setAttribute("value",i);
-				temp.appendChild(document.createTextNode(i));
-		    	PlayLocal.appendChild(temp);
-	    	}
-	    }
-	    PlayLocal.selectedIndex = data[actorID].Postion + 1;
-	    PlayLocal.addEventListener("change",function() {
-	    	VARIABLE.Socket.emit("SetPostion",{Postion:PlayLocal.selectedIndex,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
-	    });
-	    
-	}
 	function addTypeEvent(i,Div){
 		Div.addEventListener("click",function() {
 	        TypeDiv.style.display = "none";
@@ -1417,52 +1495,70 @@ function PreSelectView(windowSize,Option){
 	        VARIABLE.Socket.emit("SetItem",{Type:j,ItemID:i,ActorID:VARIABLE.USER.ActorID,RoomID:VARIABLE.USER.RoomID});
 	    });
 	}
-	function timerInit(time){
-	    timer = document.createElement("div");
-	    timer.style.position = "absolute";
-	    timer.style.top = "19px";
-	    timer.style.left = "315px";
-	    timer.style.width = "50px";
-	    timer.style.height = "30px";
-	    timer.style.color = "#FFFFFF";
-	    timer.style.fontSize = "30pt";
-	    timer.appendChild(document.createTextNode(time));
-	    return timer;
+	function addChangePostion(div,actorID,Postion){
+	    div.addEventListener("click",function(){
+	        ChangePostionMessage.childNodes[0].nodeValue = "等待玩家ID "+actorID+" 同意!";
+    	    ChangePostionDiv.style.display = "";
+            ChangePostionAgree.style.display = "none";
+            ChangePostionRefuse.style.display = "none";
+            ChangePostionConfirm.style.display = "none";
+    	    ChangePostionCancel.style.display = "";
+    	    TargetActor = actorID;
+    	    VARIABLE.Socket.emit("changePostion",{actorID:VARIABLE.USER.ActorID,targetActorID:actorID});
+	    });
 	}
-	
 	//宣告函式
 	this.update = function(data){
 	    console.log(data);
 	    /*global VARIABLE*/
         if(data.RoomData.NO!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="PreSelect") return;
         for(var i=0;i<itemArray.length;i++){
-        	this.self.removeChild(itemArray[i].Div);
+        	this.self.removeChild(itemArray[i]);
         }
         itemArray = [];
         var SideA = 0,SideB = 0;
-        if(PlayLocal!=null) this.self.removeChild(PlayLocal);
         for(var i=0;i<data.SideA.length;i++){
         	if(data.SideA[i].actorID==VARIABLE.USER.ActorID){
-        		PlayLocalInit(data.SideA,0,i);
         		TypeSelect.style.backgroundImage = "url('./src/pic/Actor/blue/"+data.SideA[i].type+"/down.png')";
         		WeaponSelect.style.backgroundImage = "url('./src/pic/Item/0/"+data.SideA[i].item1+".png')";
         		SupportSelect.style.backgroundImage = "url('./src/pic/Item/1/"+data.SideA[i].item2+".png')";
         		StrategySelect.style.backgroundImage = "url('./src/pic/Item/2/"+data.SideA[i].item3+".png')";
         		VARIABLE.USER.Side = 0;
+        	}else{
+        	    var temp = document.createElement("div");
+        	    temp.style.width = "32px";
+        	    temp.style.height = "32px";
+        	    temp.style.left = "195px";
+        	    temp.style.top = (115+i*120) + "px";
+        	    temp.style.position = "absolute";
+        	    temp.style.backgroundImage = "url('./src/pic/PreSelect/change.png')";
+        	    addChangePostion(temp,data.SideA[i].actorID,data.SideA[i].Postion);
+        	    itemArray.push(temp);
+	            this.self.appendChild(temp);
         	}
 	        var temp = new ActorDiv(data.SideA[i],i,0);
-	        itemArray.push(temp);
+	        itemArray.push(temp.Div);
 	        this.self.appendChild(temp.Div);
 	        SideA++;
 	    }
 	    for(var i=0;i<data.SideB.length;i++){
 	    	if(data.SideB[i].actorID==VARIABLE.USER.ActorID){
-        		PlayLocalInit(data.SideB,1,i);
         		VARIABLE.USER.Side = 1;
         		TypeSelect.style.backgroundImage = "url('./src/pic/Actor/blue/"+data.SideB[i].type+"/down.png')";
         		WeaponSelect.style.backgroundImage = "url('./src/pic/Item/0/"+data.SideB[i].item1+".png')";
         		SupportSelect.style.backgroundImage = "url('./src/pic/Item/1/"+data.SideB[i].item2+".png')";
         		StrategySelect.style.backgroundImage = "url('./src/pic/Item/2/"+data.SideB[i].item3+".png')";
+        	}else{
+        	    var temp = document.createElement("div");
+        	    temp.style.width = "32px";
+        	    temp.style.height = "32px";
+        	    temp.style.left = "1225px";
+        	    temp.style.top = (115+i*120) + "px";
+        	    temp.style.position = "absolute";
+        	    temp.style.backgroundImage = "url('./src/pic/PreSelect/change.png')";
+        	    addChangePostion(temp,data.SideB[i].actorID,data.SideB[i].Postion);
+        	    itemArray.push(temp);
+	            this.self.appendChild(temp);
         	}
 	        var temp = new ActorDiv(data.SideB[i],i,1);
 	        itemArray.push(temp);
@@ -1479,14 +1575,12 @@ function PreSelectView(windowSize,Option){
 	        itemArray.push(temp);
 	        this.self.appendChild(temp.Div);
 	    }
-	    this.self.appendChild(PlayLocal);
 	    for(var i=0;i<itemArray.length;i++){
 	    	if(VARIABLE.USER.Side == itemArray[i].side){
 	    		itemArray[i].appendDetail();
 	    	}
 	    }
-	    if(timer!=null) this.self.removeChild(timer);
-	    this.self.appendChild(timerInit(data.RoomData.reciprocal));
+	    timer.childNodes[0].nodeValue = data.RoomData.reciprocal;
 	};
 	this.getMessage = function(msg){
         var newMsg = document.createElement("li");
@@ -1496,10 +1590,32 @@ function PreSelectView(windowSize,Option){
         messageField.appendChild(newMsg);
         messageField.scrollTop = messageField.scrollHeight;
     };
-    //函式宣告完畢
-    
-    //初始化函式執行
-    //執行初始化函式完畢
+    this.changePostionRequest = function(data){
+        ChangePostionMessage.childNodes[0].nodeValue = "玩家ID "+data.actorID+"申請與你交換位置!";
+	    ChangePostionDiv.style.display="";
+	    ChangePostionCancel.style.display = "none";
+        ChangePostionConfirm.style.display = "none";
+	    ChangePostionAgree.style.display = "";
+	    ChangePostionRefuse.style.display = "";
+	    TargetActor = data.actorID;
+    };
+    this.changeRequestCancel = function(data){
+        ChangePostionMessage.childNodes[0].nodeValue = "玩家ID "+data.actorID+"取消申請!";
+        ChangePostionCancel.style.display = "none";
+        ChangePostionAgree.style.display = "none";
+        ChangePostionRefuse.style.display = "none";
+	    ChangePostionDiv.style.display="";
+	    ChangePostionConfirm.style.display="";
+    };
+    this.changeRequestResult = function(data){
+        if(data.Result) ChangePostionMessage.childNodes[0].nodeValue = "玩家ID "+data.targetActorID+"接受交換位置!";
+        else ChangePostionMessage.childNodes[0].nodeValue = "玩家ID "+data.targetActorID+"拒絕交換位置!";
+	    ChangePostionDiv.style.display="";
+	    ChangePostionCancel.style.display = "none";
+        ChangePostionAgree.style.display = "none";
+        ChangePostionRefuse.style.display = "none";
+	    ChangePostionConfirm.style.display="";
+    };
 }
 function RegisterView(windowSize){
     

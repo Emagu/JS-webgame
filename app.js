@@ -437,9 +437,32 @@ io.on('connection', function(socket){
 	//PreSelect
 	socket.on('preSelect',function(roomID){
 	    io.emit('preSelect',roomID);
+	    setTimeout(function(){
+	    	updateRoomList();
+	    },100);
 	    socket.local = "preSelect";
 	    connection.query("UPDATE `room_list` SET status = 1 WHERE `NO` = ?",[roomID],function(error) {
 	       if(error) console.log(error);
+	    });
+	    connection.query("SELECT * FROM `room_actor_list` WHERE `roomID` = ? AND `side` = 0",[roomID],function(error,row) {
+	       if(error) console.log(error);
+	       else{
+	       		for(var i=0;i<row.length;i++){
+	       			connection.query("UPDATE `room_actor_list` SET `Postion` = ? WHERE `actorID` = ?",[i,row[i].actorID],function(error) {
+	       				if(error) console.log(error);
+	       			});
+	       		}
+	       }
+	    });
+	    connection.query("SELECT * FROM `room_actor_list` WHERE `roomID` = ? AND `side` = 1",[roomID],function(error,row) {
+	       if(error) console.log(error);
+	       else{
+	       		for(var i=0;i<row.length;i++){
+	       			connection.query("UPDATE `room_actor_list` SET `Postion` = ? WHERE `actorID` = ?",[i+5,row[i].actorID],function(error) {
+	       				if(error) console.log(error);
+	       			});
+	       		}
+	       }
 	    });
 	    setTimeout(function(){
 	    	updatePreSelect(roomID,socket.User.ActorID);
@@ -457,11 +480,47 @@ io.on('connection', function(socket){
 			}
 		});
 	});
+	socket.on('changePostion', function(data){
+		io.emit("changePostion",data);
+	});
+	socket.on('changePostionCancel', function(data){
+		io.emit("changePostionCancel",data);
+	});
+	socket.on('changeRequestResult', function(data){
+		console.log(data);
+		io.emit("changeRequestResult",data);
+		if(data.Result){
+			var OriginPostion,NewPostion,RoomID;
+			connection.query("select `Postion` from `room_actor_list` where `actorID` = ?",[data.actorID],function(error,row) {
+			    if(error) console.log(error);
+			    else OriginPostion = row[0].Postion;
+			});
+			connection.query("select `Postion` from `room_actor_list` where `actorID` = ?",[data.targetActorID],function(error,row) {
+			    if(error) console.log(error);
+			    else NewPostion = row[0].Postion;
+			});
+			connection.query("select `roomID` from `room_actor_list` where `actorID` = ?",[data.actorID],function(error,row) {
+			    if(error) console.log(error);
+			    else RoomID = row[0].roomID;
+			});
+			setTimeout(function(){
+				connection.query("update `room_actor_list` set `Postion` = ? where `actorID` = ?",[OriginPostion,data.targetActorID],function(error) {
+					if(error) console.log(error);
+				});
+				connection.query("update `room_actor_list` set `Postion` = ? where `actorID` = ?",[NewPostion,data.actorID],function(error) {
+					if(error) console.log(error);
+				});
+				setTimeout(function() {
+				    updatePreSelect(RoomID,data.actorID);
+				},100);
+			},100);
+		}
+	});
 	socket.on('SetPostion', function(msg){//RoomPostion
 		if(socket.User.UserID!=null) updateConnect(socket.User.UserID);
 		connection.query('UPDATE `room_actor_list` SET `Postion` = ? WHERE `actorID` = ?', [msg.Postion,msg.ActorID], function(error){
 			if(error){
-				console.log(error);
+				console.log("setPOS error" + error);
 			}else{
 				setTimeout(function() {
 					updatePreSelect(msg.RoomID);
@@ -580,11 +639,11 @@ function updateGameTime(RoomID,RoomData){
 }
 function updatePreSelect(RoomID,ActorID){
 	var SideA=[],SideB=[],SideA_AI=[],SideB_AI=[],RoomData;
-	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 0', [RoomID], function(error,rows){
+	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 0 ORDER BY B.Postion;', [RoomID], function(error,rows){
 		if(error)console.log(error);
 		else SideA = rows;
 	});
-	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 1', [RoomID], function(error,rows){
+	connection.query('SELECT A.actorName,B.actorID,B.side,B.type,B.local,B.item1,B.item2,B.item3,B.Postion,B.Ready FROM `actor_list` AS A RIGHT JOIN `room_actor_list` AS B ON A.NO = B.actorID WHERE B.roomID = ? AND B.side = 1 ORDER BY B.Postion;', [RoomID], function(error,rows){
 		if(error)console.log(error);
 		else SideB = rows;
 	});
@@ -593,7 +652,7 @@ function updatePreSelect(RoomID,ActorID){
 		else {
 			RoomData = rows[0];
 			if(RoomData.reciprocal == -1){
-				gameStart(RoomData,ActorID);
+				io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData,GameStart:true});
 			}else {
 				var sideAReady = true;
 				var sideBReady = true;
@@ -611,7 +670,6 @@ function updatePreSelect(RoomID,ActorID){
 				}
 				if((sideAReady&&sideBReady&&(RoomData.RoomMaster==ActorID))){
 					io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData,GameStart:true});
-					//gameStart(RoomData,ActorID);
 				}else{
 					io.emit("updatePreSelect",{SideA:SideA,SideB:SideB,SideA_AI:SideA_AI,SideB_AI:SideB_AI,RoomData:RoomData,GameStart:false});
 				}
@@ -783,7 +841,6 @@ function updateRoomList(){
 			console.log(error);
 			return false;	
 		}else{
-			var finsh = false;
 			io.emit('RoomListUpdate',rows);
 		}
 	});

@@ -160,6 +160,7 @@
                 if(data.status=='secss'){
                     VARIABLE.USER.ActorName = data.actorName;
                     VARIABLE.USER.Level = data.LV;
+                    VARIABLE.USER.RoomID = null;
                     VARIABLE.View.Hall.StatusRender();
                     ViewInit(VARIABLE.View.Hall.self);
                 }
@@ -187,10 +188,10 @@
                 VARIABLE.View.NewActor.CheckActorName(data);
             }
             function RoomListUpdate(data){
-                VARIABLE.View.Hall.update(data);
+                if(VARIABLE.SCENES == "hall") VARIABLE.View.Hall.update(data);
             }
             function updateRoom_res(data){
-                VARIABLE.View.Room.update(data);
+                if(VARIABLE.SCENES == "room") VARIABLE.View.Room.update(data);
             }
             function RoomNewMsg(data) {
                 if(data.RoomID==VARIABLE.USER.RoomID){
@@ -205,11 +206,12 @@
                 }
             }
             function updatePreSelect(data){
-                console.log(data);
-                if(data.GameStart) {
-                    ViewInit(VARIABLE.View.Block.self);
-                    if(data.RoomData.RoomMaster == VARIABLE.USER.ActorID) VARIABLE.Socket.emit("GameStart",data.RoomData);
-                }else VARIABLE.View.PreSelect.update(data);
+                if(VARIABLE.SCENES == "PreSelect"){
+                    if(data.GameStart) {
+                        ViewInit(VARIABLE.View.Block.self);
+                        if(data.RoomData.RoomMaster == VARIABLE.USER.ActorID) VARIABLE.Socket.emit("GameStart",data.RoomData);
+                    }else VARIABLE.View.PreSelect.update(data);
+                }
             }
             function gameStart(data){
                 console.log("gameStart");
@@ -228,7 +230,16 @@
                 if(VARIABLE.SCENES=="game") VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
             }
             function updateGameTime(time){
-                VARIABLE.View.GameArea.setTime(time);
+                if(VARIABLE.SCENES == "game") VARIABLE.View.GameArea.setTime(time);
+            }
+            function changePostion(data){
+                if(data.targetActorID==VARIABLE.USER.ActorID) VARIABLE.View.PreSelect.changePostionRequest(data);
+            }
+            function changePostionCancel(data){
+                if(data.targetActorID==VARIABLE.USER.ActorID) VARIABLE.View.PreSelect.changeRequestCancel(data);
+            }
+            function changeRequestResult(data){
+                if(data.actorID==VARIABLE.USER.ActorID) VARIABLE.View.PreSelect.changeRequestResult(data);
             }
             VARIABLE.Option = new OptionSet();/*global OptionSet 實作於Option.js*/
             VARIABLE.Game = new Object();
@@ -255,6 +266,9 @@
             VARIABLE.Socket.on("gameStart",gameStart);
             VARIABLE.Socket.on("gameSynchronize",gameSynchronize);
             VARIABLE.Socket.on("updateGameTime",updateGameTime);
+            VARIABLE.Socket.on("changePostion",changePostion);
+            VARIABLE.Socket.on("changePostionCancel",changePostionCancel);
+            VARIABLE.Socket.on("changeRequestResult",changeRequestResult);
             VARIABLE.Socket.emit("getMap");
             checkSave();
             window.addEventListener( 'resize', onWindowReSize, false );
@@ -320,7 +334,7 @@
             VARIABLE.View.GameArea.getIframe().contentWindow.document.open();
             VARIABLE.View.GameArea.getIframe().contentWindow.document.write(html);
             VARIABLE.View.GameArea.getIframe().src='src/GameArea.html';
-            
+            console.log("遊戲初始化完畢");
         }//遊戲畫面初始化
         //以下為系統工具
         function getWindowSize(){
