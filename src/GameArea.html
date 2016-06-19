@@ -87,8 +87,10 @@
                 }
                 for(var i=0;i!=player.length;i++){
                     player[i].Dir=1;
+                    console.log(1);
                     if(parent.VARIABLE.USER.ActorID==player[i].No){    
                         me=player[i];
+                        console.log(2);
                         console.log(player[i]);
                     }
                 }
@@ -104,38 +106,36 @@
         function Start(data){
             //先處理玩家狀態
             for(var i=0;i!=player.length;i++){
-                 MapCube[player[i].X][player[i].Y].earse(player[i]);
+                if(player[i].Under!=null)//死掉就不用在刪一次
+                MapCube[player[i].X][player[i].Y].earse(player[i]);
                 //確認身分
                 if(parent.VARIABLE.USER.ActorID==player[i].No){
                     //回合到自己的時候才算視野?
                     if(Turn%(player.length)==i){    
-                        //也要重插一次
-                        //HP
+                       //直接重插一次,要紀錄裝態
                         if(me.HP>=0){
-                                MapCube[me.X][me.Y].earse(me);
-                                    me.AP+=me.APRecover;   
+                            player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
+                
+                            MapCube[player[i].X][player[i].Y].insert(player[i]);
+                 
+                            me.AP+=me.APRecover;   
                         }else{
                             me=null;
                             
                         }
                         //放開關按鈕
                     }
-                    //直接重插一次,要紀錄裝態
+                   
                 }else{
-                    //東西被清掉不放
-                    if(player[i].Top!=null && player[i].Under!=null){
-                        player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
+                    player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
                 
-if(player[i].Hp<=0)//有可能在躲在建築物
-                           {
-                               
-                           }
-                        else
-                        {
-                            
-                        }
+                    if(player[i].Hp>=0)//有可能在躲在建築物
+                    {
+                     MapCube[player[i].X][player[i].Y].insert(player[i]);    
                     }
-                }
+                       
+                    }
+                
             }     
             //處理建築物
             

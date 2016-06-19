@@ -1509,7 +1509,6 @@ function PreSelectView(windowSize,Option){
 	}
 	//宣告函式
 	this.update = function(data){
-	    console.log(data);
 	    /*global VARIABLE*/
         if(data.RoomData.NO!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="PreSelect") return;
         for(var i=0;i<itemArray.length;i++){
