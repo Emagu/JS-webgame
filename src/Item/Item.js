@@ -18,6 +18,7 @@ function MapItem(x,y,T){
     this.Under=null;//下方物件
     this.Move_AP;
     this.Invincible=true;
+    this.ItemID = null;
     var info_on=false;
     var info=null;
     
@@ -238,6 +239,7 @@ function PlayerItem(x,y,no,T,S) {
   this.Hidden=false;
   this.Dir=4;//1左2上3右4下
   this.Snipe_dir=0;//1左2上3右4下
+  
   var Data=new Object();
   this.getData=function() {
         var tmp=this;
@@ -248,14 +250,15 @@ function PlayerItem(x,y,no,T,S) {
         Data.Side=tmp.Side;
         Data.HP=tmp.HP;
         Data.AP=tmp.AP;
-      
+        Data.ItemID = tmp.ItemID;
         return Data;
   };
-  this.setData=function(Data,position) {
+  this.setData=function(Data,position,ItemID) {
       this.X=position.X;
       this.Y=position.Y;
       this.AP=Data.AP;
       this.HP=Data.HP;
+      this.ItemID = ItemID;
   };
   this.setType=function(){//兵種初始特性,只用一次,放圖的在下面
   //之後放在靜態陣列

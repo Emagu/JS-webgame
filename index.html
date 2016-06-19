@@ -221,13 +221,15 @@
             function gameSynchronize(data){
                 console.log("gameSynchronize");
                 console.log(data);
-                for(var i=0;i<data.Item.length;i++){
-                    if(data.Item[i].ActorData.ActorID==VARIABLE.USER.ActorID){
-                        VARIABLE.View.GameArea.setHP(data.Item[i].ActorData.HP);
-                        VARIABLE.View.GameArea.setAP(data.Item[i].ActorData.AP);
+                if(VARIABLE.SCENES=="game") {
+                    for(var i=0;i<data.Item.length;i++){
+                        if(data.Item[i].ActorID==VARIABLE.USER.ActorID){
+                            VARIABLE.View.GameArea.setHP(data.Item[i].HP);
+                            VARIABLE.View.GameArea.setAP(data.Item[i].AP);
+                        }
                     }
+                    VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
                 }
-                if(VARIABLE.SCENES=="game") VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
             }
             function updateGameTime(time){
                 if(VARIABLE.SCENES == "game") VARIABLE.View.GameArea.setTime(time);

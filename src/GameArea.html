@@ -73,118 +73,96 @@
         }//遊戲畫面初始化
         
         function update(data){
-            /*
-                        同步處理
-                            .
-                            .
-                            .
-            */
-            /*繼續同步*/
             console.log(data);//還沒解json
             //如果data回合和本地回合再從新進行
             if(data.turn==0 && player.length==0){
-                
                 for(var i=0;i!=data.Item.length;i++){
-                    var x = parseInt(data.Item[i].Postion.X,10);
-                    var y = parseInt(data.Item[i].Postion.Y,10);
-                    tmp=new PlayerItem(x,y,data.Item[i].ActorData.ActorID,"通訊兵","A");//side,type 為0先不用
+                    var x = parseInt(data.Item[i].X,10);
+                    var y = parseInt(data.Item[i].Y,10);
+                    var tmp=new PlayerItem(x,y,data.Item[i].ActorID,"通訊兵","A");//side,type 為0先不用
                     console.log(tmp);
                     tmp.setType();
                     player.push(tmp);
                     MapCube[tmp.X][tmp.Y].insert(tmp);
-                 }
+                }
                 for(var i=0;i!=player.length;i++){
                     player[i].Dir=1;
-               
                     if(parent.VARIABLE.USER.ActorID==player[i].No){    
                         me=player[i];
                         console.log(player[i]);
                     }
-             }
-            View();
-            rendCube();
-            window.scrollTo((me.X-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (me.Y-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
+                }
+                View();
+                rendCube();
+                window.scrollTo((me.X-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (me.Y-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
             }
-            if(data.turn!=Turn)
-            {
-            Turn=data.turn;
+            if(data.turn!=Turn){
+                Turn=data.turn;
                 Start(data);
             }
-            
         }
         function Start(data){
             //先處理玩家狀態
-            for(var i=0;i!=player.length;i++)
-            {
-                player[i].setData(data.Item[i].ActorData,data.Item[i].Postion);
-                if(parent.VARIABLE.USER.ActorID==player[i].No)//確認身分
-                {
-                if(Turn%(player.length)==i)//回合到自己的時候才算視野?
-                {    
-                    //也要重插一次
-                    console.log(Turn%(player.length));
-                    if(me.HP<=0)//HP
-                    {
-                        if(me.Under!=null)
-                            MapCube[me.X][me.Y].earse(me);
-                        me=null;
+            for(var i=0;i!=player.length;i++){
+                 MapCube[player[i].X][player[i].Y].earse(player[i]);
+                //確認身分
+                if(parent.VARIABLE.USER.ActorID==player[i].No){
+                    //回合到自己的時候才算視野?
+                    if(Turn%(player.length)==i){    
+                        //也要重插一次
+                        //HP
+                        if(me.HP>=0){
+                                MapCube[me.X][me.Y].earse(me);
+                                    me.AP+=me.APRecover;   
+                        }else{
+                            me=null;
+                            
+                        }
+                        //放開關按鈕
                     }
-                    else
-                    {
-                        me.AP+=me.APRecover;   
-                        console.log(me.APRecover);
-                    }
-                    //放開關按鈕
-                }
-                //直接重插一次,要紀錄裝態
-                }
-                else
-                {
-                    if(player[i].Top!=null && player[i].Under!=null)//東西被清掉不放
-                    {
-                        
-                        if(player[i].Hp<=0)//有可能在躲在建築物
-                        MapCube[player[i].X][player[i].Y].earse(player[i]);
+                    //直接重插一次,要紀錄裝態
+                }else{
+                    //東西被清掉不放
+                    if(player[i].Top!=null && player[i].Under!=null){
+                        player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
+                
+if(player[i].Hp<=0)//有可能在躲在建築物
+                           {
+                               
+                           }
+                        else
+                        {
+                            
+                        }
                     }
                 }
-            }
-         
+            }     
             //處理建築物
             
-            for(var i=0;i!=Buliding.length;i++)
-            {
+            for(var i=0;i!=Buliding.length;i++){
                 //if(i>Buliding.length-1 && data.Buliding.length>Buliding.length)//插新的
-                if(0)//????
-                {
+                if(0){
                     var tmp=new BulidingItem();//x,y,T,S,Turn
                     MapCube[tmp.X][tmp.Y].insert(tmp);
-                }
-                else//檢查舊的
-                {
+                }else{//檢查舊的
                     //Buliding[i].setData(Data);
                     switch(Buliding[i].Type){
-                    case "定時炸彈":
-                    
-                        if(Buliding[i].EndTurn==Turn)
-                        {
-                            Area_Attack(2,Buliding[i].X,Buliding[i].Y,100);
-                            MapCube[Buliding[i].X][Buliding[i].Y].earse(Buliding[i]);
-                        }
+                        case "定時炸彈":
+                            if(Buliding[i].EndTurn==Turn){
+                                Area_Attack(2,Buliding[i].X,Buliding[i].Y,100);
+                                MapCube[Buliding[i].X][Buliding[i].Y].earse(Buliding[i]);
+                            }
                         break;
-                    case "資源點":
-                        if(Buliding[i].HP>0 && Buliding[i].Side==me.Side)
-                        {
-                            me.AP++;
-                        }
+                        case "資源點":
+                            if(Buliding[i].HP>0 && Buliding[i].Side==me.Side){
+                                me.AP++;
+                            }
                         break;
                     }
-                    if(Buliding[i].Top!=null && Buliding[i].Under!=null)//東西被清掉不放
-                    {
+                    if(Buliding[i].Top!=null && Buliding[i].Under!=null){//東西被清掉不放
                         if(Buliding[i].Hp<=0)
-                        MapCube[Buliding[i].X][Buliding[i].Y].earse(Buliding[i]);
-                
+                            MapCube[Buliding[i].X][Buliding[i].Y].earse(Buliding[i]);
                     }
-
                 }
             }
             
@@ -195,8 +173,7 @@
                 switch (TurnCube[i].Type) {
                     case '空中偵察':
                         if(Turn>= TurnCube[i].Turn &&Turn<=TurnCube[i].EndTurn)
-                        if(me.Side==TurnCube[i].Side)
-                        {
+                        if(me.Side==TurnCube[i].Side){
                             ViewCube.push(TurnCube[i]);
                         }
                         break;

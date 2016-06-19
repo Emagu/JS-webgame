@@ -544,13 +544,14 @@ io.on('connection', function(socket){
 		gameStart(RoomData,socket.User.ActorID);
 	});
 	socket.on("SetGameSynchronize",function(data) {//遊戲同步
+		console.log(data);
 	    for(var i=0;i<data.Buliding.length;i++){
-	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `NO` = ?;",[data.Buliding[i].X,data.Buliding[i].Y, data.RoomID],function(error) {
+	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `ItemID` = ?;",[data.Buliding[i].X,data.Buliding[i].Y, data.Buliding[i].ItemID],function(error) {
 	    	    if(error) console.log(error);
 	    	});
 	    }
 	    for(var i=0;i<data.Player.length;i++){
-	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `NO` = ?;",[data.Player[i].X,data.Player[i].Y, data.RoomID],function(error) {
+	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `ItemID` = ?;",[data.Player[i].X,data.Player[i].Y, data.Player[i].ItemID],function(error) {
 	    	    if(error) console.log(error);
 	    	});
 	    	connection.query("UPDATE `game_player_table` SET `HP` = ?, `AP` = ? WHERE `ActorID` = ?;",[data.Player[i].HP,data.Player[i].AP, data.Player[i].NO],function(error) {
@@ -689,20 +690,26 @@ function gameStart(RoomData,ActorID){
 				else{
 					var Player = MapData.Player;
 					var Item = MapData.House;
+					var ItemID = [];
 					for(var i = 0;i<row.length;i++){
 						var actorID = row[i].actorID;
-						var actorPos = Player[row[i].Postion];
 						var actorSide = row[i].side;
 						var actorType = row[i].Type;
 						connection.query("INSERT INTO `game_player_table` SET ?;",{ActorID:actorID, HP:100, AP:15, command:"",side:actorSide,type:actorType},function(error,result) {
 							if(error) console.log(error);
 							else{
-								connection.query("INSERT INTO `game_table` SET ?;",{RoomID:RoomData.NO, ItemID:result.insertId, X:actorPos.X, Y:actorPos.Y, type:"player"},function(error) {
-									if(error) console.log(error);
-								});
+								ItemID.push(result.insertId);
 							}
 						});
 					}
+					setTimeout(function(){
+						for(var i=0;i<ItemID.length;i++){
+							console.log(ItemID[i]);
+							connection.query("INSERT INTO `game_table` SET ?;",{RoomID:RoomData.NO, ItemID:ItemID[i], X:Player[row[i].Postion].X, Y:Player[row[i].Postion].Y, type:"player"},function(error) {
+								if(error) console.log(error);
+							});
+						}
+					},100);
 				}
 			});
 			connection.query("SELECT `item1`,`item2`,`item3` FROM `room_actor_list` WHERE `roomID` = ? AND `actorID` = ?",[RoomData.NO,ActorID],function(error,row) {
@@ -877,19 +884,9 @@ function addRoom(roomID,actorID,socket){
 }
 function gameSynchronize(roomID){
 	var Item=[],turn,recount;
-	connection.query("SELECT `ItemID`,`X`,`Y`,`type` FROM `game_table` WHERE `RoomID` = ?",[roomID],function(error,row) {
+	connection.query("SELECT A.ItemID,A.X,A.Y,A.type,B.ActorID,B.HP,B.AP,B.command,B.Type,B.side,B.turn FROM `game_table` AS A RIGHT JOIN `game_player_table` AS B ON A.ItemID = B.NO WHERE A.RoomID = ?;",[roomID],function(error,row) {
 		if(error) console.log(error);
-		else{
-			for(var i=0;i<row.length;i++){
-				var temp = row[i];
-				if(temp.type=='player'){
-					connection.query("SELECT * FROM `game_player_table` WHERE `NO` = ?",[temp.ItemID],function(error,rw) {
-						if(error) console.log(error);
-						else Item.push({ItemID:temp.ItemID,type:"player",Postion:{X:temp.X,Y:temp.Y},ActorData:rw[0]});
-					});
-				}else Item.push({ItemID:temp.ItemID,type:"bulid",Postion:{X:temp.X,Y:temp.Y}});
-			}
-		}
+		else Item = row;
 	});
 	connection.query("SELECT `turn` FROM `room_list` WHERE `NO` = ?",[roomID],function(error,row) {
 		if(error) console.log(error);
