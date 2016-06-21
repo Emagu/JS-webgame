@@ -173,10 +173,14 @@
                             VARIABLE.Socket.emit("updateRoom",VARIABLE.USER.RoomID);
                         }, 50);
                     }else{
-                        VARIABLE.USER.RoomID = data.RoomID;
-                        VARIABLE.USER.RoomSide = data.Side;
-                        VARIABLE.USER.RoomMaster = data.RoomMaster;
-                        RoomViewInit();
+                        console.log(data);
+                        console.log(VARIABLE.USER.ActorID);
+                        if(data.ActorID == VARIABLE.USER.ActorID){
+                            VARIABLE.USER.RoomID = data.RoomID;
+                            VARIABLE.USER.RoomSide = data.Side;
+                            VARIABLE.USER.RoomMaster = data.RoomMaster;
+                            RoomViewInit();
+                        }
                     }
                 }
             }
@@ -201,7 +205,8 @@
                 } 
             }
             function preSelectInit(data){
-                if(data == VARIABLE.USER.RoomID){
+                console.log(data);
+                if(data == VARIABLE.USER.RoomID && VARIABLE.SCENES == "room"){
                     PreSelectViewInit();
                 }
             }
@@ -219,21 +224,22 @@
                 if(data.RoomData.NO == VARIABLE.USER.RoomID) GameAreaInit(data);
             }
             function gameSynchronize(data){
-                console.log("gameSynchronize");
-                console.log(data);
-                if(VARIABLE.SCENES=="game") {
-                    for(var i=0;i<data.Item.length;i++){
-                        if(data.Item[i].ActorID==VARIABLE.USER.ActorID){
-                            VARIABLE.View.GameArea.setHP(data.Item[i].HP);
-                            VARIABLE.View.GameArea.setAP(data.Item[i].AP);
+                if(data.RoomID == VARIABLE.USER.RoomID){
+                    if(VARIABLE.SCENES=="game") {
+                        console.log("gameSynchronize");
+                        console.log(data);
+                        for(var i=0;i<data.Item.length;i++){
+                            if(data.Item[i].ActorID==VARIABLE.USER.ActorID){
+                                VARIABLE.View.GameArea.setHP(data.Item[i].HP);
+                                VARIABLE.View.GameArea.setAP(data.Item[i].AP);
+                            }
                         }
+                        VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
                     }
-                     console.log(data);
-                    VARIABLE.View.GameArea.getIframe().contentWindow.update(data);
                 }
             }
             function updateGameTime(time){
-                if(VARIABLE.SCENES == "game") VARIABLE.View.GameArea.setTime(time);
+                if(VARIABLE.SCENES == "game" && VARIABLE.USER.RoomID == time.RoomID) VARIABLE.View.GameArea.setTime(time);
             }
             function changePostion(data){
                 if(data.targetActorID==VARIABLE.USER.ActorID) VARIABLE.View.PreSelect.changePostionRequest(data);

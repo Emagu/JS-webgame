@@ -47,33 +47,12 @@
                     MapCube[i].push(item);
                 }
             }
-            /*
-            for(var i=0;i!=parent.VARIABLE.Game.Item.length;i++){
-                var x = parseInt(parent.VARIABLE.Game.Item[i].Postion.X,10);
-                var y = parseInt(parent.VARIABLE.Game.Item[i].Postion.Y,10);
-                if(i<parent.VARIABLE.Game.Item.length/2) tmp=new PlayerItem(x,y,parent.VARIABLE.Game.Item[i].ActorData.ActorID,"通訊兵","C");
-                else tmp=new PlayerItem(x,y,parent.VARIABLE.Game.Item[i].ActorData.ActorID,"通訊兵","A");
-                player.push(tmp);
-                MapCube[tmp.X][tmp.Y].insert(tmp);
-            }
-            
-            for(var i=0;i!=player.length;i++){
-                player[i].Dir=1;
-                if(parent.VARIABLE.USER.ActorID==player[i].No){    
-                    me=player[i];
-                }
-            }
-            */
-            /*
-            View();
-            rendCube();
-            window.scrollTo((me.X-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (me.Y-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
-            */
           
         }//遊戲畫面初始化
         
         function update(data){
             console.log(data);//還沒解json
+            console.log(new Date());
             //如果data回合和本地回合再從新進行
             if(data.turn==0 && player.length==0){
                 for(var i=0;i!=data.Item.length;i++){
@@ -98,47 +77,48 @@
                 rendCube();
                 window.scrollTo((me.X-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar, (me.Y-15)* (Option.CubeSize + Option.CubeLine * 2) * FocalVar);
             }
+            console.log((data.turn));
+            console.log((Turn));
             if(data.turn!=Turn){
+               
+                var start = new Date().getTime();
                 Turn=data.turn;
                 Start(data);
+                var end = new Date().getTime();
+                console.log((end - start) / 1000 + "sec");
+                
             }
+            View();
+            rendCube();
         }
         function Start(data){
             //先處理玩家狀態
+            console.log(new Date());
             for(var i=0;i!=player.length;i++){
-                if(player[i].Under!=null)//死掉就不用在刪一次
-                MapCube[player[i].X][player[i].Y].earse(player[i]);
+            if(player[i].Under!=null)//死掉就不用在刪一次
+                    MapCube[player[i].X][player[i].Y].earse(player[i]);
+            }
+            for(var i=0;i!=player.length;i++){
+                
                 //確認身分
-                if(parent.VARIABLE.USER.ActorID==player[i].No){
-                    //回合到自己的時候才算視野?
-                    if(Turn%(player.length)==i){    
-                       //直接重插一次,要紀錄裝態
-                        if(me.HP>=0){
-                            player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
-                
-                            MapCube[player[i].X][player[i].Y].insert(player[i]);
-                 
-                            me.AP+=me.APRecover;   
-                        }else{
-                            me=null;
-                            
-                        }
-                        //放開關按鈕
-                    }
-                   
-                }else{
-                    player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
-                
-                    if(player[i].Hp>=0)//有可能在躲在建築物
-                    {
+                player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
+                if(player[i].HP>0){
                      MapCube[player[i].X][player[i].Y].insert(player[i]);    
-                    }
-                       
-                    }
+                }
+                if(Turn%(player.length)==i){
+                    if(player[i].HP<=0)
+                        me=null;
+                        //按鈕開關
+                }
                 
-            }     
+            }
+            var start = new Date().getTime();
+            View();
+            rendCube();
+            var end = new Date().getTime();
+            console.log((end - start) / 1000 + "sec");
             //處理建築物
-            
+            /*
             for(var i=0;i!=Buliding.length;i++){
                 //if(i>Buliding.length-1 && data.Buliding.length>Buliding.length)//插新的
                 if(0){
@@ -178,9 +158,8 @@
                         }
                         break;
                 }
-            }
-            View();
-            rendCube();
+            }*/
+           
         }
         function Attack_Check(input,ATK){
             //然後他就死掉了
@@ -286,15 +265,7 @@
             rendCube();
         }
         function rendCube(){
-            /*
-            while(parent.VARIABLE.View.GameArea.RightControl.Status.firstChild) parent.VARIABLE.View.GameArea.RightControl.Status.removeChild(parent.VARIABLE.View.GameArea.RightControl.Status.firstChild);
-            parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createTextNode("兵種:"+me.Type));
-            parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createElement("br"));
-            parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createTextNode("剩餘HP:"+me.HP));
-            parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createElement("br"));
-            parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createTextNode("剩餘AP:"+me.AP));
-            parent.VARIABLE.View.GameArea.RightControl.Status.appendChild(document.createElement("br"));
-          */
+
             while (GameArea.firstChild) {
                 GameArea.removeChild(GameArea.firstChild);
             }
@@ -310,10 +281,12 @@
                         GameArea.appendChild(MapCube[i][j].Div);
                         
                         if(MapCube[i][j].findTop().Class!='MapItem')//下方有東西
-                        if(MapCube[i][j].findTop().Under.Class!='MapItem')
+                        //if(MapCube[i][j].findTop().Under.Class!='MapItem')
                         {
                             while(tmp!=MapCube[i][j].findTop())
                             {
+                                tmp=tmp.Top;
+                               
                                 if(tmp.Class=='PlayerItem' )
                                 {
                                     if(tmp.Hidden)
@@ -322,14 +295,15 @@
                                         GameArea.appendChild(tmp.Div);
                                     }
                                     else{
+                                        tmp.show();
                                         GameArea.appendChild(tmp.Div);
                                     }
                                 }
                                 else if(tmp.Class=='BulidingItem')
                                 {
+                                    tmp.show();
                                     GameArea.appendChild(tmp.Div);
                                 }
-                                tmp=tmp.Top;
                             }
                         }
                     }
@@ -1514,8 +1488,8 @@
                 tmp=tmp.Top;
             }
             UpLoad();
-            
-            Turn++;
+            View();
+            rendCube();
         }
         function UpLoad(){
             var updata = new Object();
@@ -1527,14 +1501,17 @@
             for(var i=0;i!=player.length;i++){
                 updata.Player.push(player[i].getData());
             }
-            updata.Turn = Turn;
+            //updata.Turn = Turn;
             updata.RoomID = parent.VARIABLE.USER.RoomID;
             //var data=JSON.stringify(updata);
             //saveTextAsFile('Map',data);//下載Map
             //最後在json
             sendGameCommand(updata);
+           
         }//上傳資料
+        
         function sendGameCommand(data){
+            console.log(data);
             parent.VARIABLE.Socket.emit("SetGameSynchronize",data);
         }
         function saveTextAsFile( _fileName, _text ) {

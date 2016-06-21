@@ -259,6 +259,7 @@ function PlayerItem(x,y,no,T,S) {
       this.AP=Data.AP;
       this.HP=Data.HP;
       this.ItemID = ItemID;
+      
   };
   this.setType=function(){//兵種初始特性,只用一次,放圖的在下面
   //之後放在靜態陣列
@@ -330,6 +331,9 @@ function PlayerItem(x,y,no,T,S) {
         }
   }
   this.show=function(){
+      console.log("show");
+     this.Div.style.left = (this.X * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
+     this.Div.style.top = (this.Y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
       switch(this.Type){
         case '通訊兵' :
             this.Div.style.backgroundColor = "transparent"; 

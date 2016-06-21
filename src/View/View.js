@@ -943,7 +943,6 @@ function RoomView(windowSize,Option){    /*global OriginView */
 	    }
 	}
 	this.update = function(data){
-	    console.log(data);
         if(data.status!="secss" || data.RoomID!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="room") return;
         for(var i=0; i<playerArray.length;i++){
             this.self.removeChild(playerArray[i]);
@@ -1008,11 +1007,9 @@ function RoomView(windowSize,Option){    /*global OriginView */
             Join_Bside.style.display = "none";
             BTN_AI_Bside.style.display = "none";
         } 
-        
         if(RoomStatusDiv!=null) this.self.removeChild(RoomStatusDiv);
         RoomStatusDiv = new RoomStatus({RoomName:data.RoomName,Mode:data.Mode,MapName:data.MapName}).Div;
         this.self.appendChild(RoomStatusDiv);
-        
 	};
     this.getMessage = function(msg){
         var newMsg = document.createElement("li");
@@ -1032,7 +1029,7 @@ function PreSelectView(windowSize,Option){
     OriginView.call(this,windowSize,Option.getWindowSize());//繼承 
     this.self.style.backgroundImage = "url('./src/pic/PreSelect/BackGround.png')";
     //宣告變數
-    var itemArray = [];
+    var itemArray = [],ChangeArray=[];
     var PlayLocal = null;
     var Ready = false;
     var TargetActor;
@@ -1356,6 +1353,7 @@ function PreSelectView(windowSize,Option){
 	    this.Div.style.backgroundImage = "url('./src/pic/PreSelect/playbox.png')";
 	    this.Div.style.backgroundPosition = "center center";
 	    this.Div.style.position = "absolute";
+	    
 	    if(data.Ready==1){
 	    	this.Div.appendChild(dark);
 	    }
@@ -1511,10 +1509,15 @@ function PreSelectView(windowSize,Option){
 	this.update = function(data){
 	    /*global VARIABLE*/
         if(data.RoomData.NO!=VARIABLE.USER.RoomID || VARIABLE.SCENES!="PreSelect") return;
+        
         for(var i=0;i<itemArray.length;i++){
-        	this.self.removeChild(itemArray[i]);
+        	this.self.removeChild(itemArray[i].Div);
+        }
+        for(var i=0;i<ChangeArray.length;i++){
+        	this.self.removeChild(ChangeArray[i]);
         }
         itemArray = [];
+        ChangeArray = [];
         var SideA = 0,SideB = 0;
         for(var i=0;i<data.SideA.length;i++){
         	if(data.SideA[i].actorID==VARIABLE.USER.ActorID){
@@ -1524,19 +1527,21 @@ function PreSelectView(windowSize,Option){
         		StrategySelect.style.backgroundImage = "url('./src/pic/Item/2/"+data.SideA[i].item3+".png')";
         		VARIABLE.USER.Side = 0;
         	}else{
-        	    var temp = document.createElement("div");
-        	    temp.style.width = "32px";
-        	    temp.style.height = "32px";
-        	    temp.style.left = "195px";
-        	    temp.style.top = (115+i*120) + "px";
-        	    temp.style.position = "absolute";
-        	    temp.style.backgroundImage = "url('./src/pic/PreSelect/change.png')";
-        	    addChangePostion(temp,data.SideA[i].actorID,data.SideA[i].Postion);
-        	    itemArray.push(temp);
-	            this.self.appendChild(temp);
+        	    if(VARIABLE.USER.Side==0){
+        	        var temp = document.createElement("div");
+        	        temp.style.width = "32px";
+        	        temp.style.height = "32px";
+        	        temp.style.left = "195px";
+        	        temp.style.top = (115+i*120) + "px";
+        	        temp.style.position = "absolute";
+        	        temp.style.backgroundImage = "url('./src/pic/PreSelect/change.png')";
+        	        addChangePostion(temp,data.SideA[i].actorID,data.SideA[i].Postion);
+        	        ChangeArray.push(temp);
+	                this.self.appendChild(temp);
+        	    }
         	}
 	        var temp = new ActorDiv(data.SideA[i],i,0);
-	        itemArray.push(temp.Div);
+	        itemArray.push(temp);
 	        this.self.appendChild(temp.Div);
 	        SideA++;
 	    }
@@ -1548,16 +1553,18 @@ function PreSelectView(windowSize,Option){
         		SupportSelect.style.backgroundImage = "url('./src/pic/Item/1/"+data.SideB[i].item2+".png')";
         		StrategySelect.style.backgroundImage = "url('./src/pic/Item/2/"+data.SideB[i].item3+".png')";
         	}else{
-        	    var temp = document.createElement("div");
-        	    temp.style.width = "32px";
-        	    temp.style.height = "32px";
-        	    temp.style.left = "1225px";
-        	    temp.style.top = (115+i*120) + "px";
-        	    temp.style.position = "absolute";
-        	    temp.style.backgroundImage = "url('./src/pic/PreSelect/change.png')";
-        	    addChangePostion(temp,data.SideB[i].actorID,data.SideB[i].Postion);
-        	    itemArray.push(temp);
-	            this.self.appendChild(temp);
+        	    if(VARIABLE.USER.Side==1){
+        	        var temp = document.createElement("div");
+            	    temp.style.width = "32px";
+            	    temp.style.height = "32px";
+            	    temp.style.left = "1225px";
+            	    temp.style.top = (115+i*120) + "px";
+            	    temp.style.position = "absolute";
+            	    temp.style.backgroundImage = "url('./src/pic/PreSelect/change.png')";
+            	    addChangePostion(temp,data.SideB[i].actorID,data.SideB[i].Postion);
+            	    ChangeArray.push(temp);
+    	            this.self.appendChild(temp);
+        	    }
         	}
 	        var temp = new ActorDiv(data.SideB[i],i,1);
 	        itemArray.push(temp);
@@ -2025,7 +2032,7 @@ function GameAreaView(windowSize,itemlist,Option){
     HPNum.style.width = "90px";
 	HPNum.style.height = "26px";
 	HPNum.style.textAlign = "center";
-	HPNum.style.color = "#FFFFFF";
+	HPNum.style.color = "#27468D";
 	HPNum.appendChild(document.createTextNode("100 / 100"));
 	HpTag.appendChild(HPNum);
 	
@@ -2054,7 +2061,7 @@ function GameAreaView(windowSize,itemlist,Option){
     APNum.style.width = "90px";
 	APNum.style.height = "26px";
 	APNum.style.textAlign = "center";
-	APNum.style.color = "#FFFFFF";
+	APNum.style.color = "#A50A0A";
 	APNum.appendChild(document.createTextNode("15 / 15"));
 	ApTag.appendChild(APNum);
     
