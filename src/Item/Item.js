@@ -331,7 +331,6 @@ function PlayerItem(x,y,no,T,S) {
         }
   }
   this.show=function(){
-      console.log("show");
      this.Div.style.left = (this.X * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
      this.Div.style.top = (this.Y * (Option.CubeSize + Option.CubeLine * 2) * FocalVar ) + "px";
       switch(this.Type){

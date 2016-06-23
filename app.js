@@ -550,7 +550,7 @@ io.on('connection', function(socket){
 	    	    if(error) console.log(error);
 	    	});
 	    }*/
-	    
+	    console.log(data);
 	    for(var i=0;i<data.Player.length;i++){
 	    	connection.query("UPDATE `game_table` SET `X` = ?, `Y` = ? WHERE `ItemID` = ?;",[data.Player[i].X,data.Player[i].Y, data.Player[i].ItemID],function(error) {
 	    	    if(error) console.log(error);
@@ -779,10 +779,10 @@ function gameStart(RoomData,ActorID){
 	});
 	setTimeout(function() {
 	    gameSynchronize(RoomData.NO);
-	},400);
+	},500);
 	setTimeout(function(){
 		io.emit("gameStart",{MapData:MapData,RoomData:RoomData,PlayData:PlayData});
-	},150);
+	},50);
 }
 //msg =>{ActorID,RoomID,Echo("是否回傳")}
 function quitRoom(socket,msg){

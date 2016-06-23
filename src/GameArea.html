@@ -58,7 +58,9 @@
                 for(var i=0;i!=data.Item.length;i++){
                     var x = parseInt(data.Item[i].X,10);
                     var y = parseInt(data.Item[i].Y,10);
-                    var tmp=new PlayerItem(x,y,data.Item[i].ActorID,"通訊兵","A");//side,type 為0先不用
+                    var type=["通訊兵","工程師",'狙擊手',"醫護兵","野戰兵","水鬼","裝甲兵"];
+                    var side=["A","B"];
+                    var tmp=new PlayerItem(x,y,data.Item[i].ActorID,type[data.Item[i].Type],side[data.Item[i].side]);//side,type 為0先不用
                     console.log(tmp);
                     tmp.setType();
                     player.push(tmp);
@@ -69,8 +71,6 @@
                     console.log(1);
                     if(parent.VARIABLE.USER.ActorID==player[i].No){    
                         me=player[i];
-                        console.log(2);
-                        console.log(player[i]);
                     }
                 }
                 View();
@@ -80,13 +80,8 @@
             console.log((data.turn));
             console.log((Turn));
             if(data.turn!=Turn){
-               
-                var start = new Date().getTime();
-                Turn=data.turn;
                 Start(data);
-                var end = new Date().getTime();
-                console.log((end - start) / 1000 + "sec");
-                
+                Turn=data.turn;
             }
             View();
             rendCube();
@@ -98,33 +93,43 @@
             if(player[i].Under!=null)//死掉就不用在刪一次
                     MapCube[player[i].X][player[i].Y].earse(player[i]);
             }
+            parent.VARIABLE.View.GameArea.ButtonDisable();
+            parent.VARIABLE.View.GameArea.setTurnTag(false);
             for(var i=0;i!=player.length;i++){
-                
                 //確認身分
                 player[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
                 if(player[i].HP>0){
                      MapCube[player[i].X][player[i].Y].insert(player[i]);    
                 }
-                if(Turn%(player.length)==i){
-                    if(player[i].HP<=0)
-                        me=null;
-                        //按鈕開關
-                }
-                
             }
-            var start = new Date().getTime();
+            if(parent.VARIABLE.USER.ActorID==player[Turn%(player.length)].No){
+                if(player[Turn%(player.length)].HP>0){
+                    me.AP+=me.APRecover;
+                    parent.VARIABLE.View.GameArea.ButtonEnable();
+                    parent.VARIABLE.View.GameArea.setTurnTag(true);
+                    parent.VARIABLE.View.GameArea.setAP(me.AP);
+                }
+                if(player[Turn%(player.length)].HP<=0)
+                    me=null;
+            }    
+            
             View();
             rendCube();
-            var end = new Date().getTime();
-            console.log((end - start) / 1000 + "sec");
-            //處理建築物
+           
+            //處理建築
             /*
             for(var i=0;i!=Buliding.length;i++){
+                if(Buliding[i].Under!=null)//死掉就不用在刪一次
+                    MapCube[Buliding[i].X][Buliding[i].Y].earse(Buliding[i]);
+            }
                 //if(i>Buliding.length-1 && data.Buliding.length>Buliding.length)//插新的
-                if(0){
-                    var tmp=new BulidingItem();//x,y,T,S,Turn
-                    MapCube[tmp.X][tmp.Y].insert(tmp);
-                }else{//檢查舊的
+                Buliding[i].setData(data.Item[i],{X:data.Item[i].X,Y:data.Item[i].Y},data.Item[i].ItemID);
+                 if(Buliding[i].HP>0){
+                     MapCube[Buliding[i].X][Buliding[i].Y].insert(Buliding[i]);    
+                }
+                */
+                   /*
+                //檢查舊的
                     //Buliding[i].setData(Data);
                     switch(Buliding[i].Type){
                         case "定時炸彈":
@@ -139,12 +144,10 @@
                             }
                         break;
                     }
-                    if(Buliding[i].Top!=null && Buliding[i].Under!=null){//東西被清掉不放
-                        if(Buliding[i].Hp<=0)
-                            MapCube[Buliding[i].X][Buliding[i].Y].earse(Buliding[i]);
-                    }
-                }
-            }
+                    */
+                
+            
+            
             
             ViewCube.length=0;
             //跑回合倒數執行的事件
@@ -158,7 +161,7 @@
                         }
                         break;
                 }
-            }*/
+            }
            
         }
         function Attack_Check(input,ATK){
@@ -263,9 +266,11 @@
                     break;
             }
             rendCube();
+           
         }
         function rendCube(){
-
+            if(me!=null)
+             parent.VARIABLE.View.GameArea.setAP(me.AP);
             while (GameArea.firstChild) {
                 GameArea.removeChild(GameArea.firstChild);
             }
@@ -445,7 +450,16 @@
             function Arms_Ability(x,y){
                 var check;
                 switch(me.Type){//兵種移動特性
-                    case '通訊兵':
+                     case '水鬼':
+                        if(x>=0 && x<Option.CubeX && y>=0 && y<Option.CubeY)//邊界判定 
+                        if(MapCube[x][y].findTop().MoveAble==true || MapCube[x][y].Type=="海") //地形不允許
+                        if(MapCube[x][y].findTop().VisiAble)//超出視野
+                           check=true;
+                        else
+                            check= false;
+                        
+                        break;
+                    default:
                         if(x>=0 && x<Option.CubeX && y>=0 && y<Option.CubeY)//邊界判定 
                         if(MapCube[x][y].findTop().MoveAble==true) //地形不允許
                         if(MapCube[x][y].findTop().VisiAble)//超出視野
@@ -453,8 +467,6 @@
                         else
                             check= false;
                         break;
-                    default:
-                        check= true;
                         
                 }
                 return check;
@@ -1343,9 +1355,7 @@
                         y=player[i].Y;
                     }
                 }
-                console.log(x,y);
                 short_path(input.X,input.Y,x,y,input.AP);
-                console.log(bestpath);
             }
             else
             {
@@ -1500,12 +1510,11 @@
             }
             for(var i=0;i!=player.length;i++){
                 updata.Player.push(player[i].getData());
+                 console.log(player[i].AP);
             }
             //updata.Turn = Turn;
             updata.RoomID = parent.VARIABLE.USER.RoomID;
-            //var data=JSON.stringify(updata);
-            //saveTextAsFile('Map',data);//下載Map
-            //最後在json
+           
             sendGameCommand(updata);
            
         }//上傳資料

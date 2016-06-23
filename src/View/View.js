@@ -2065,6 +2065,16 @@ function GameAreaView(windowSize,itemlist,Option){
 	APNum.appendChild(document.createTextNode("15 / 15"));
 	ApTag.appendChild(APNum);
     
+    var TurnTag = document.createElement("div");
+    TurnTag.style.position = "absolute";
+    TurnTag.style.top = "360px";
+    TurnTag.style.left = "1120px";
+    TurnTag.style.width = "160px";
+	TurnTag.style.height = "40px";
+	TurnTag.style.display = "none";
+	TurnTag.style.backgroundImage = "url('/src/pic/GameArea/YourTurn.png')"
+	this.self.appendChild(TurnTag);
+	
     function addItemEvent(node,i){
     	node.addEventListener("click",function(){
     		iframe.contentWindow.Skill(ItemList[i]);
@@ -2084,7 +2094,6 @@ function GameAreaView(windowSize,itemlist,Option){
         isItemSelect = false;
         iframe.contentWindow.ActionCancel();
     }
-    
     this.getIframe = function(){
         return iframe;
     }
@@ -2098,13 +2107,27 @@ function GameAreaView(windowSize,itemlist,Option){
     };
     this.ResetMove = MoveButtonReset;
     this.ResetButton = ButtonReset;
+    this.ButtonEnable = function(){
+        MoveButton.style.pointerEvents = 'auto';
+        AttackButton.style.pointerEvents = 'auto';
+        ItemButton.style.pointerEvents = 'auto';
+        SkillButton.style.pointerEvents = 'auto';
+        stay.style.pointerEvents = 'auto';
+    }
+    this.ButtonDisable = function(){
+        MoveButton.style.pointerEvents = 'none';
+        AttackButton.style.pointerEvents = 'none';
+        ItemButton.style.pointerEvents = 'none';
+        SkillButton.style.pointerEvents = 'none';
+        stay.style.pointerEvents = 'none';
+    }
     this.setHP = function(NewHP){
         var HPrate = NewHP / 100;
         HP.style.width = (90*HPrate) + "px";
         HPNum.childNodes[0].nodeValue = NewHP + " / 100";
     }
     this.setAP = function(NewAP){
-        var APrate = NewAP / 15;
+        var APrate = NewAP / 50;
         AP.style.width = (90*APrate) + "px";
         APNum.childNodes[0].nodeValue = NewAP + " / 15";
     }
@@ -2122,5 +2145,12 @@ function GameAreaView(windowSize,itemlist,Option){
         var leftSecs = lefttime - leftMins*60;
         GameTime.childNodes[0].nodeValue = leftMins + " : " + leftSecs;
         TurnTime.childNodes[0].nodeValue = Time.Turn;
+    }
+    this.setTurnTag = function(status){
+        if(status){
+            TurnTag.style.display = "";
+        }else{
+            TurnTag.style.display = "none";
+        }
     }
 }
